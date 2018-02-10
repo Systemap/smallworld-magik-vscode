@@ -1,4 +1,5 @@
 # Language support for Smallworld™ Magik 
+
 This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Smallworld) application development and [Magik](https://en.wikipedia.org/wiki/Magik_%28programming_language%29) programming language.
 
 ## Features

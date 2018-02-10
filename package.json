@@ -4,7 +4,7 @@
     "description": "Smallworld Magik for Visual Studio Code",
     "version": "1.0.0",
     "publisher": "siamz",
-    "icon": "images/swMagik.png",
+    "icon": "images/swmagik.png",
 	"keywords": [
 		"smallworld",
 		"magik",
