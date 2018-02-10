@@ -4,6 +4,7 @@
     "description": "Smallworld Magik for Visual Studio Code",
     "version": "0.0.1",
     "publisher": "siamz",
+    "icon": "images/swMagik.png",
     "galleryBanner": {
         "color": "#00AAAA",
         "theme": "light"
@@ -21,7 +22,6 @@
         "onLanguage:magik"
     ],
     "main": "./src/extension",
-    "icon": "./swMagik.png",
     "contributes": {
         "themes": [
             {
