@@ -1,0 +1,227 @@
+{
+	".source.magik": {
+		"text_encoding": {
+			"prefix": "text_encoding",
+			"body": "#% text_encoding = utf8\n"
+		},
+		"_package": {
+			"prefix": "package",
+			"body": "_package ${1:user}\n"
+		},
+		"_block @name _endblock": {
+			"prefix": "block",
+			"body": "_block ${1:@block_name} \n\t${2:# --- body ---}\n_endblock\n"
+		},
+		"_dynamic": {
+			"prefix": "dynamic",
+			"body": "_dynamic (\n\t\"${1:VARIABLE_NAME}\"\n)"
+		},
+		"_local": {
+			"prefix": "local",
+			"body": "_local ${1:VARIABLE_NAME} << ${2:VALUE}"
+		},
+		"_global": {
+			"prefix": "global",
+			"body": "_global ( ${1:VARIABLE_NAME} << ${2:VALUE} )"
+		},
+		"_proc @name() _endproc": {
+			"prefix": "proc",
+			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- body ---}\n_endproc\n"
+		},
+		"_loop _endloop": {
+			"prefix": "loop @",
+			"body": [
+				"_loop @${1:LOOP_NAME}",
+				"\t${2:# --- loop body ---}",
+				"_endloop\n"]
+		},
+		"_for key,element _endloop": {
+			"prefix": "for keys_and_elements()",
+			"body": [
+				"_for ${1:KEY,ELEMENT} _over  ${2:COLLECTION.keys_and_elements()}",
+				"_loop @${3:LOOP_NAME}",
+				"\t${4:# --- loop body ---}",
+				"_finally",
+				"\t${5:# --- last iteration ---}",
+				"_endloop\n"]
+		},
+		"_for element _endloop": {
+			"prefix": "for elements()",
+			"body": [
+				"_for ${1:ELEMENT} _over  ${2:COLLECTION.fast_elements()}",
+				"_loop @${3:LOOP_NAME}",
+				"\t${4:# --- loop body ---}",
+				"_finally",
+				"\t${5:# --- last iteration ---}",
+				"_endloop\n"]
+		},
+		"_over _endloop": {
+			"prefix": "over iterator",
+			"body": [
+				"_over  ${1:iterator()}",
+				"_loop @${2:LOOP_NAME}",
+				"\t${3:# --- loop body ---}",
+				"_finally",
+				"\t${4:# --- last iteration ---}",
+				"_endloop\n"]
+		},
+		"_if _endif": {
+			"prefix": "if",
+			"body": "_if ${1:#--- condition ---} \n_then  \n\t${2:#--- if body ---} \n_else \n\t${3:# --- else body ---}\n_endif\n"
+		},
+		"_try _endtry": {
+			"prefix": "try",
+			"body": "_try ${1:_with a_cond} \n\t# --- body ---\n_when ${2:error}\n\t# --- condition handling ---\n_endtry\n"
+		},
+		"_protect _endprotect": {
+			"prefix": "protect",
+			"body": "_protect \n\t$0:# --- body ---\n_protection\n\t$1:# --- protected ---\n_endprotect\n"
+		},
+		"_lock": {
+			"prefix": "lock",
+			"body": "_lock _self  \n\t$0:# --- lock body ---\n_endlock\n"
+		},
+		"_pragma": {
+			"prefix": "pragma",
+			"body": "_pragma(classify_level=${1:basic,advanced,restricted,debug,depricated}, topic=${2:CLASS_NAME}, usage=${3:external,internal})\r\n"
+		},
+		"_method _endmethod": {
+			"prefix": "method",
+			"body": [
+				"_pragma(classify_level=basic, topic=$1, usage=external)",
+				"_method ${1:CLASS_NAME}.${2:METHOD_NAME}()",
+				"\t##  Function: ",
+				"\t## Arguments: ",
+				"\t##   Returns: ",
+				"\t# --- body ---",
+				"\t_retrun ${3:VAL1,VAL2,...# --- return values  ---}",
+				"_endmethod\n"]
+		},
+		"_iter _method _endmethod": {
+			"prefix": "iter",
+			"body": [
+				"_pragma(classify_level=basic, topic=$1)",
+				"_iter _method ${1:CLASS_NAME}.${2:METHOD_NAME}()",
+				"\t##   Remarks: ",
+				"\t## Arguments: ",
+				"\t##   Returns: ",
+				"\t# --- body ---",
+				"\t_loopbody(${3:VAL1,VAL2,..} # return values)",
+				"_endmethod\n"]
+		},
+		"_private _method _endmethod": {
+			"prefix": "private",
+			"body": [
+				"_pragma(classify_level=restricted, topic=$1, usage=internal)",
+				"_private _method ${1:CLASS_NAME}.${2:METHOD_NAME}()",
+				"\t##   Remarks: ",
+				"\t## Arguments: ",
+				"\t##   Returns: ",
+				"\t# --- body ---",
+				"\t_retrun ${3:VAL1,VAL2,...# --- return values  ---}",
+				"_endmethod\n"]
+		},
+		"def_slotted_exemplar": {
+			"prefix": "def_slotted_exemplar",
+			"body": [
+				"_pragma(classify_level=basic, topic={$1})",
+				"def_slotted_exemplar(:${1:CLASS_NAME},",
+				"\t# --- Slot Definitions ---",
+				"\t{:${2:SLOT_NAME}, ${3:DEFAULT_VALUE}, :${4:FLAVOUR}},",
+				"\t# --- Parents ---",
+				"\t{:${5:PARENT_1,PARENT_2,...} }",
+				")\n"]
+		},
+		"define_slot_access": {
+			"prefix": "define_slot_access",
+			"body": [
+				"_pragma(classify_level=basic, topic=$1)",
+				"${1:CLASS_NAME}.define_slot_access(:${2:SLOT_NAME}, :${3:MODE})\n"]
+		},
+		"define_shared_constant": {
+			"prefix": "define_shared_constant",
+			"body": [
+				"_pragma(classify_level=basic, topic=$1)",
+				"${1:CLASS_NAME}.define_shared_constant(:${2:CONSTANT_NAME},",
+				"\t##   Remarks: ",
+				"\t##   Returns: ",
+				"\t##",
+				"\t${2:# --- body ---}\n\t,",
+				":public)\n"]
+		},
+		"define_shared_variable": {
+			"prefix": "define_shared_variable",
+			"body": [
+				"_pragma(classify_level=basic, topic={$1})",
+				"${1:CLASS_NAME}.define_shared_constant(:${2:VARIABLE_NAME},",
+				"\t##   Remarks: ",
+				"\t##   Returns: ",
+				"\t##",
+				"\t${2:# --- body ---}\n\t,",
+				":public)\n"]
+		},
+		"operator": {
+			"prefix": "operator",
+			"body": [
+				"_pragma(classify_level=basic, topic={$1,$2})",
+				"define_binary_operator_case(:|${0:OPERATOR}|,",
+				"\t${1:<class_1>}, ${2:<class_2>},",
+				"\t_proc(a, b)",
+				"\t\t##   Remarks: ",
+				"\t\t##   Returns: ",
+				"\t\t ${3:# --- operator body ---",
+				"\t\t _return ${4:VALUE} # --- operator results ---",
+				"\t_endproc",
+				")\n"]
+		},
+		"condition": {
+			"prefix": "condition",
+			"body": [
+				"_pragma(classify_level=basic)",
+				"condition.define_condition(:${1:CONDITION_NAME},",
+				"\t:${2:PARENT_NAME},",
+				"\t${3:DATA_NAME_LIST},",
+				"\t${3:optional REPORTER},",
+				"\t${4:MESSAGE_ACCESSOR}",
+				")\n"]
+		},
+		"pseudo_slot": {
+			"prefix": "pseudo_slot",
+			"body": [
+				"\r\n_pragma(classify_level=basic, topic=$1)",
+				"${1:CLASS_NAME}.define_pseudo_slot(:${2:SLOT_NAME},",
+				"\t${3:optional DEFAULT_VALUE},",
+				"\t${4:FLAG},",
+				"\t${5:FLAVOUR}",
+				")\n"]
+		},
+		"%newline": {
+			"prefix": "%n",
+			"body": "%newline"
+		},
+		"%tab": {
+			"prefix": "%t",
+			"body": "%tab"
+		},
+		"%space": {
+			"prefix": "%s",
+			"body": "%space"
+		},
+		"Application": {
+			"prefix": "app",
+			"body": "app<< smallworld_product.application(:${1:APPLICATION_NAME})"
+		},
+		"spatial_object_manager": {
+			"prefix": "soc",
+			"body": "manage_soc()"
+		},
+		"current_map_view": {
+			"prefix": "map",
+			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
+		},
+		"databases": {
+			"prefix": "dbv",
+			"body": "dbv<< gis_program_manager.databases"
+		}
+	}
+}

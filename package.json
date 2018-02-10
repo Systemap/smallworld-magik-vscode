@@ -1,0 +1,107 @@
+{
+    "name": "smallworld-magik",
+    "displayName": "Smallworld Magik",
+    "description": "Smallworld Magik for Visual Studio Code",
+    "version": "0.0.1",
+    "publisher": "siamz",
+    "galleryBanner": {
+        "color": "#00AAAA",
+        "theme": "light"
+    },
+    "engines": {
+        "vscode": "^1.1.0"
+    },
+    "categories": [
+        "Languages",
+        "Snippets",
+        "Themes"
+    ],
+    "activationEvents": [
+        "onLanguage:swgis",
+        "onLanguage:magik"
+    ],
+    "main": "./src/extension",
+    "icon": "swMagik.png",
+    "contributes": {
+        "themes": [
+            {
+                "label": "Smallworld Magik",
+                "uiTheme": "vs-dark",
+                "path": "./themes/magik.tmTheme"
+            }
+        ],
+        "languages": [
+            {
+                "id": "magik",
+                "aliases": [
+                    "Magik",
+                    "Smallworld Magik"
+                ],
+                "extensions": [
+                    ".magik",
+                    ".msg",
+                    ".def"
+                ],
+                "filenames": [
+                    "load_list.txt",
+                    "patch_list.txt"
+                ],
+                "configuration": "./languages/configuration.json"
+            },
+            {
+                "id": "swgis",
+                "aliases": [
+                    "swgis",
+                    "Smallworld GIS"
+                ],
+                "extensions": [],
+                "filenames": [
+                    "gis_aliases",
+                    "product.def",
+                    "module.def",
+                    "load_list.txt",
+                    "patch_list.txt"
+                ],
+                "configuration": "./languages/configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "magik",
+                "scopeName": "source.magik",
+                "path": "./grammars/magik.tmLanguage.json"
+            },
+            {
+                "language": "swgis",
+                "scopeName": "source.swgis",
+                "path": "./grammars/swgis.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "magik",
+                "path": "./snippets/magik.snippets.json"
+            }
+        ]
+    },
+    "bugs": {
+		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
+		"email": "siamz@live.com"
+	},
+	"homepage": "https://github.com/siamz/smallworld-magik-vscode.git/blob/master/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/siamz/smallworld-magik-vscode.git"
+	},
+    "scripts": {
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "@types/mocha": "^2.2.32",
+        "@types/node": "^6.0.40",
+        "mocha": "^2.3.3",
+        "typescript": "^2.0.3",
+        "vscode": "^1.1.0"
+    }
+}
