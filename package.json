@@ -2,13 +2,14 @@
     "name": "smallworld-magik",
     "displayName": "Smallworld Magik",
     "description": "Smallworld Magik for Visual Studio Code",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "publisher": "siamz",
-    "icon": "swMagik.png",
-    "galleryBanner": {
-        "color": "#00AAAA",
-        "theme": "light"
-    },
+    "icon": "images/swMagik.png",
+	"keywords": [
+		"smallworld",
+		"magik",
+		"gis_aliases"
+	],
     "engines": {
         "vscode": "^1.1.0"
     },
