@@ -22,7 +22,7 @@
         "onLanguage:swgis",
         "onLanguage:magik"
     ],
-    "main": "./src/extension",
+    "main": "./snippets/extension",
     "contributes": {
         "themes": [
             {
