@@ -21,7 +21,7 @@
         "onLanguage:magik"
     ],
     "main": "./src/extension",
-    "icon": "swMagik.png",
+    "icon": "./swMagik.png",
     "contributes": {
         "themes": [
             {
@@ -88,10 +88,10 @@
 		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
 		"email": "siamz@live.com"
 	},
-	"homepage": "https://github.com/siamz/smallworld-magik-vscode.git/blob/master/README.md",
+	"homepage": "https://github.com/siamz/smallworld-magik-vscode/tree/master/README.md",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/siamz/smallworld-magik-vscode.git"
+		"url": "https://github.com/siamz/smallworld-magik-vscode/tree/master"
 	},
     "scripts": {
         "postinstall": "node ./node_modules/vscode/bin/install",
