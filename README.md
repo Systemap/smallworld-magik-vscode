@@ -28,4 +28,5 @@ This extension contributes the following settings:
 ## Release Notes
 ### 1.0.0
 Basic support for Smallworld Magik source and resource file types, including Symbols and Autocorrection.
+
 ** Enjoy and share! **
