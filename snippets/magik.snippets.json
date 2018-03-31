@@ -94,7 +94,7 @@
 				"\t## Arguments: ",
 				"\t##   Returns: ",
 				"\t# --- body ---",
-				"\t_retrun ${3:VAL1,VAL2,...# --- return values  ---}",
+				"\t_return ${3:VAL1,VAL2,...# --- return values  ---}",
 				"_endmethod\n"]
 		},
 		"_iter _method _endmethod": {
@@ -118,7 +118,7 @@
 				"\t## Arguments: ",
 				"\t##   Returns: ",
 				"\t# --- body ---",
-				"\t_retrun ${3:VAL1,VAL2,...# --- return values  ---}",
+				"\t_return ${3:VAL1,VAL2,...# --- return values  ---}",
 				"_endmethod\n"]
 		},
 		"def_slotted_exemplar": {
