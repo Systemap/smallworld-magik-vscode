@@ -1,5 +1,32 @@
 {
 	"recommendations": [
 		"patrys.vscode-code-outline"
-	]
+	],
+
+  "symbolOutline.doSort": false,
+  "symbolOutline.doSelect": true,
+  "symbolOutline.sortOrder": [
+    "Class",
+    "Module",
+    "Constant",
+    "Interface",
+    "*",
+    "Constructor",
+    "Function",
+    "Method"
+  ],
+  "symbolOutline.expandNodes": [
+    "Module",
+    "Class",
+    "Interface",
+    "Namespace",
+    "Object",
+    "Package",
+    "Struct"
+  ],
+  "symbolOutline.topLevel": [
+    "Module",
+    "Class",
+    "Interface"
+  ]
 }
