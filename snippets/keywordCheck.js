@@ -127,6 +127,19 @@ class keywordCheck{
             editBuilder.replace(new vscode.Range(pos1, pos2), kword.string);
        });
     }
+    provideCompletionItems(document, position, token) {
+        var conf = vscode.workspace.getConfiguration('magik', document.uri);
+        return this.provideCompletionItemsInternal(document, position, token, conf).then(result => {
+            if (!result) {
+                return new vscode.CompletionList([], false);
+            }
+            if (Array.isArray(result)) {
+                return new vscode.CompletionList(result, false);
+            }
+            return result;
+        });
+    }
+   
 }
 exports.keywordCheck = keywordCheck    
 

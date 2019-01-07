@@ -14,12 +14,12 @@
         "vscode": "^1.20.0"
     },
     "categories": [
-        "Languages",
+        "Programming Languages",
         "Snippets",
         "Themes"
     ],
     "activationEvents": [
-        "onCommand:extension.swMagik",
+        "onCommand:magik.set",
         "onLanguage:swgis",
         "onLanguage:magik"
     ],
@@ -27,11 +27,11 @@
     "contributes": {
         "commands": [
             {
-                "command": "extension.swMagik",
+                "command": "magik.set",
                 "title": "Smallworld Magik"
             },
             {
-                "command": "extension.swGIS",
+                "command": "swgis.set",
                 "title": "Smallworld Session"
             }
         ],

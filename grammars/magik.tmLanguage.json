@@ -36,7 +36,7 @@
 				"begin": "'",
 				"end": "'",
 				"patterns": [	
-				{	"name": "constant.character.escape.magik",
+				{	"name": "constant.character.dot.magik",
 					"match": "."
 				}]
 			},
@@ -56,14 +56,22 @@
 					"match": "[a-z!?_]"
 				}]
 			},
-			{	"name": "string.symbol.colon.magik",
-				"begin": ":\\w",
-				"end": "[a-z!?_A-Z0-9]+",
+			{	"name": "string.symbol.pipes.magik",
+				"begin": ":[a-z!?_A-Z0-9]+\\|",
+				"end": "\\||\n",
 				"patterns": [	
 				{	"name": "constant.character.escape.magik",
-					"match": "[a-z!?_]"
+					"match": "."
 				}]
-			}
+			},
+			{	"name": "string.symbol.colon.magik",
+				"begin": ":\\w",
+				"end": "[a-z!?_A-Z0-9]+||\\w",
+				"patterns": [	
+					{	"name": "constant.character.escape.magik",
+						"match": "[a-z!?_A-Z0-9]"
+					}]
+					}
 			]
 		}
 	},

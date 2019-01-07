@@ -19,15 +19,14 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 ![Smallworld Magik Theme](images/syntaxLight.png)
 
 ### Recommended Extensions
-* Install [Code Outline](https://marketplace.visualstudio.com/items?itemName=patrys.vscode-code-outline) to get a better experience browsing your Magik or gis_aliases code.
-![Code Outline](images/CodeOutline.png)
+* Install [Code Runner](https://marketplace.visualstudio.com/items?itemName=formulahendry.code-runner) to Set up a batch to start your Smallworld session and use this extension to start it.
 
 ## Extension Settings
 This extension contributes the following settings:
 * languages, grammars, themes, snippets.
 
 ## Release Notes
-### 1.0.0
+### 1.0.1
 Basic support for Smallworld Magik source and resource file types, including Symbols and Autocorrection.
 
 ** Enjoy and share! **

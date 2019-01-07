@@ -1,5 +1,6 @@
 'use strict';
 const vscode = require('vscode');
+const fs=require("fs");
 const vsSK = vscode.SymbolKind;
 var magikKeys=null;// = /(_method|_proc|_block|_global|def_slotted_exemplar|sw!patch_software|define_shared_variable|define_shared_constant|define_property|def_property|register_new|register_application)/ig;
 
@@ -18,97 +19,106 @@ const magikSymbols = {
     'register_application'   : ['smallworld_product.register_application' ,  ')', vsSK.Module]
 };
 
+const swWorkspaceSymbols = {index: [], cache: [], paths: []};
+
 class codeBrowser{
 
-    magikKeys(){
-        if (magikKeys == null) {
-            magikKeys ="(";
-            for( var k in magikSymbols) {
-                var ms =  magikSymbols[k];
-                magikKeys +=   k + '|';
-                // ms[0] = new RegExp(ms[0]);
-                // ms[1] = new RegExp(ms[1]);
-            };
-            magikKeys +=  "null)";
-            magikKeys = new RegExp("\\b"+ magikKeys + "\\b" ,"ig");
-        } 
-        return  magikKeys;
-    };
-    
-    getTagText(lineText, tagKey) {
-        var tagIdx =  (tagKey == '\n')? 0 : lineText.indexOf(tagKey);
-        if (tagIdx < 0) return;
- 
-        var tagTxt = lineText;
-        var commentIdx = lineText.indexOf('#');
-        if (commentIdx > -1 )
-             if (commentIdx < tagIdx) 
-                  return;
-             else 
-                 tagTxt = tagTxt.slice(0,commentIdx-1).trim();
- 
-        for (var i in [1,2])            
-        for (var ch = ['"',"'"][i];;){
-             var rem = tagTxt.indexOf(ch)
-             if (rem<0 || rem > tagIdx) 
-                 break;
-             tagTxt = tagTxt.slice(0,rem-1);
-             tagIdx = tagTxt.indexOf(tagKey);
-             rem =lineText.indexOf(ch); 
-             if (tagIdx < 0 || rem > tagIdx) 
-                 return;
-             tagTxt = tagTxt.slice(0,rem-1);
-        };     
-        tagIdx = tagTxt.indexOf(tagKey);     
-        rem =  tagTxt.length - (tagIdx+tagKey.length);
-        if (tagKey[0]=="_" &&  rem > 0)   {            
-             let str = RegExp (tagKey+"[\\s()]");     
-             tagIdx = lineText.search(str);
-             if (tagIdx<0) 
-                 return;
-        }           
-     return tagTxt;   
-    }          
+    provideWorkspaceSymbols(query, token) {
+        let rootPath = vscode.workspace.rootPath;
+        if (vscode.window.activeTextEditor && vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)) {
+            rootPath = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri.fsPath;
+        };
+        let swConfig = vscode.workspace.getConfiguration('magik', vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.uri : null);
+        if (!rootPath && !swConfig.gotoSymbol.includeGoroot) {
+            vscode.window.showInformationMessage('No workspace is open to find symbols.');
+            return;
+        };
+       // --- grab symbols from files and push to index
+        var grab =  function (err, magikfiles,rootPath) { 
+            console.log("---done "+ magikfiles.length + " " + rootPath )
+            if (err) return ;
+            magikfiles.forEach(function(fname) {
+                if ( swWorkspaceSymbols.index.indexOf(fname) < 0 ) {    
+                    let urif = fname; // vscode.file(fname)//  URI.file(fname);
+                    let openDocPromise = vscode.workspace.openTextDocument(urif);
+                    openDocPromise.then(function(doc){
+                        var symbolProvider =  new cBrowser.codeBrowser();
+                        var symbols = symbolProvider.provideDocumentSymbols(doc);
+                        swWorkspaceSymbols.cache.push(symbols);    
+                        swWorkspaceSymbols.index.push(fname);  
+                    }); 
+                };       
+            });
+            swWorkspaceSymbols.paths.push(rootPath);
+        };
+        // --- walk thru the folders for .magik files
+        var walk = function(dir, done) {
+            var results = [];
+            fs.readdir(dir, function(err, list) {
+                if (err) return done(err);
+        // console.log("---walk "+dir)
+                var i = 0;
+                (function next() {
+                    var file = list[i++];
+                    if (!file) return done(null, results,dir);
+                    file = dir + '/' + file;
+                    fs.stat(file, function(err, stat) {
+                        if (stat && stat.isDirectory()) {
+                        walk(file, function(err, res) {
+                            results = results.concat(res);
+                            next();
+                        });
+                        } else {
+                            var fn = file.substr(-6);
+                            if(fn==".magik") results.push(file);
+                        next();
+                        }
+                    });
+                })();
+            });
+        };        
 
-    getTagInfo(lineText) {
-        var tagKeys = [];
-        let tagKey = null;
-        var keys = this.magikKeys();
-        while ((tagKey = keys.exec(lineText)) !== null) {
-                tagKey = tagKey[1];
-                var tagTxt = this.getTagText(lineText,tagKey);
-                var tag = magikSymbols[tagKey]
-                if (tagTxt==null) continue;
-                tagKeys.push({
-                    text:    tagTxt, 
-                    keyWord: tag[0], 
-                    endWord: tag[1], 
-                    keyPosition: null,
-                    endPosition: null,
-                    parentNode: null,
-                    containerName: null,
-                    nodeName: null,   
-                    vsKind:  tag[2] 
-                });
-         };
-        return tagKeys;
-    };           
-  
+        // --- sift the symbols for 'query'
+        var sift = function(symbolCache,filter) {
+            let list = [];
+            var n;
+            for (n in symbolCache) {
+                symbolCache[n].forEach(function(symb){
+                    if(filter=='' || symb.name.indexOf(filter)>=0)
+                        list.push(symb);
+                });      
+            };      
+            return list;      
+       };    
+
+        if (swWorkspaceSymbols.paths.indexOf(rootPath)<0) {
+            walk(rootPath, grab);    
+        };
+
+        return sift(swWorkspaceSymbols.cache,query); 
+    }
+
     provideDocumentSymbols(document, token) {
-        var symUri = document.fileName;
+        var fname = document.fileName;
         var symInfos;
-        var n = symUri.search("gis_aliases");
-        if (n != null && symUri.slice(n)=="gis_aliases")
+        var n = fname.search("gis_aliases");
+        if (n != null && fname.slice(n)=="gis_aliases")
             symInfos = this.get_gisSymbols(document, token);
         else
             symInfos = this.get_magikSymbols(document, token);
+        var i = swWorkspaceSymbols.index.indexOf(fname);
+        if (  i < 0 ) {    
+            swWorkspaceSymbols.cache.push(symInfos);    
+            swWorkspaceSymbols.index.push(fname);  
+        } else swWorkspaceSymbols.cache[i] = symInfos;         
+
         return  symInfos;   
     }
               
     get_gisSymbols(document, token) {
         var symRef = [];
         var parentName, methd, parms;
-        var symUri = document.fileName;
+        var docUri = document.fileName;
         var symInfos = [];
 
         // parse the document for functions
@@ -120,7 +130,7 @@ class codeBrowser{
             if ((tag=tag.trim()).search(":") != tag.length-1) continue;
             if (tag.indexOf(" ")>-1) continue;
             var symRnge = new vscode.Range(new vscode.Position(lineCount, 0), new vscode.Position(lineCount+1, 0))
-            var symInfo = new vscode.SymbolInformation(tag, vsSK.Interface, symRnge, null);// symUri);
+            var symInfo = new vscode.SymbolInformation(tag, vsSK.Interface, symRnge, null);// docUri);
             symInfos.push(symInfo);
         };
         return symInfos;
@@ -233,11 +243,9 @@ class codeBrowser{
     }
 
     get_magikSymbols(document, token) {
-        var symUri = document.fileName;
+        var docUri = document.uri; //vscode.Uri.file(document.path);
         var symRef = [];
         var symRefIndex = [];
-        var symRefInfo;
-        var symRange = [];
         var lastContainer = null;   
         var vsSymbols = this.find_magikTags(document);
         for(var k in vsSymbols){
@@ -258,29 +266,106 @@ class codeBrowser{
                     symRefIndex.push(tagRef);
                     tag.parentNode = tagRef;
                     lastContainer = tagRef;
+                    tag.parentNode = lastContainer;
                     parentName = lastContainer[4] 
             } else {
                 // symRefIndex[i][3] = tag.endPosition;  
                 lastContainer[3] = tag.endPosition; 
-                tag.parentNode = symRefIndex[i];
+                tag.parentNode = lastContainer;
                 parentName = lastContainer[4] 
             };
             var symRnge = new vscode.Range(tag.keyPosition, tag.endPosition);
-            // var symInfo = new vscode.SymbolInformation(tag.nodeName, tag.vsKind, symRnge, symUri, parentName);
-            var symInfo = new vscode.SymbolInformation(tag.nodeName + " " + tag.keyPosition.line, tag.vsKind, symRnge, null, parentName);
-             vsSymbols[k] = symInfo;
+            // var symInfo = new vscode.SymbolInformation(tag.nodeName, tag.vsKind, symRnge, docUri, parentName);
+            var label = tag.nodeName; //+ " " + tag.keyPosition.line;
+            var symInfo = new vscode.SymbolInformation(label, tag.vsKind, symRnge, docUri, parentName);
+            vsSymbols[k] = symInfo;
 
         };
  
         for(var k in symRefIndex){
             var tagRef = symRefIndex[k]
-            var symRefInfo = new vscode.SymbolInformation(tagRef[4], tagRef[1], new vscode.Range(tagRef[2],tagRef[3]) );//tagRef[3]));
+            var symRefInfo = new vscode.SymbolInformation(tagRef[4], tagRef[1], new vscode.Range(tagRef[2],tagRef[3]),docUri );
             vsSymbols.push(symRefInfo); 
         };
         
         return vsSymbols;
     }
 
+    magikKeys(){
+        if (magikKeys == null) {
+            magikKeys ="(";
+            for( var k in magikSymbols) {
+                var ms =  magikSymbols[k];
+                magikKeys +=   k + '|';
+                // ms[0] = new RegExp(ms[0]);
+                // ms[1] = new RegExp(ms[1]);
+            };
+            magikKeys +=  "null)";
+            magikKeys = new RegExp("\\b"+ magikKeys + "\\b" ,"ig");
+        } 
+        return  magikKeys;
+    };
+    
+    getTagText(lineText, tagKey) {
+        var tagIdx =  (tagKey == '\n')? 0 : lineText.indexOf(tagKey);
+        if (tagIdx < 0) return;
+ 
+        var tagTxt = lineText;
+        var commentIdx = lineText.indexOf('#');
+        if (commentIdx > -1 )
+             if (commentIdx < tagIdx) 
+                  return;
+             else 
+                 tagTxt = tagTxt.slice(0,commentIdx-1).trim();
+ 
+        for (var i in [1,2])            
+        for (var ch = ['"',"'"][i];;){
+             var rem = tagTxt.indexOf(ch)
+             if (rem<0 || rem > tagIdx) 
+                 break;
+//            tagTxt = tagTxt.slice(0,rem-1);
+            tagTxt = tagTxt.slice(rem+1,tagTxt.length);
+            tagIdx = tagTxt.indexOf(tagKey);
+            rem = tagTxt.indexOf(ch); 
+             if (tagIdx < 0 || rem > tagIdx) 
+                 return;
+            tagTxt = tagTxt.slice(rem+1,tagTxt.length);
+        };     
+        tagIdx = tagTxt.indexOf(tagKey);     
+        rem =  tagTxt.length - (tagIdx+tagKey.length);
+        if (tagKey[0]=="_" &&  rem > 0)   {            
+             let str = RegExp (tagKey+"[\\s()]");     
+             tagIdx = lineText.search(str);
+             if (tagIdx<0) 
+                 return;
+        }           
+     return tagTxt;   
+    }          
+
+    getTagInfo(lineText) {
+        var tagKeys = [];
+        let tagKey = null;
+        var keys = this.magikKeys();
+        while ((tagKey = keys.exec(lineText)) !== null) {
+                tagKey = tagKey[1];
+                var tagTxt = this.getTagText(lineText,tagKey);
+                var tag = magikSymbols[tagKey]
+                if (tagTxt==null) continue;
+                tagKeys.push({
+                    text:    tagTxt, 
+                    keyWord: tag[0], 
+                    endWord: tag[1], 
+                    keyPosition: null,
+                    endPosition: null,
+                    parentNode: null,
+                    containerName: null,
+                    nodeName: null,   
+                    vsKind:  tag[2] 
+                });
+         };
+        return tagKeys;
+    };           
+  
 }
 exports.codeBrowser = codeBrowser    
 
