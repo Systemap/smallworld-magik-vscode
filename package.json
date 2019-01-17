@@ -24,6 +24,16 @@
     ],
     "main": "./src/extension",
     "contributes": {
+        "configuration":{
+            "title": "Smallworld GIS path",
+            "properties": {
+                "Smallworld.gisPath":{
+                "type": ["string", "null"],
+                "default": "C:\\Smallworld\\430\\product\\bin\\x86\\gis.exe",
+                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash \\ **"
+                }
+            }
+        },
         "themes": [
             {
                 "label": "Smallworld Magik",
@@ -83,7 +93,22 @@
                 "language": "magik",
                 "path": "./snippets/magik.snippets.json"
             }
+        ],        
+
+        "commands": [
+            {
+            "command": "swSessions.runaliases",
+            "title": "sw:Run GIS Alias"
+            }
+        ],
+        "menus": {
+        "editor/context": [
+            {
+            "command": "swSessions.runaliases",
+            "group": "swGroup@1"
+            }
         ]
+        }   
     },
     "bugs": {
 		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
