@@ -98,14 +98,15 @@
         "commands": [
             {
             "command": "swSessions.runaliases",
-            "title": "sw:Run GIS Alias"
+            "title": "sw: Run GIS Alias"
             }
         ],
         "menus": {
         "editor/context": [
             {
             "command": "swSessions.runaliases",
-            "group": "swGroup@1"
+            "group": "swGroup@1",
+            "title": "Run GIS Alias"
             }
         ]
         }   

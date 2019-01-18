@@ -64,17 +64,18 @@ class swSessions{
             //Currently the tab of the alias file needs to be opened.
             var currentOpenTabFilePath = vscode.window.activeTextEditor.document.fileName;
             //Get gis.exe path
-            const gisPath = workbenchConfig.get('gisPath');
+            var gisPath = workbenchConfig.get('gisPath');
 
             //Get the selected text(alias).
-            const selectedAlias = editor.document.getText(editor.selection);
+            var selectedAlias = editor.document.getText(editor.selection);
 
             //Show some messages.
             vscode.window.showInformationMessage('Smallworld GIS Starting...');
-            vscode.window.showInformationMessage('using alias: ' + selectedAlias + ' ' + currentOpenTabFilePath);
+            vscode.window.showInformationMessage('using alias: ' + selectedAlias);
            
             //Start Smallworld with the correct alias
            var execCommand = gisPath +  ' -a ' + currentOpenTabFilePath + ' ' + selectedAlias;
+           vscode.window.showInformationMessage(execCommand);
            exec(execCommand, (err, stdout, stderr) => { 
             if (err)
                 return console.error(err);
