@@ -29,8 +29,8 @@
             "properties": {
                 "Smallworld.gisPath":{
                 "type": ["string", "null"],
-                "default": "C:\\Smallworld\\430\\product\\bin\\x86\\gis.exe",
-                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash \\ **"
+                "default": "C:/Smallworld/430/product/bin/x86/gis.exe",
+                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single foreward slash '/'**"
                 }
             }
         },
@@ -98,15 +98,14 @@
         "commands": [
             {
             "command": "swSessions.runaliases",
-            "title": "sw: Run GIS Alias"
+            "title": "GIS Run Alias"
             }
         ],
         "menus": {
         "editor/context": [
             {
             "command": "swSessions.runaliases",
-            "group": "swGroup@1",
-            "title": "Run GIS Alias"
+            "group": "swGroup@1"
             }
         ]
         }   

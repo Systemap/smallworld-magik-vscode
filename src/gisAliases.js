@@ -65,7 +65,7 @@ class swSessions{
             var currentOpenTabFilePath = vscode.window.activeTextEditor.document.fileName;
             //Get gis.exe path
             var gisPath = workbenchConfig.get('gisPath');
-
+            console.log("path: " + gisPath);
             //Get the selected text(alias).
             var selectedAlias = editor.document.getText(editor.selection);
 
