@@ -1,3 +1,4 @@
+
 {
     "name": "smallworld-magik",
     "displayName": "Smallworld Magik",
@@ -21,7 +22,8 @@
     "activationEvents": [
         "onCommand:magik.set",
         "onLanguage:swgis",
-        "onLanguage:magik"
+        "onLanguage:magik",
+        "workspaceContains:*.magik,*.def,gis_aliases"
     ],
     "main": "./snippets/extension",
     "contributes": {
@@ -37,28 +39,27 @@
         ],
         "themes": [
             {
-                "label": "Smallworld Magik",
-                "uiTheme": "vs-dark",
-                "path": "./themes/magik.tmTheme"
+                "label": "Smallworld Magik Light",
+				"uiTheme": "vs",
+				"path": "./themes/magik-light.color-theme.json"
             }
         ],
         "languages": [
             {
                 "id": "magik",
                 "aliases": [
-                    "Magik",
+                    "magik",
                     "Smallworld Magik"
                 ],
                 "extensions": [
                     ".magik",
-                    ".msg",
-                    ".def"
+                    ".msg"
                 ],
                 "filenames": [
                     "load_list.txt",
                     "patch_list.txt"
                 ],
-                "configuration": "./languages/configuration.json"
+                "configuration": "./languages/magik-configuration.json"
             },
             {
                 "id": "swgis",
@@ -74,7 +75,7 @@
                     "load_list.txt",
                     "patch_list.txt"
                 ],
-                "configuration": "./languages/configuration.json"
+                "configuration": "./languages/swgis-configuration.json"
             }
         ],
         "grammars": [

@@ -1,4 +1,6 @@
-'use strict';
+// ---------------------------------------------------------
+//   siamz.smallworld-magik
+//  --------------------------------------------------------'use strict';
 const vscode = require('vscode');
 const fs=require("fs");
 const vsSK = vscode.SymbolKind;
@@ -22,99 +24,93 @@ const magikSymbols = {
 const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
 class codeBrowser{
-
-    provideWorkspaceSymbols(query, token) {
-        let rootPath = vscode.workspace.rootPath;
-        if (vscode.window.activeTextEditor && vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)) {
-            rootPath = vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri).uri.fsPath;
-        };
-        let swConfig = vscode.workspace.getConfiguration('magik', vscode.window.activeTextEditor ? vscode.window.activeTextEditor.document.uri : null);
-        if (!rootPath && !swConfig.gotoSymbol.includeGoroot) {
-            vscode.window.showInformationMessage('No workspace is open to find symbols.');
-            return;
-        };
-       // --- grab symbols from files and push to index
-        var grab =  function (err, magikfiles,rootPath) { 
-            console.log("---done "+ magikfiles.length + " " + rootPath )
-            if (err) return ;
-            magikfiles.forEach(function(fname) {
-                if ( swWorkspaceSymbols.index.indexOf(fname) < 0 ) {    
-                    let urif = fname; // vscode.file(fname)//  URI.file(fname);
-                    let openDocPromise = vscode.workspace.openTextDocument(urif);
-                    openDocPromise.then(function(doc){
-                        var symbolProvider =  new cBrowser.codeBrowser();
-                        var symbols = symbolProvider.provideDocumentSymbols(doc);
-                        swWorkspaceSymbols.cache.push(symbols);    
-                        swWorkspaceSymbols.index.push(fname);  
-                    }); 
-                };       
-            });
-            swWorkspaceSymbols.paths.push(rootPath);
-        };
-        // --- walk thru the folders for .magik files
-        var walk = function(dir, done) {
-            var results = [];
-            fs.readdir(dir, function(err, list) {
-                if (err) return done(err);
-        // console.log("---walk "+dir)
-                var i = 0;
-                (function next() {
-                    var file = list[i++];
-                    if (!file) return done(null, results,dir);
-                    file = dir + '/' + file;
-                    fs.stat(file, function(err, stat) {
-                        if (stat && stat.isDirectory()) {
-                        walk(file, function(err, res) {
-                            results = results.concat(res);
-                            next();
-                        });
-                        } else {
-                            var fn = file.substr(-6);
-                            if(fn==".magik") results.push(file);
-                        next();
-                        }
-                    });
-                })();
-            });
-        };        
-
-        // --- sift the symbols for 'query'
-        var sift = function(symbolCache,filter) {
-            let list = [];
-            var n;
-            for (n in symbolCache) {
-                symbolCache[n].forEach(function(symb){
-                    if(filter=='' || symb.name.indexOf(filter)>=0)
-                        list.push(symb);
-                });      
-            };      
-            return list;      
-       };    
-
-        if (swWorkspaceSymbols.paths.indexOf(rootPath)<0) {
-            walk(rootPath, grab);    
-        };
-
-        return sift(swWorkspaceSymbols.cache,query); 
+    constructor() {
+        this.swWorkspaceSymbols = swWorkspaceSymbols;
     }
-
+        
     provideDocumentSymbols(document, token) {
-        var fname = document.fileName;
+        var magikfile = document.fileName;
         var symInfos;
-        var n = fname.search("gis_aliases");
-        if (n != null && fname.slice(n)=="gis_aliases")
+        if (magikfile.endsWith("\gis_aliases"))
             symInfos = this.get_gisSymbols(document, token);
+        else if(magikfile.endsWith("\product.def"))
+            symInfos = this.get_moduleSymbols(document, token);
+        else if(magikfile.endsWith("\module.def"))
+            symInfos = this.get_moduleSymbols(document, token);
         else
             symInfos = this.get_magikSymbols(document, token);
-        var i = swWorkspaceSymbols.index.indexOf(fname);
+
+        var i = swWorkspaceSymbols.index.indexOf(magikfile);
         if (  i < 0 ) {    
             swWorkspaceSymbols.cache.push(symInfos);    
-            swWorkspaceSymbols.index.push(fname);  
+            swWorkspaceSymbols.index.push(magikfile);  
         } else swWorkspaceSymbols.cache[i] = symInfos;         
 
         return  symInfos;   
     }
-              
+
+    get_WorkspaceSymbols(rootPath, token) {
+
+        if (swWorkspaceSymbols.paths.indexOf(rootPath)<0) {
+
+            // --- grab symbols from files and push to index
+            var grab =  function (magikfile) { 
+                if ( swWorkspaceSymbols.index.indexOf(magikfile) < 0 ) {    
+                    let urif = magikfile; // vscode.file(magikfile)//  URI.file(magikfile);
+                    let openDocPromise = vscode.workspace.openTextDocument(urif);
+                    openDocPromise.then(function(doc){
+                        var symbols = this.get_magikSymbols(doc);
+                        swWorkspaceSymbols.cache.push(symbols);    
+                        swWorkspaceSymbols.index.push(magikfile);  
+                    });       
+                };       
+            };
+    
+            // --- walk thru the folders for .magik files
+            var walk = function(dir) {
+                var list = fs.readdirSync(dir) 
+                for(var i in list){
+                    var file = dir + '/' + list[i];
+                    var stat = fs.statSync(file);
+                    if (stat && stat.isDirectory()) 
+                        walk(file);
+                    else if (file.endsWith(".magik") )
+                        grab(file);
+                };
+            };        
+
+            walk(rootPath);
+
+ 
+            // swWorkspaceSymbols.paths.push(rootPath);
+        };
+
+        let symInfos = [];
+        for(var i in swWorkspaceSymbols.index)
+            if (swWorkspaceSymbols.index[i].indexOf(rootPath) == 0)  
+                symInfos = symInfos.concat(swWorkspaceSymbols.cache[i]);         
+
+        return symInfos;
+    };
+
+    get_moduleSymbols(document, token) {
+        var magikfile = document.fileName;
+        var symInfos = [];
+        var n;
+       if(magikfile.endsWith("\product.def"))
+           n=magikfile.indexOf("\product.def");
+        else if(magikfile.endsWith("\module.def"))
+           n=magikfile.indexOf("\module.def");
+        else
+            return symInfos;
+
+        var rootPath = magikfile.slice(0,n-1);
+
+        symInfos =  this.get_WorkspaceSymbols(rootPath, token)  
+
+        return symInfos  
+    }
+
     get_gisSymbols(document, token) {
         var symRef = [];
         var parentName, methd, parms;
@@ -334,7 +330,7 @@ class codeBrowser{
         tagIdx = tagTxt.indexOf(tagKey);     
         rem =  tagTxt.length - (tagIdx+tagKey.length);
         if (tagKey[0]=="_" &&  rem > 0)   {            
-             let str = RegExp (tagKey+"[\\s()]");     
+             let str = RegExp ("\\b"+tagKey+"\\b");     
              tagIdx = lineText.search(str);
              if (tagIdx<0) 
                  return;

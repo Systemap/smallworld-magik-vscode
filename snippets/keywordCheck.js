@@ -1,3 +1,6 @@
+// ---------------------------------------------------------
+//   siamz.smallworld-magik
+//  --------------------------------------------------------
 'use strict';
 const vscode = require('vscode');
 const mRegEx = /(abstract\W|allresults\W|and\W|andif\W|block\W|catch\W|clone\W|constant\W|continue\W|div\W|dynamic\W|elif\W|else\W|endblock\W|endcatch\W|endif\W|endlock\W|endloop\W|endmethod\W|endproc\W|endprotect\W|endtry\W|false\W|finally\W|for\W|gather\W|global\W|handling\W|if\W|import\W|is\W|isnt\W|iter\W|leave\W|local\W|lock\W|loop\W|loopbody()|maybe\W|method\W|mod\W|no_way\W|not\W|optional\W|or\W|orif\W|over\W|package\W|pragma\W|private\W|proc\W|protect\W|locking\W|protection\W|recursive\W|return\W|scatter\W|self\W|super\W|then\W|thisthread\W|throw\W|true\W|try\W|unset\W|when\W|with\W|xor)/ig;

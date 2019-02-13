@@ -1,4 +1,6 @@
-'use strict';
+// ---------------------------------------------------------
+//   siamz.smallworld-magik
+//  --------------------------------------------------------'use strict';
 const vscode = require('vscode');
 
 class magikReference implements vscode.ReferenceProvider {

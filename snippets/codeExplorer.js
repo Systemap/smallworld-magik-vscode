@@ -1,12 +1,11 @@
-/*---------------------------------------------------------
- * Copyright (C) Microsoft Corporation. All rights reserved.
- *--------------------------------------------------------*/
+// ---------------------------------------------------------
+//   siamz.smallworld-magik
+//  --------------------------------------------------------
 'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require("vscode");
 const fs=require("fs");
 const cBrowser = require('./codeBrowser');
-const swWorkspaceSymbols = {index: [], cache: [], paths: []};
+// const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
 class swWorkspaceSymbolProvider {
     constructor() {
@@ -31,7 +30,9 @@ class swWorkspaceSymbolProvider {
             vscode.window.showInformationMessage('No workspace is open to find symbols.');
             return;
         };
-       // --- grab symbols from files and push to index
+        var symbolProvider =  new cBrowser.codeBrowser();
+        var swWorkspaceSymbols = symbolProvider.swWorkspaceSymbols
+        // --- grab symbols from files and push to index
         var grab =  function (err, magikfiles) { 
             if (err) return ;
             magikfiles.forEach(function(fname) {
@@ -39,7 +40,6 @@ class swWorkspaceSymbolProvider {
                     let urif = fname; // vscode.file(fname)//  URI.file(fname);
                     let openDocPromise = vscode.workspace.openTextDocument(urif);
                     openDocPromise.then(function(doc){
-                        var symbolProvider =  new cBrowser.codeBrowser();
                         var symbols = symbolProvider.provideDocumentSymbols(doc);
                         swWorkspaceSymbols.cache.push(symbols);    
                         swWorkspaceSymbols.index.push(fname);  
