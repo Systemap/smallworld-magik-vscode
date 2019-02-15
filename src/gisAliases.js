@@ -1,7 +1,6 @@
 'use strict';
 const vscode = require('vscode');
 const { exec } = require('child_process');
-const path = require('path');
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld')
 const editor = vscode.window.activeTextEditor;
 
@@ -61,20 +60,21 @@ class swSessions{
     runaliases(alias){        
         try
         {
+            let activeEditor = vscode.window.activeTextEditor;
             //Currently the tab of the alias file needs to be opened.
-            var currentOpenTabFilePath = vscode.window.activeTextEditor.document.fileName;
+            var currentOpenTabFilePath = activeEditor.document.fileName;
             //Get gis.exe path
             var gisPath = workbenchConfig.get('gisPath');
             console.log("path: " + gisPath);
             //Get the selected text(alias).
-            var selectedAlias = editor.document.getText(editor.selection);
+            var selectedAlias = activeEditor.document.getText(activeEditor.selection);
 
             //Show some messages.
             vscode.window.showInformationMessage('Smallworld GIS Starting...');
             vscode.window.showInformationMessage('using alias: ' + selectedAlias);
            
             //Start Smallworld with the correct alias
-           var execCommand = gisPath +  ' -a ' + currentOpenTabFilePath + ' ' + selectedAlias;
+           var execCommand = gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
            vscode.window.showInformationMessage(execCommand);
            exec(execCommand, (err, stdout, stderr) => { 
             if (err)
