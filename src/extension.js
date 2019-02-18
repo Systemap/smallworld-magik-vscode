@@ -20,6 +20,16 @@ function activate(context) {
     vscode.languages.registerDocumentSymbolProvider('magik', symbolProvider);
     vscode.languages.registerDocumentSymbolProvider('swgis', symbolProvider);
 
+    //button click run aliases
+    
+    let disposable = vscode.commands.registerCommand(
+        "swSessions.runaliases",
+        function() {
+        gAl.runaliases();
+        }
+      );
+
+
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated

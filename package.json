@@ -2,7 +2,7 @@
     "name": "smallworld-magik",
     "displayName": "Smallworld Magik",
     "description": "Smallworld Magik for Visual Studio Code",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "siamz",
     "icon": "images/swmagik.png",
 	"keywords": [
@@ -24,6 +24,16 @@
     ],
     "main": "./src/extension",
     "contributes": {
+        "configuration":{
+            "title": "Smallworld GIS path",
+            "properties": {
+                "Smallworld.gisPath":{
+                "type": ["string", "null"],
+                "default": "C:/Smallworld/430/product/bin/x86/gis.exe",
+                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single foreward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+                }
+            }
+        },
         "themes": [
             {
                 "label": "Smallworld Magik",
@@ -83,7 +93,22 @@
                 "language": "magik",
                 "path": "./snippets/magik.snippets.json"
             }
+        ],        
+
+        "commands": [
+            {
+            "command": "swSessions.runaliases",
+            "title": "GIS Run Alias"
+            }
+        ],
+        "menus": {
+        "editor/context": [
+            {
+            "command": "swSessions.runaliases",
+            "group": "swGroup@1"
+            }
         ]
+        }   
     },
     "bugs": {
 		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
