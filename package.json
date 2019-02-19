@@ -3,7 +3,7 @@
     "name": "smallworld-magik",
     "displayName": "Smallworld Magik",
     "description": "Smallworld Magik for Visual Studio Code",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "siamz",
     "icon": "images/swmagik.png",
 	"keywords": [
@@ -25,23 +25,37 @@
         "onLanguage:magik",
         "workspaceContains:*.magik,*.def,gis_aliases"
     ],
-    "main": "./snippets/extension",
+    "main": "./src/extension",
     "contributes": {
+        "configuration":{
+            "title": "Smallworld GIS path",
+            "properties": {
+                "Smallworld.gisPath":{
+                "type": ["string", "null"],
+                "default": "C:/Smallworld/430/product/bin/x86/gis.exe",
+                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+                }
+            }
+        },
         "commands": [
             {
-                "command": "magik.set",
-                "title": "Smallworld Magik"
-            },
-            {
-                "command": "swgis.set",
-                "title": "Smallworld Session"
+            "command": "swSessions.runaliases",
+            "title": "SW Run GIS Alias"
             }
         ],
+        "menus": {
+            "editor/context": [
+                {
+                "command": "swSessions.runaliases",
+                "group": "swGroup@1"
+                }
+            ]
+        },
         "themes": [
             {
                 "label": "Smallworld Magik Light",
 				"uiTheme": "vs",
-				"path": "./themes/magik-light.color-theme.json"
+				"path": "./cfg/magik-light.color-theme.json"
             }
         ],
         "languages": [
@@ -56,10 +70,10 @@
                     ".msg"
                 ],
                 "filenames": [
-                    "load_list.txt",
-                    "patch_list.txt"
+                    "config.xml",
+                    "gui.xml"
                 ],
-                "configuration": "./languages/magik-configuration.json"
+                "configuration": "./cfg/magik-configuration.json"
             },
             {
                 "id": "swgis",
@@ -75,25 +89,25 @@
                     "load_list.txt",
                     "patch_list.txt"
                 ],
-                "configuration": "./languages/swgis-configuration.json"
+                "configuration": "./cfg/swgis-configuration.json"
             }
         ],
         "grammars": [
             {
                 "language": "magik",
                 "scopeName": "source.magik",
-                "path": "./grammars/magik.tmLanguage.json"
+                "path": "./cfg/magik.tmLanguage.json"
             },
             {
                 "language": "swgis",
                 "scopeName": "source.swgis",
-                "path": "./grammars/swgis.tmLanguage.json"
+                "path": "./cfg/swgis.tmLanguage.json"
             }
         ],
         "snippets": [
             {
                 "language": "magik",
-                "path": "./snippets/magik.snippets.json"
+                "path": "./cfg/magik.snippets.json"
             }
         ]
     },
@@ -111,11 +125,7 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.6.1",
-        "vscode": "^1.1.6",
-        "eslint": "^4.6.1",
-        "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "vscode": "^1.31.1"
 	},
 	"__metadata": {
 		"id": "79db1554-2964-43e4-bc4f-5060b5d9eca2",

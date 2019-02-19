@@ -27,16 +27,16 @@
 			},
 		"products": {
 			"patterns": [{
-				"name": "invalid",
+				"name": "constant.character",
 				"match": "\\b(layered_product|config_product|customisation_product)\\b"
 			}]
 		},
 		"strings": {
-			"name": "string.percent.double.gis_aliases",
+			"name": "constant.string",
 				"begin": "%",
 				"end": "%",
 				"patterns": [	
-				{	"name": "constant.character.escape.swgis",
+				{	"name": "constant.character",
 				"match": "\\b(.)\\b"
 				}]
 		}

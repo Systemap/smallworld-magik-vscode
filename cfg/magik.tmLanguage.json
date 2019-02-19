@@ -18,34 +18,34 @@
 			}]
 		},
 		"pragma": {
-			"name": "entity.name.tag",
+			"name": "constant.regexp",
 			"begin": "_pragma",
 			"end": "\n",
 			"patterns":[]
 		},
 		"self": {
-			"name": "entity.name",
+			"name": "constant.language",
 			"begin": "_self",
 			"end": ".",
 			"patterns":[]
 		},
 		"slot": {
-			"name": "entity.name",
+			"name": "constant.language",
 			"begin": "\\s\\.",
 			"end": "[a-z!?_A-Z0-9]+||\\w",
 			"notIn": ["string", "comment"],
 			"patterns":[]
 		},
 		"comments": {
-			"name": "comment.control.magik",
+			"name": "comment.control",
 			"begin": "#",
 			"end": "\n",
 			"patterns":[]
 		},
 		"conditions": {
 			"patterns": [{
-				"name": "invalid",
-				"match": "\\b(error|information|warning)\\b"
+				"name": "string.regexp",
+				"match": "\\b(error|information|warning|system)\\b"
 			}]
 		},
 		"strings": {

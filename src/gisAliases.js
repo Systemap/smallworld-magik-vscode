@@ -1,6 +1,11 @@
+// ---------------------------------------------------------
+//   siamz.smallworld-magik
+// ---------------------------------------------------------
 'use strict';
 const vscode = require('vscode');
 const { exec } = require('child_process');
+const workbenchConfig = vscode.workspace.getConfiguration('Smallworld')
+const editor = vscode.window.activeTextEditor;
 
 class swSessions{
     run(context) {
@@ -55,15 +60,40 @@ class swSessions{
         }
     }
     
+	// ---------------------------------------------------------
+   	// https://github.com/MarkerDave
     runaliases(alias){
+        try
+        {
+            let activeEditor = vscode.window.activeTextEditor;
+            //Currently the tab of the alias file needs to be opened.
+            var currentOpenTabFilePath = activeEditor.document.fileName;
+            //Get gis.exe path
+            var gisPath = workbenchConfig.get('gisPath');
+            console.log("path: " + gisPath);
+            //Get the selected text(alias).
+            var selectedAlias = activeEditor.document.getText(activeEditor.selection);
+
+            //Show some messages.
         vscode.window.showInformationMessage('Smallworld GIS Starting...');
-        exec('D:\\WDI\\Core430\\product\\bin\\x86\\gis.exe -a D:\\WDI\\adjust.IT432\\config\\gis_aliases open', (err, stdout, stderr) => {
+            vscode.window.showInformationMessage('using alias: ' + selectedAlias);
+           
+            //Start Smallworld with the correct alias
+           var execCommand = gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
+           vscode.window.showInformationMessage(execCommand);
+           exec(execCommand, (err, stdout, stderr) => { 
             if (err)
                return console.error(err);
            else 
                console.log(stdout);
         });
+        }
+         catch(err)
+        {
+            vscode.window.showInformationMessage(err.message);  
+        }
     }
+	// ---------------------------------------------------------
 }
 exports.swSessions = swSessions    
 

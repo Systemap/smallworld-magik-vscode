@@ -2,10 +2,17 @@
   "name": "Magik Light",
   "type": "light",
   "colors": {
-    "editor.background": "#eed",
+    "editor.background": "#ddc",
     "editor.foreground": "#222"
   },
   "tokenColors": [
+    {
+      "name": "pragma",
+      "scope": ["constant.regexp"],
+      "settings": {
+        "foreground": "#cf78cf"
+      }
+    },
     {
       "name": "Comment",
       "scope": ["comment"],
@@ -21,37 +28,11 @@
         "fontStyle": "bold"
       }
     },
-    {
-      "name": "Class",
-      "scope": ["entity.name"],
-      "settings": {
-        "foreground": "#008",
-        "fontStyle": "bold"
-      }
-    },
-    {
-      "name": "Method",
-      "scope": ["entity.name.function"],
+   {
+      "name": "self,slot",
+      "scope": ["constant.language"],
       "settings": {
         "foreground": "#008"
-      }
-    },
-    {
-      "name": "self",
-      "scope": [
-        "entity.name.tag"
-      ],
-      "settings": {
-        "foreground": "#14db25",
-        "fontStyle": "bold"     }
-    },
-    {
-      "name": "pragma",
-      "scope": [
-        "entity.name.tag"
-      ],
-      "settings": {
-        "foreground": "#cf78cf"
       }
     },
     {
@@ -63,9 +44,9 @@
     },
     {
       "name": "Conditions",
-      "scope": ["conditions.control.magik"],
+      "scope": ["string.regexp"],
       "settings": {
-        "foreground": "#ff0000",
+        "foreground": "#b20",
         "fontStyle": "italic"     }
     },
     {
@@ -108,14 +89,7 @@
         "foreground": "#660008"
       }
     },
-    {
-      "name": "Constant, Boolean",
-      "scope": ["constant.language"],
-      "settings": {
-        "foreground": "#fa8072"
-      }
-    },
-    {
+   {
       "name": "String, Symbols, Inherited Class, Markup Heading",
       "scope": [
         "string",
@@ -135,22 +109,6 @@
       "scope": ["string.value"],
       "settings": {
         "foreground": "#991155"
-      }
-    },
-    {
-      "name": "Class, Support",
-      "scope": [
-        "entity.name",
-        "support.type",
-        "support.class",
-        "support.orther.namespace.use.php",
-        "meta.use.php",
-        "support.other.namespace.php",
-        "markup.changed.git_gutter",
-        "support.type.sys-types"
-      ],
-      "settings": {
-        "foreground": "#000099"
       }
     },
     {

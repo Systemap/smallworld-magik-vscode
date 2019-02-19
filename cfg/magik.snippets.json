@@ -220,11 +220,11 @@
 			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
 		},
 		"gis_program_manager": {
-			"prefix": "gis_",
+			"prefix": "gis",
 			"body": "gis_program_manager"
 		},
 		"databases": {
-			"prefix": "gis_",
+			"prefix": "gis",
 			"body": "dbv<< gis_program_manager.databases"
 		}
 	}

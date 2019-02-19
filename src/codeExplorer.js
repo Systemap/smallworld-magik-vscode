@@ -1,13 +1,13 @@
 // ---------------------------------------------------------
 //   siamz.smallworld-magik
-//  --------------------------------------------------------
+// ---------------------------------------------------------
 'use strict';
 const vscode = require("vscode");
 const fs=require("fs");
 const cBrowser = require('./codeBrowser');
 // const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
-class swWorkspaceSymbolProvider {
+class codeExplorer {
     constructor() {
         this.swKindToCodeKind = {
             'package': vscode.SymbolKind.Package,
@@ -30,8 +30,9 @@ class swWorkspaceSymbolProvider {
             vscode.window.showInformationMessage('No workspace is open to find symbols.');
             return;
         };
-        var symbolProvider =  new cBrowser.codeBrowser();
-        var swWorkspaceSymbols = symbolProvider.swWorkspaceSymbols
+        var fileSignitures = [".magik","\module.def","\product.def","\gis_aliases","\environment.bat"];
+        var cB =  new cBrowser.codeBrowser();
+        var swWorkspaceSymbols = cB.swWorkspaceSymbols
         // --- grab symbols from files and push to index
         var grab =  function (err, magikfiles) { 
             if (err) return ;
@@ -40,7 +41,7 @@ class swWorkspaceSymbolProvider {
                     let urif = fname; // vscode.file(fname)//  URI.file(fname);
                     let openDocPromise = vscode.workspace.openTextDocument(urif);
                     openDocPromise.then(function(doc){
-                        var symbols = symbolProvider.provideDocumentSymbols(doc);
+                        var symbols = cB.provideDocumentSymbols(doc);
                         swWorkspaceSymbols.cache.push(symbols);    
                         swWorkspaceSymbols.index.push(fname);  
                     });       
@@ -64,9 +65,12 @@ class swWorkspaceSymbolProvider {
                         next();
                     });
                     } else {
-                        var fn = file.substr(-6);
-                        if(fn==".magik") results.push(file);
-                    next();
+                      for(var f in fileSignitures)
+                        if(file.endsWith(fileSignitures[f])) {
+                            results.push(file);
+                            break;
+                        };
+                        next();
                     }
                 });
                 })();
@@ -78,11 +82,14 @@ class swWorkspaceSymbolProvider {
             let list = [];
             var n;
             for (n in symbolCache) {
-                symbolCache[n].forEach(function(symb){
-                    if(filter=='' || symb.name.indexOf(filter)>=0)
-                        list.push(symb);
-                });      
+                if (filter=='')
+                    list = list.concat(symbolCache[n]);
+                else 
+                    symbolCache[n].forEach(function(symb){
+                        if(symb.name.indexOf(filter)>=0) list.push(symb);
+                    });      
             };      
+            // console.log(filter + " : " + list.length);
             return list;      
        };    
 
@@ -93,5 +100,7 @@ class swWorkspaceSymbolProvider {
 
         return sift(swWorkspaceSymbols.cache,query); 
     };
+    
+  
 }
-exports.swWorkspaceSymbolProvider = swWorkspaceSymbolProvider;
+exports.codeExplorer = codeExplorer;
