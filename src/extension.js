@@ -26,6 +26,7 @@ function activate(context) {
     vscode.languages.registerDocumentSymbolProvider('magik', new cBrowser.codeBrowser());
     vscode.languages.registerDocumentSymbolProvider('swgis', new cBrowser.codeBrowser());
 
+<<<<<<< HEAD
 
 
     // var CompletionProvider =  new keyCheck.keywordCheck();
@@ -45,6 +46,19 @@ function activate(context) {
         vscode.languages.setTextDocumentLanguage(doc, "magik");
     });
 };
+=======
+    //button click run aliases
+    
+    let disposable = vscode.commands.registerCommand(
+        "swSessions.runaliases",
+        function() {
+        gAl.runaliases();
+        }
+      );
+
+
+}
+>>>>>>> cc3e9dc04b56efc57c55fa4d3c740ae6b249ccb3
 exports.activate = activate;
 
 // this method is called when your extension is deactivated

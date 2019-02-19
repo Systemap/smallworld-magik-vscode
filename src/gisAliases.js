@@ -60,9 +60,13 @@ class swSessions{
         }
     }
     
+<<<<<<< HEAD
 	// ---------------------------------------------------------
    	// https://github.com/MarkerDave
     runaliases(alias){
+=======
+    runaliases(alias){        
+>>>>>>> cc3e9dc04b56efc57c55fa4d3c740ae6b249ccb3
         try
         {
             let activeEditor = vscode.window.activeTextEditor;
@@ -75,7 +79,11 @@ class swSessions{
             var selectedAlias = activeEditor.document.getText(activeEditor.selection);
 
             //Show some messages.
+<<<<<<< HEAD
         vscode.window.showInformationMessage('Smallworld GIS Starting...');
+=======
+            vscode.window.showInformationMessage('Smallworld GIS Starting...');
+>>>>>>> cc3e9dc04b56efc57c55fa4d3c740ae6b249ccb3
             vscode.window.showInformationMessage('using alias: ' + selectedAlias);
            
             //Start Smallworld with the correct alias
@@ -83,10 +91,17 @@ class swSessions{
            vscode.window.showInformationMessage(execCommand);
            exec(execCommand, (err, stdout, stderr) => { 
             if (err)
+<<<<<<< HEAD
                return console.error(err);
            else 
                console.log(stdout);
         });
+=======
+                return console.error(err);
+            else 
+                console.log(stdout);
+            });
+>>>>>>> cc3e9dc04b56efc57c55fa4d3c740ae6b249ccb3
         }
          catch(err)
         {
