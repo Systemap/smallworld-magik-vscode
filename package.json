@@ -33,7 +33,6 @@
                 "Smallworld.gisPath":{
                 "type": ["string", "null"],
                 "default": "C:/Smallworld/430/product/bin/x86/gis.exe",
-<<<<<<< HEAD
                 "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
                 }
             }
@@ -52,12 +51,6 @@
                 }
             ]
         },
-=======
-                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single foreward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
-                }
-            }
-        },
->>>>>>> cc3e9dc04b56efc57c55fa4d3c740ae6b249ccb3
         "themes": [
             {
                 "label": "Smallworld Magik Light",
@@ -116,22 +109,7 @@
                 "language": "magik",
                 "path": "./cfg/magik.snippets.json"
             }
-        ],        
-
-        "commands": [
-            {
-            "command": "swSessions.runaliases",
-            "title": "GIS Run Alias"
-            }
-        ],
-        "menus": {
-        "editor/context": [
-            {
-            "command": "swSessions.runaliases",
-            "group": "swGroup@1"
-            }
-        ]
-        }   
+        ]     
     },
     "bugs": {
 		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
@@ -150,8 +128,6 @@
         "vscode": "^1.31.1"
 	},
 	"__metadata": {
-		"id": "79db1554-2964-43e4-bc4f-5060b5d9eca2",
-		"publisherId": "7094f1cf-cf53-43cd-b0d2-7bda8ba8d306",
 		"publisherDisplayName": "Siamak Zolghadri"
     }
 }
