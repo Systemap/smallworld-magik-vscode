@@ -13,6 +13,7 @@ const magikSymbols = {
     _dynamic               : ['_dynamic',                '\n', vsSK.Variable],
     def_mixin              : ['def_mixin',               ')', vsSK.Property], 
     def_slotted_exemplar   : ['def_slotted_exemplar',    ')', vsSK.Property], 
+    define_slot_access     : ['define_slot_access',      ')', vsSK.Property], 
     define_shared_variable : ['define_shared_variable',  ')', vsSK.Variable], 
     define_shared_constant : ['define_shared_constant',  ')', vsSK.Constant], 
     define_property        : ['define_property',         ')', vsSK.Property], 
