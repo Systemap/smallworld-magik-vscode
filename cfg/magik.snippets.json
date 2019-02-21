@@ -10,11 +10,11 @@
 		},
 		"_block @name _endblock": {
 			"prefix": "block",
-			"body": "_block ${1:@block_name} \n\t${2:# --- body ---}\n_endblock\n"
+			"body": "_block ${1:@BLOCK_NAME \n\t${2:# --- body ---}\n_endblock\n"
 		},
 		"_dynamic": {
 			"prefix": "dynamic",
-			"body": "_dynamic (\n\t\"${1:VARIABLE_NAME}\"\n)"
+			"body": "_dynamic ${1:VARIABLE_NAME} << ${2:VALUE}"
 		},
 		"_local": {
 			"prefix": "local",
@@ -22,7 +22,7 @@
 		},
 		"_global": {
 			"prefix": "global",
-			"body": "_global ( ${1:VARIABLE_NAME} << ${2:VALUE} )"
+			"body": "_global ${1:VARIABLE_NAME} << ${2:VALUE}"
 		},
 		"_proc @name() _endproc": {
 			"prefix": "proc",
