@@ -4,21 +4,22 @@
 const vscode = require('vscode');
 const fs=require("fs");
 const vsSK = vscode.SymbolKind;
-var magikKeys=null;// = /(_method|_proc|_block|_global|def_slotted_exemplar|sw!patch_software|define_shared_variable|define_shared_constant|define_property|def_property|register_new|register_application)/ig;
-
+var magikKeys=null;
 const magikSymbols = {
-    _method                : ['_method','_endmethod',vsSK.Method],
-    _proc                  : [ '_proc','_endproc', vsSK.Function],
-    _block                 : ['_block','_endblock',vsSK.Function],
-    _global                : ['_global','\n', vsSK.Variable],
-    def_slotted_exemplar   : ['def_slotted_exemplar',   ')', vsSK.Property], 
-    define_shared_variable : ['define_shared_variable', ')', vsSK.Variable], 
-    define_shared_constant : ['define_property',        ')', vsSK.Constant], 
-    define_property        : ['define_property',        ')', vsSK.Property], 
-    def_property           : ['def_property' ,          ')', vsSK.Property],
-    condition              : ['condition.define_condition' ,  ')', vsSK.Constant],
-    register_new           : ['magik_session.register_new' ,  ')', vsSK.Module],
-    register_application   : ['smallworld_product.register_application' ,  ')', vsSK.Module],
+    _method                : ['_method',                 '_endmethod',vsSK.Method],
+    _proc                  : [ '_proc',                  '_endproc', vsSK.Function],
+    _block                 : ['_block',                  '_endblock',vsSK.Function],
+    _global                : ['_global',                 '\n', vsSK.Variable],
+    _dynamic               : ['_dynamic',                '\n', vsSK.Variable],
+    def_mixin              : ['def_mixin',               ')', vsSK.Property], 
+    def_slotted_exemplar   : ['def_slotted_exemplar',    ')', vsSK.Property], 
+    define_shared_variable : ['define_shared_variable',  ')', vsSK.Variable], 
+    define_shared_constant : ['define_shared_constant',  ')', vsSK.Constant], 
+    define_property        : ['define_property',         ')', vsSK.Property], 
+    def_property           : ['def_property' ,           ')', vsSK.Property],
+    condition              : ['condition.define_condition',  ')', vsSK.Constant],
+    register_new           : ['magik_session.register_new',  ')', vsSK.Module],
+    register_application   : ['smallworld_product.register_application',  ')', vsSK.Module],
     'sw!patch_software'    : ['sw!patch_software',      ')', vsSK.Module]
 };
 
@@ -144,8 +145,9 @@ class codeBrowser{
                 // continue;
             } else if (lastContainer==null || lastContainer[0]!=parentName){//( (i=symRef.indexOf(parentName)) < 0) {
                 var p1 = tag.keyPosition;
-                i = Math.max(0,p1.line-1);
-                var tagRef = [parentName,vsSK.Class,new vscode.Position(i, 0),tag.endPosition,parentName + " " + i];
+                var i = Math.max(0,p1.line-1);
+                p1 = new vscode.Position( i,0 );
+                var tagRef = [parentName,vsSK.Class,p1,tag.endPosition,parentName];// + " " + i];
                  //   symRef.push(parentName);
                     symRefIndex.push(tagRef);
                     tag.parentNode = tagRef;
@@ -202,10 +204,12 @@ class codeBrowser{
             var lineTextTags = this.getTagInfo(lineText);
             for (var i in lineTextTags){
                 var tag = lineTextTags[i];
-                tag.keyPosition = new vscode.Position(lineCount,0);
-                tag.endPosition = new vscode.Position(lineCount,lineText.length);
-
-                //tag.foldingRange = this.parse_foldingRange(document,tag);    
+                var charCount = lineText.indexOf(tag.keyWord);
+                tag.keyPosition = new vscode.Position(lineCount,charCount);
+                //    tag.foldingRange = this.parse_foldingRange(document,tag);   
+                var endline = this.parse_foldingRange(document,tag);   
+                charCount = document.lineAt(endline).text.length;
+               tag.endPosition = new vscode.Position(endline,charCount);
 
                 // build node and container names    
                 var parentName, methd, parms;
@@ -233,37 +237,39 @@ class codeBrowser{
                             if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
                         } ;   
                     case '_block':
-                        parentName = tag.keyWord;
-                        methd = parentName.slice(1);
+                        parentName = null;//tag.keyWord;
+                        methd = tag.keyWord + " ";
                         if ((i = tagTxt.indexOf("<<")) > -1) {
                             var arr = tagTxt.slice(0,i).trim().split(" ");
-                            methd = arr[arr.length-1].trim();
+                            methd += arr[arr.length-1].trim();
                         } else if (tagTxt.indexOf("@") > -1)
-                            methd += " @"+tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
+                            methd += "@"+tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
                         else 
-                            methd += " @unammed";
+                            methd += "@unammed";
                         if (tagTxt.indexOf("(") > -1) 
                             parms = "()";    
                         break;    
+                    case '_dynamic':
                     case '_global':
-                        parentName = tag.keyWord;
-                        methd = "_global ";
-                        var arr = tagTxt.split("<<");
-                        if ((i=tagTxt.indexOf("<<")) > -1)            
-                            methd += tagTxt.slice(0,i).trim().split(" ")[1].trim();
+                        parentName =  null;//tag.keyWord;
+                        methd = tag.keyWord+ " ";
+                        var arr = tagTxt.split(tag.keyWord);
+                        parms = arr[arr.length-1];
+                        if ((i=parms.indexOf("<<")) > -1)            
+                            parms = parms.slice(0,i).trim().split(" ")[0];
                         else  
-                            methd += tagTxt.trim();
-                        parms = "";                 
+                            parms = parms.trim();
                         break;    
+                    case 'def_mixin':
                     case 'def_slotted_exemplar':
                         for(var i = tag.keyPosition.line+1; tagTxt.indexOf(":") < 0;i++)
                             tagTxt += document.lineAt(i).text;
                         var arr = tagTxt.split(")")[0].split(",")[0].split(":");
                         parentName = arr[arr.length-1].trim();
-                        methd = tag.keyWord
+                        methd = tag.keyWord;
                         parms = "";
                         break;                       
-                    case 'condition':
+                    case 'condition.define_condition':
                     case 'smallworld_product.register_application':
                     case 'magik_session.register_new':
                         parentName = tag.keyWord.split(".")[0];               
@@ -293,16 +299,17 @@ class codeBrowser{
             }    
         }  
         return tags;  
-    };
+    }
 
     parse_foldingRange(document,tag) {
         var start_line = tag.keyPosition.line;
-        var nestedBrackets = 0;     
         var closeBracket =tag.endWord;
-        var openBracket = (closeBracket==')')?'(':tag.keyWord;
+        var openBracket = (closeBracket=='(')?-1:0;
+        var nestedBrackets = (openBracket==')')?'(':tag.keyWord;;     
         var end_line = start_line;
-        for (; n< document.length ; ++n) {
-            lineText = document[end_line];
+        var doc_length =  document.lineCount; //document.length;
+        for (; end_line< doc_length; ++end_line) {
+            var lineText =  document.lineAt(end_line).text; //document[end_line];
             if (this.getTagText(lineText,closeBracket) != null ) 
                 nestedBrackets -= Math.max(1,lineText.split(closeBracket).length-1);
             if (this.getTagText(lineText,openBracket) != null ) 
@@ -311,9 +318,10 @@ class codeBrowser{
             var endTag = this.getTagText(lineText, tag.endWord);
             if (endTag==null) continue; else break;
         }   
-        var RagneKind = 3; //Region 
-        return new FoldingRange(start_line, end_line, RagneKind);
-    };
+        // return new FoldingRange(start_line, end_line); //, FoldingRangeKind.Region);
+        return end_line;
+    }
+
     magikKeys(){
         if (magikKeys == null) {
             magikKeys ="(";
@@ -364,12 +372,13 @@ class codeBrowser{
         let tagKey = null;
         var keys = this.magikKeys();
         while ((tagKey = keys.exec(lineText)) !== null) {
-                tagKey = tagKey[1];
-                var tagTxt = this.getTagText(lineText,tagKey);
-                var tag = magikSymbols[tagKey]
+                tagKey = tagKey[1].toLowerCase();
+                var tag = magikSymbols[tagKey];
+                var tagTxt = this.getTagText(lineText, tag[0]);
                 if (tagTxt==null || tag==undefined) continue;
                 tagKeys.push({
                     text:    tagTxt, 
+                    key: tagKey,
                     keyWord: tag[0], 
                     endWord: tag[1], 
                     keyPosition: null,
@@ -385,4 +394,3 @@ class codeBrowser{
   
 }
 exports.codeBrowser = codeBrowser    
-
