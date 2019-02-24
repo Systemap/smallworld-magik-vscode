@@ -43,14 +43,6 @@
             "title": "SW Run GIS Alias"
             }
         ],
-        "menus": {
-            "editor/context": [
-                {
-                "command": "swSessions.runaliases",
-                "group": "swGroup@1"
-                }
-            ]
-        },
         "themes": [
             {
                 "label": "Smallworld Magik Light",
@@ -96,12 +88,12 @@
             {
                 "language": "magik",
                 "scopeName": "source.magik",
-                "path": "./cfg/magik.tmLanguage.json"
+                "path": "./cfg/magik.grammars.json"
             },
             {
                 "language": "swgis",
                 "scopeName": "source.swgis",
-                "path": "./cfg/swgis.tmLanguage.json"
+                "path": "./cfg/swgis.grammars.json"
             }
         ],
         "snippets": [
@@ -128,6 +120,8 @@
         "vscode": "^1.31.1"
 	},
 	"__metadata": {
+		"id": "79db1554-2964-43e4-bc4f-5060b5d9eca2",
+		"publisherId": "7094f1cf-cf53-43cd-b0d2-7bda8ba8d306",
 		"publisherDisplayName": "Siamak Zolghadri"
     }
 }

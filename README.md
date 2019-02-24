@@ -30,7 +30,8 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 ## Start Smallworld sessions from gis_aliases stanzas. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
 
 * Set you gis.exe path in the settings: { "Smallworld.gisPath": "{your sw install directory}/gis.exe" }.
-* Start a Smallworld Session by double clicking the alias name and then right click and select Run alias from the context menu.
+* Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
+* Click the Light Bulb to get the command to Start a Smallworld Session.
 
 ![Run GIS Alias](images/SWRunGisAlias.png)
 
