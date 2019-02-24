@@ -9,8 +9,8 @@ const magikSymbols = {
     _method                : ['_method',                 '_endmethod',vsSK.Method],
     _proc                  : [ '_proc',                  '_endproc', vsSK.Function],
     _block                 : ['_block',                  '_endblock',vsSK.Function],
-    _global                : ['_global',                 '\n', vsSK.Variable],
-    _dynamic               : ['_dynamic',                '\n', vsSK.Variable],
+    _global                : ['_global',                 '_global', vsSK.Variable],
+    _dynamic               : ['_dynamic',                '_dynamic', vsSK.Variable],
     def_mixin              : ['def_mixin',               ')', vsSK.Property], 
     def_slotted_exemplar   : ['def_slotted_exemplar',    ')', vsSK.Property], 
     define_slot_access     : ['define_slot_access',      ')', vsSK.Property], 
@@ -29,6 +29,13 @@ const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 class codeBrowser{
     constructor() {
         this.swWorkspaceSymbols = swWorkspaceSymbols;
+        this.magikStringPattern = {           
+             '"': /[^"]/,
+            "'":  /[^']/,
+            ":|": /[^|]/,
+            ":" : /[a-z!?_A-Z0-9]/,
+            "%":  /(%\.|%space|%tab|%newline)/
+        };
     };
         
     provideDocumentSymbols(document, token) {
@@ -201,16 +208,9 @@ class codeBrowser{
         var tags = [];
             // parse the document for symbols
         for (var lineCount = 0; lineCount < document.lineCount; ++lineCount) {
-             var lineText = document.lineAt(lineCount).text;
-            var lineTextTags = this.getTagInfo(lineText);
+            var lineTextTags = this.parse_magikSyntax(document,lineCount);
             for (var i in lineTextTags){
                 var tag = lineTextTags[i];
-                var charCount = lineText.indexOf(tag.keyWord);
-                tag.keyPosition = new vscode.Position(lineCount,charCount);
-                //    tag.foldingRange = this.parse_foldingRange(document,tag);   
-                var endline = this.parse_foldingRange(document,tag);   
-                charCount = document.lineAt(endline).text.length;
-               tag.endPosition = new vscode.Position(endline,charCount);
 
                 // build node and container names    
                 var parentName, methd, parms;
@@ -263,10 +263,11 @@ class codeBrowser{
                         break;    
                     case 'def_mixin':
                     case 'def_slotted_exemplar':
-                        for(var i = tag.keyPosition.line+1; tagTxt.indexOf(":") < 0;i++)
-                            tagTxt += document.lineAt(i).text;
-                        var arr = tagTxt.split(")")[0].split(",")[0].split(":");
-                        parentName = arr[arr.length-1].trim();
+                        // for(var i = tag.keyPosition.line+1; tagTxt.indexOf(":") < 0;i++)
+                        //     tagTxt += document.lineAt(i).text;
+                        // var arr = tagTxt.split(")")[0].split(",")[0].split(":");
+                        // parentName = arr[arr.length-1].trim();
+                        parentName = tag.params[0].replace(':','');
                         methd = tag.keyWord;
                         parms = "";
                         break;                       
@@ -274,11 +275,12 @@ class codeBrowser{
                     case 'smallworld_product.register_application':
                     case 'magik_session.register_new':
                         parentName = tag.keyWord.split(".")[0];               
-                        for(var i = tag.keyPosition._line+1; tagTxt.indexOf(",") < 0;i++)
-                        tagTxt += document.lineAt(i).text;
-                        var arr = tagTxt.split(":");
-                        arr = arr[arr.length-1].split("(");
-                        methd = arr[arr.length-1].split(",")[0].trim();
+                        // for(var i = tag.keyPosition._line+1; tagTxt.indexOf(",") < 0;i++)
+                        // tagTxt += document.lineAt(i).text;
+                        // var arr = tagTxt.split(":");
+                        // arr = arr[arr.length-1].split("(");
+                        // methd = arr[arr.length-1].split(",")[0].trim();
+                        methd = tag.params[0].replace(':','');
                         parms = "";
                         break;    
                     case 'sw!patch_software':
@@ -289,9 +291,9 @@ class codeBrowser{
                     default:
                         var arr = tagTxt.split(".")
                         parentName = arr[0].trim();
-                        for(var i = tag.keyPosition._line+1; tagTxt.indexOf(":") < 0;i++)
-                            tagTxt += document.lineAt(i).text;
-                        methd = tagTxt.split(":")[1].split(",")[0].trim();
+                        // for(var i = tag.keyPosition._line+1; tagTxt.indexOf(":") < 0;i++)
+                        //     tagTxt += document.lineAt(i).text;
+                        methd = tag.params[0].replace(':','');
                         parms = "";
                 };
                 tag.containerName = parentName;
@@ -302,96 +304,220 @@ class codeBrowser{
         return tags;  
     }
 
-    parse_foldingRange(document,tag) {
-        var start_line = tag.keyPosition.line;
-        var closeBracket =tag.endWord;
-        var openBracket = (closeBracket=='(')?-1:0;
-        var nestedBrackets = (openBracket==')')?'(':tag.keyWord;;     
-        var end_line = start_line;
-        var doc_length =  document.lineCount; //document.length;
-        for (; end_line< doc_length; ++end_line) {
-            var lineText =  document.lineAt(end_line).text; //document[end_line];
-            if (this.getTagText(lineText,closeBracket) != null ) 
-                nestedBrackets -= Math.max(1,lineText.split(closeBracket).length-1);
-            if (this.getTagText(lineText,openBracket) != null ) 
-                nestedBrackets += lineText.split(openBracket).length-1;
-            if (nestedBrackets) continue;        
-            var endTag = this.getTagText(lineText, tag.endWord);
-            if (endTag==null) continue; else break;
-        }   
-        // return new FoldingRange(start_line, end_line); //, FoldingRangeKind.Region);
-        return end_line;
+    parse_foldingRange(document, tag) {
+
+        // return new FoldingRange(keyLine, endLine); //, FoldingRangeKind.Region);
     }
 
     magikKeys(){
         if (magikKeys == null) {
             magikKeys ="(";
+            var index = [];
             for( var k in magikSymbols) {
                 var ms =  magikSymbols[k];
-                magikKeys +=   k + '|';
+                magikKeys +=   ms[0] + '|';
+                index[ms[0]] = k;
                 // ms[0] = new RegExp(ms[0]);
                 // ms[1] = new RegExp(ms[1]);
             };
             magikKeys= magikKeys.slice(0,magikKeys.length-1) + ')';
-            magikKeys = new RegExp("\\b"+ magikKeys + "\\b" ,"ig");
-        } 
+            magikKeys = {
+                regexp: new RegExp("\\b"+ magikKeys + "\\b" ,"ig"),
+                index: index
+        };
+        };
         return  magikKeys;
     };
-    
+
     getTagText(lineText, tagKey) {
         var tagIdx =  (tagKey == '\n')? 0 : lineText.indexOf(tagKey);
         if (tagIdx < 0) return;
  
-        var tagTxt = lineText.split('#')[0].trim();
+        var tagTxt = this.trimComments(lineText);
+//        var syntax = this.parse_magikLine(lineText) ;
         if (tagTxt.length < tagIdx) return;
-        for (var i in [1,2])            
-        for (var ch = ['"',"'"][i];;){
-             var rem = tagTxt.indexOf(ch)
-             if (rem<0 || rem > tagIdx) 
-                 break;
-//            tagTxt = tagTxt.slice(0,rem-1);
-            tagTxt = tagTxt.slice(rem+1,tagTxt.length);
-            tagIdx = tagTxt.indexOf(tagKey);
-            rem = tagTxt.indexOf(ch); 
-             if (tagIdx < 0 || rem > tagIdx) 
-                 return;
-            tagTxt = tagTxt.slice(rem+1,tagTxt.length);
-        };     
         tagIdx = tagTxt.indexOf(tagKey);     
-        rem =  tagTxt.length - (tagIdx+tagKey.length);
-        if (tagKey[0]=="_" &&  rem > 0)   {            
+        if (tagKey[0]=="_" &&  tagIdx >= 0)   {            
              let str = RegExp ("\\b"+tagKey+"\\b");     
              tagIdx = lineText.search(str);
-             if (tagIdx<0) 
-                 return;
+             if (this.testInString(tagIdx) )
+                return;
         };           
      return tagTxt;   
     };         
 
-    getTagInfo(lineText) {
+    testInString(tagTxt,pos) {
+        // var inString = false;
+        // if (/[%"':]/.test(tagTxt)){
+        //     this.magikStringPattern.forEach( function(ch){
+        //         var n = tagTxt.length;
+        //         var c = tagTxt.indexOf(ch[0]);
+        //         if (c<0 || c > pos) return;
+        //         c = c+ch[0].length; 
+        //         while(c<n && ch[1].test(tagTxt[c])) ++c;
+        //         if (pos < c) inString = true;
+        //     }); 
+        // }; 
+        var n = tagTxt.length;
+        for(var i=0; i<pos; i++){
+            var ch = tagTxt[i];
+            if (/[#"':]/.test(ch) == false) continue;
+            if (ch=='#') return false;
+            if (i>0 && tagTxt[i-1]=='%') continue;
+            if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
+            i = i + ch.length; 
+            var strPttrn = this.magikStringPattern[ch];
+            while(i<n && strPttrn.test(tagTxt[i])) ++i;
+            if (i > pos) return true;
+        }
+        return false;
+    }
+
+    trimComments(tagTxt) {
+        let match, regex = /#/ig;
+        while (match = regex.exec(tagTxt)) 
+            if(match.index == 0) 
+                return "";
+            else if (!this.testInString(tagTxt,match.index))
+                return tagTxt.slice(0,match.index-1).trim();
+        return tagTxt.trim();
+    }
+    
+    parse_magikSyntax(document,keyLine) {
+        var syntaxText = "";
+        var doc_length =  document.lineCount; //document.length;
+        for (var i=keyLine; i< doc_length; ++i) {
+            syntaxText +=  this.trimComments(document.lineAt(i).text) //document[i];
+            var ch = syntaxText[syntaxText.length-1];
+             if (!/[(,]/.test(ch)) break;
+        };
+
         var tagKeys = [];
-        let tagKey = null;
-        var keys = this.magikKeys();
-        while ((tagKey = keys.exec(lineText)) !== null) {
-                tagKey = tagKey[1].toLowerCase();
-                var tag = magikSymbols[tagKey];
-                var tagTxt = this.getTagText(lineText, tag[0]);
-                if (tagTxt==null || tag==undefined) continue;
-                tagKeys.push({
-                    text:    tagTxt, 
-                    key: tagKey,
-                    keyWord: tag[0], 
-                    endWord: tag[1], 
-                    keyPosition: null,
-                    endPosition: null,
-                    parentNode: null,
-                    containerName: null,
-                    nodeName: null,   
-                    vsKind:  tag[2] 
-                });
-         };
+        let match, keys = this.magikKeys(); 
+        while ((match = keys.regexp.exec(syntaxText)) !== null) {
+            var keyPos = match.index;
+            if (this.testInString(syntaxText,keyPos)) continue;
+
+            // check tag    
+            var tagKey = keys.index[match[1].toLowerCase()];
+            var mSymb = magikSymbols[tagKey];
+            //var tagTxt = this.getTagText(syntaxText, mSymb[0]);
+            //if (tagTxt==null) continue;
+            var tagParams = this.parse_magikParams(syntaxText,keyPos+tagKey.length);
+            var tagRange = this.parse_foldingRange(document, keyLine, keyPos, mSymb[0], mSymb[1]) 
+
+            var tag = {
+                text:        syntaxText, 
+                key:         tagKey,
+                range:       tagRange,
+                keyWord:     mSymb[0], 
+                endWord:     mSymb[1], 
+                keyPosition: tagRange.start,
+                endPosition: tagRange.end,
+                parentNode:  null,
+                containerName: null,
+                nodeName:    null,   
+                params :     tagParams,
+                vsKind:      mSymb[2] 
+            };
+
+            tagKeys.push(tag);
+        };
         return tagKeys;
-    };           
-  
+    }           
+
+    parse_foldingRange(document, keyLine, keyPos,keyWord,endWord) {
+            // folding range    
+            var nestedBrackets = 0;
+            let closeBracket = /\)/ig;
+            let openBracket = /\(/ig;
+            if (endWord!=')'){
+                closeBracket = new RegExp(  "\\b("+ endWord + ")\\b","ig"); 
+                openBracket =  new RegExp( "\\b("+ keyWord + ")\\b" ,"ig"); 
+            } ;
+            var endLine = keyLine, endPos = 0;
+            var doc_length =  document.lineCount; //document.length;
+            for (; endLine< doc_length; ++endLine) {
+                var lineText = this.trimComments(document.lineAt(endLine).text); //document[endLine];
+                // var endPos = lineText.indexOf(closeBracket);
+                // if ( this.testInString(lineText,endPos)) continue;
+                        
+                let match;
+                while (match = closeBracket.exec(lineText)) 
+                    if (!this.testInString(lineText,match.index)) nestedBrackets++;
+                while (match = openBracket.exec(lineText)) 
+                    if (!this.testInString(lineText,match.index)) nestedBrackets--;
+                
+                // if (this.getTagText(lineText,closeBracket) != null ) 
+                // nestedBrackets -= Math.max(1,lineText.split(closeBracket).length-1);
+                // if (this.getTagText(lineText,openBracket) != null ) 
+                //     nestedBrackets += lineText.split(openBracket).length-1;
+                if (nestedBrackets) continue;   
+
+                // var endTag = this.getTagText(lineText, closeBracket);
+                // if (endTag==null) continue; 
+                else break;
+            }; 
+            keyPos = new vscode.Position(keyLine,keyPos),
+            endPos = Math.max(endPos,0)+ closeBracket.length;
+            endPos = new vscode.Position(endLine,endPos);
+            var tagRnge = new vscode.Range(keyPos, endPos);
+
+        return tagRnge   
+    }
+    parse_magikParams(syntaxText,keyPos) {
+        // params
+        var params = [], n = -1;
+        var pCount = 0;
+           for (var i= keyPos; i< syntaxText.length; ++i) {
+                var ch = syntaxText[i];
+                if (pCount) 
+                    if (ch==',' && !this.testInString(syntaxText,i)) {params.push(""); n++}  
+                    else if (ch==')' && !this.testInString(syntaxText,i))
+                        if (--pCount) params[n] +=ch;
+                        else break; 
+                    else if (ch=='(' && !this.testInString(syntaxText,i)) {params[n]+=ch; pCount++} 
+                    else params[n] +=ch;
+                else if (ch ==')') --pCount;
+                else if (ch =='('){params.push(""); n++; pCount++}  
+            };
+        return params
+    }
+
+    parse_magikLine(lineText) {
+
+        var c,s;
+        var syntax = [""];
+        for(var i=0; i< lineText.length; ++i ){
+            var s = lineText[i];
+            if (s=='#'){
+                s = lineText.slice(i, lineText.length-1);
+                syntax.push(s);
+                break;
+            } else if (/[a-z!?_A-Z:]/.test(s)){
+                while (/[a-z!?_A-Z0-9]/.test(c = lineText[++i])) s+=c;
+                syntax.push(s);
+            } else if (/[\+\-0-9]/.test(s)){
+                while (/[eE.0-9]/.test(c = lineText[++i])) s+=c;
+                syntax.push(s);
+            } else if (/({|\"|\'|:\|)/.test(s)){
+                [['{','}'],["'","'"],[":|","|"]].forEach( function(ch){
+                    if (ch[0] != s) return;
+                    while ((c = lineText[++i]) != ch[1]) s+=c;
+                    s += ch[1];
+                    syntax.push(s);
+                }); 
+                continue;
+            } else if (/[+-,()[\]]/.test(s)){
+                syntax.push(s);
+            } else if (/\S/.test(s)){
+                syntax.push(s);
+            };   
+            syntax[0] += s;
+        };
+        return syntax;
+    }
+
 }
 exports.codeBrowser = codeBrowser    
+

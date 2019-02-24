@@ -4,8 +4,8 @@
 'use strict';
 const vscode = require('vscode');
 const { exec } = require('child_process');
-const workbenchConfig = vscode.workspace.getConfiguration('Smallworld')
-const editor = vscode.window.activeTextEditor;
+const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
+const swgis = {codeAction: [], sessions:[]};
 
 class swSessions{
     run(context) {
@@ -32,6 +32,7 @@ class swSessions{
             }
             timeout = setTimeout(updateDecorations, 500);
         }
+
         function updateDecorations() {
             if (!activeEditor) 
                 return;
@@ -39,54 +40,99 @@ class swSessions{
                 return;
             // create a decorator type that we use to decorate labels
             const crosshairType = vscode.window.createTextEditorDecorationType({
-                // cursor: 'crosshair',
-                // backgroundColor: 'rgba(32,0,0,0.5)',
+                cursor: 'alias',
+               // backgroundColor: 'rgba(0,0,0,0.5)',
+                border: "1px solid orange",
+                width: "1px",
                 color: 'rgba(255,64,0,1)'
             });
 
-            const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
-            const regEx = /[a-z_0-9-]+:[\s]\n/ig; // /:\|*\w+\<*\?*\(*\)*\!*\|*/g;
+            // const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
+            var regEx = /[A-Za-z_0-9-]+:(\s\n|\n)/ig; // 
             const text = activeEditor.document.getText();
             const labelLines = [];
             let match;
             while (match = regEx.exec(text)) {
                 const startPos = activeEditor.document.positionAt(match.index);
                 const endPos = activeEditor.document.positionAt(match.index + match[0].length);
-                const decoration = { range: new vscode.Range(startPos, endPos), hoverMessage: gis+match[0] };
-                 labelLines.push(decoration);
-            }
+                const decoration = { range: new vscode.Range(startPos, endPos)};//, hoverMessage: gis+match[0] };
+                labelLines.push(decoration);
+            };
             if(labelLines.length)   
                 activeEditor.setDecorations(crosshairType, labelLines);
         }
+
+    }
+    
+    provideCodeActions(document, range, context, token) {
+        var pos = range.start;
+        var selectedAlias = document.lineAt(pos.line).text;
+        selectedAlias = selectedAlias.split("#")[0].trim()
+        if (/[A-Za-z_0-9-]+:$/i.test(selectedAlias))
+            console.log(selectedAlias);
+        else return null;
+
+       var currentOpenTabFilePath = document.fileName;
+        var codeActions = [];
+        var titleAction = "Run GIS "+selectedAlias;
+        const args = [selectedAlias.split(":")[0], currentOpenTabFilePath ];
+        const cak = {value: titleAction, tooltip: titleAction};
+        const runAction = new vscode.CodeAction(titleAction, cak);// vscode.CodeActionKind.Empty);
+        runAction.command = {
+            title:    titleAction,
+            command:  "swSessions.runaliases",
+            arguments: args,
+            tooltip: titleAction
+        };
+        swgis.codeAction = runAction;
+        //runAction.diagnostics = [ diagnostic ];
+        codeActions.push(runAction);
+
+        return codeActions;
+    }
+
+    provideHover(document, position, token) {
+        
+        var alias = document.lineAt(position.line).text;
+        alias = alias.split("#")[0].trim()
+        if (/[A-Za-z_0-9-]+:$/i.test(alias)){
+            let hoverTexts = new vscode.MarkdownString();
+            hoverTexts.appendMarkdown("Click for Action to run GIS Alias");
+            let hover = new vscode.Hover(hoverTexts);
+            return hover;
+        }
+    
     }
     
 	// ---------------------------------------------------------
    	// https://github.com/MarkerDave
-    runaliases(alias){
+    runaliases(selectedAlias, currentOpenTabFilePath){
+
         try
         {
-            let activeEditor = vscode.window.activeTextEditor;
-            //Currently the tab of the alias file needs to be opened.
-            var currentOpenTabFilePath = activeEditor.document.fileName;
-            //Get gis.exe path
+            if (!selectedAlias) {
+                var args = swgis.codeAction.command.arguments
+                selectedAlias = args[0];
+                currentOpenTabFilePath = args[1];
+            };
+                //Get gis.exe path
             var gisPath = workbenchConfig.get('gisPath');
             console.log("path: " + gisPath);
-            //Get the selected text(alias).
-            var selectedAlias = activeEditor.document.getText(activeEditor.selection);
 
-            //Show some messages.
-        vscode.window.showInformationMessage('Smallworld GIS Starting...');
-            vscode.window.showInformationMessage('using alias: ' + selectedAlias);
            
             //Start Smallworld with the correct alias
            var execCommand = gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
-           vscode.window.showInformationMessage(execCommand);
+
+            //Show some messages.
+            var sessionInfo = 'Smallworld GIS Starting...' + selectedAlias + "\n" + execCommand;
+           vscode.window.showInformationMessage(sessionInfo);
+
            exec(execCommand, (err, stdout, stderr) => { 
-            if (err)
-               return console.error(err);
-           else 
-               console.log(stdout);
-        });
+                if (err)
+                   return console.error(err);
+                else 
+                   console.log(stdout);
+            });
         }
          catch(err)
         {

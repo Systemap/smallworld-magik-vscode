@@ -17,10 +17,6 @@ function activate(context) {
     kC.run(context);
 
     // vscode.languages.registerOnTypeFormattingEditProvider('magik', new keyCheck.keywordCheck());
-
-    // ---- gisAliases
-    let gAl = new gAliases.swSessions();
-    gAl.run(context);
     
     // magik Symbol provider --------------------------------
     vscode.languages.registerDocumentSymbolProvider('magik', new cBrowser.codeBrowser());
@@ -39,6 +35,12 @@ function activate(context) {
     //  vscode.languages.registerSignatureHelpProvider("magik", new cExplorer.codeExplorer(), '(', ','));
     //  vscode.languages.registerImplementationProvider("magik", new cExplorer.codeExplorer()));
     
+    // ---- gisAliases
+    let gAl = new gAliases.swSessions();
+    gAl.run(context);
+    vscode.languages.registerHoverProvider('swgis', new gAliases.swSessions());
+    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.swSessions());
+
     //button click run aliases
     let disposable = vscode.commands.registerCommand(
         "swSessions.runaliases",
