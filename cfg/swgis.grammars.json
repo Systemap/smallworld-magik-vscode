@@ -1,0 +1,45 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "swgis",
+	"patterns": [
+		{ "include": "#keywords" },
+		{ "include": "#comments" },
+		{ "include": "#products" },
+		{ "include": "#strings"  }
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.swgis",
+				"match": "\\b(title|description|end|requires|version)\\b"
+			},{
+				"begin": "",
+				"end": "=",
+				"name": "keyword.control.swgis",
+				"match": "[A-Za-z0-9!?_\\s]+="
+			}]
+		},
+		"comments": {
+			"name": "comment",
+			"begin": "#",
+			"end": "\n",
+			"patterns": [{"match": "."}]
+			},
+		"products": {
+			"patterns": [{
+				"name": "constant.character",
+				"match": "\\b(layered_product|config_product|customisation_product)\\b"
+			}]
+		},
+		"strings": {
+			"name": "constant.string",
+				"begin": "%",
+				"end": "%",
+				"patterns": [	
+				{	"name": "constant.character",
+				"match": "\\b(.)\\b"
+				}]
+		}
+	},
+	"scopeName": "source.swgis"
+}
