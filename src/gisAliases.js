@@ -4,10 +4,22 @@
 'use strict';
 const vscode = require('vscode');
 const { exec } = require('child_process');
+const fs = require("fs");
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
-const swgis = {codeAction: [], sessions:[]};
+const swgis = {
+    gisPath: null,
+    codeAction: [], 
+    sessions: null, 
+    errorHover:null, 
+    aliasePattern: /[A-Za-z_0-9-]:$/i};
+
 
 class swSessions{
+    constructor() {
+        this.swgis = swgis;
+        this.check_gisPath();
+    }
+        
     run(context) {
 
         let activeEditor = vscode.window.activeTextEditor;
@@ -41,8 +53,8 @@ class swSessions{
             // create a decorator type that we use to decorate labels
             const crosshairType = vscode.window.createTextEditorDecorationType({
                 cursor: 'alias',
-               // backgroundColor: 'rgba(0,0,0,0.5)',
-                border: "1px solid orange",
+               // backgroundColor: 'rgba(255,64,0,0.3)',
+                border: "1px solid rgba(255,64,0,0.3)",
                 width: "1px",
                 color: 'rgba(255,64,0,1)'
             });
@@ -65,12 +77,14 @@ class swSessions{
     }
     
     provideCodeActions(document, range, context, token) {
+        if ( swgis.sessions != null) return;
+        if (!swgis.gisPath) return;
+
         var pos = range.start;
         var selectedAlias = document.lineAt(pos.line).text;
         selectedAlias = selectedAlias.split("#")[0].trim()
-        if (/[A-Za-z_0-9-]+:$/i.test(selectedAlias))
-            console.log(selectedAlias);
-        else return null;
+        if (!swgis.aliasePattern.test(selectedAlias)) return null;
+            if (selectedAlias.split(" ").length>1) return null;
 
        var currentOpenTabFilePath = document.fileName;
         var codeActions = [];
@@ -95,13 +109,37 @@ class swSessions{
         
         var alias = document.lineAt(position.line).text;
         alias = alias.split("#")[0].trim()
-        if (/[A-Za-z_0-9-]+:$/i.test(alias)){
+        if (swgis.aliasePattern.test(alias)){
+            if (!swgis.gisPath) 
+                return this.errorHover();
+        }
+    }
+
+    errorHover(alias) {
+        if (!swgis.errorHover ) {
             let hoverTexts = new vscode.MarkdownString();
-            hoverTexts.appendMarkdown("Click for Action to run GIS Alias");
-            let hover = new vscode.Hover(hoverTexts);
-            return hover;
+            hoverTexts.appendCodeblock("Run GIS: invalid \"swgis.gisPath\" ","magik");
+            hoverTexts.appendCodeblock("Set gisPath in File-Preferences-Settings, e.g.:","magik");
+            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : \"C:/Smallworld/core/bin/x86/gis.exe\" }","magik");
+            swgis.errorHover = new vscode.Hover(hoverTexts);
+        }
+        return swgis.errorHover 
         }
     
+    check_gisPath(){
+        var gisPath = workbenchConfig.get('gisPath');
+        if (gisPath) {
+            var stat;
+            try {
+                stat = fs.statSync(gisPath);
+            }
+            catch(err) {
+                gisPath = null;
+            }        
+        }
+        if (swgis.gisPath==gisPath) return false;
+        swgis.gisPath = gisPath;
+        return true;       
     }
     
 	// ---------------------------------------------------------
@@ -115,13 +153,9 @@ class swSessions{
                 selectedAlias = args[0];
                 currentOpenTabFilePath = args[1];
             };
-                //Get gis.exe path
-            var gisPath = workbenchConfig.get('gisPath');
-            console.log("path: " + gisPath);
-
            
             //Start Smallworld with the correct alias
-           var execCommand = gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
+           var execCommand = swgis.gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
 
             //Show some messages.
             var sessionInfo = 'Smallworld GIS Starting...' + selectedAlias + "\n" + execCommand;

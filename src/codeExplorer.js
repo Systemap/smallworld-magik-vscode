@@ -8,7 +8,7 @@ const cBrowser = require('./codeBrowser');
 // const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
 class codeExplorer {
-    constructor() {
+    constructor(swgis) {
         this.swKindToCodeKind = {
             'package': vscode.SymbolKind.Package,
             'import': vscode.SymbolKind.Namespace,
@@ -18,8 +18,33 @@ class codeExplorer {
             'const': vscode.SymbolKind.Constant,
         };
         this.symbols = [];
+        this.swgis = swgis;
     }
-    
+
+    provideCodeActions(document, range, context, token) {
+        let swgis = this.swgis;
+
+        if ( swgis.sessions == null) return;
+
+        var codeBlock = document.getText(range);
+        var codeActions = [];
+        var titleAction = "Compile code to "+ swgis.sessions;
+        const args = [codeBlock];
+        const cak = {value: titleAction, tooltip: titleAction};
+        const runAction = new vscode.CodeAction(titleAction, cak);// vscode.CodeActionKind.Empty);
+        runAction.command = {
+            title:    titleAction,
+            command:  "swSessions.compileCode",
+            arguments: args,
+            tooltip: titleAction
+        };
+        swgis.codeAction = runAction;
+        //runAction.diagnostics = [ diagnostic ];
+        codeActions.push(runAction);
+
+        return codeActions;
+    }
+
     provideWorkspaceSymbols(query, token) {
         let rootPath = vscode.workspace.rootPath;
         if (vscode.window.activeTextEditor && vscode.workspace.getWorkspaceFolder(vscode.window.activeTextEditor.document.uri)) {
@@ -99,8 +124,34 @@ class codeExplorer {
         };
 
         return sift(swWorkspaceSymbols.cache,query); 
-    };
+    }
     
-  
+    compileCode(context, editor,edit){
+        let swgis = this.swgis;
+        if ( swgis.sessions == null) return;
+        var codeBlock;
+        switch(context) {
+            case 'Range':
+                var pos= editor.document.cursorPosition;
+                codeBlock = editor.document.getText(pos);
+                break;
+            case 'Selection':
+                codeBlock = editor.document.getText(editor.selection);
+                break;
+            case 'Code':
+                codeBlock = editor.document.getText();
+                break;
+            case '':
+                let n = editor.selection.start.line
+                let range = new vscode.Range(new vscode.Position(n, 0), new vscode.Position(n+1, 0));
+                codeBlock = editor.document.getText(range);
+                break;
+            default: 
+                codeBlock = context;
+        }
+      
+       var ret = swgis.sessions.sendText(codeBlock, true);
+       console.log(ret);
+    }
 }
 exports.codeExplorer = codeExplorer;

@@ -17,15 +17,15 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 * Open a Magik file to see the code outline for Objects and methods in the file.
 * Start typing Magik code to get keyword autocorrections and autocomplete features.
 
-![Snippet](images/snippet.png)
+![Snippet](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/snippet.png)
 
 * open the Symbol browser by CTRL-T and see a list of Object Exemplars, Methods, and Procs in the entire product tree, and click to jump to a definition.
 
-![CTRL-T](images/CodeOutline.png)
+![CTRL-T](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
 
-![Smallworld Magik Theme](images/syntaxLight.png)
+![Smallworld Magik Theme](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/syntaxLight.png)
 
 ## Start Smallworld sessions from gis_aliases stanzas. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
 
@@ -33,7 +33,7 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 * Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
 * Click the Light Bulb to get the command to Start a Smallworld Session.
 
-![Run GIS Alias](images/SWRunGisAlias.png)
+![Run GIS Alias](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SWRunGisAlias.png)
 
 This is tested with Smallworld 4.3 and Smallworld 5.1.9
 
