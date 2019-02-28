@@ -6,6 +6,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const keyCheck = require('./keywordCheck');
+const swSessions = require('./swSessions');
 const cBrowser = require('./codeBrowser');
 const gAliases = require('./gisAliases');
 const cExplorer = require("./codeExplorer");
@@ -50,15 +51,16 @@ function activate(context) {
     );
 
     // ---- gisAliases
-    let gAl = new gAliases.swSessions();
+    let gAl = new gAliases.gisAliases();
     gAl.run(context);
-    vscode.languages.registerHoverProvider('swgis', new gAliases.swSessions());
-    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.swSessions());
+    vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases());
+    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases());
 
     //button click run aliases
+    let swS = new swSessions.swSessions();
     disposable[3] = vscode.commands.registerCommand(
-        "swSessions.runaliases", function() {gAl.runaliases();}
-        );
+        "swSessions.runaliases",  function() { swS.runaliases(); }
+    );
     
 };
 exports.activate = activate;

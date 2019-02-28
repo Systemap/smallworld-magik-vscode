@@ -5,6 +5,7 @@
 const vscode = require("vscode");
 const fs=require("fs");
 const cBrowser = require('./codeBrowser');
+
 // const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
 class codeExplorer {
