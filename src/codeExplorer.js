@@ -5,6 +5,7 @@
 const vscode = require("vscode");
 const fs=require("fs");
 const cBrowser = require('./codeBrowser');
+
 // const swWorkspaceSymbols = {index: [], cache: [], paths: []};
 
 class codeExplorer {
@@ -100,7 +101,11 @@ class codeExplorer {
 
         return sift(swWorkspaceSymbols.cache,query); 
     };
-    
+
+    resolveWorkspaceSymbol(symbolInfo, token) {
+        console.log(symbolInfo);
+
+    }    
   
 }
 exports.codeExplorer = codeExplorer;

@@ -6,6 +6,7 @@
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
 const keyCheck = require('./keywordCheck');
+const swSessions = require('./swSessions');
 const cBrowser = require('./codeBrowser');
 const gAliases = require('./gisAliases');
 const cExplorer = require("./codeExplorer");
@@ -22,8 +23,6 @@ function activate(context) {
     vscode.languages.registerDocumentSymbolProvider('magik', new cBrowser.codeBrowser());
     vscode.languages.registerDocumentSymbolProvider('swgis', new cBrowser.codeBrowser());
 
-
-
     // var CompletionProvider =  new keyCheck.keywordCheck();
     // vscode.languages.registerCompletionItemProvider('magik',CompletionProvider );
 
@@ -36,18 +35,16 @@ function activate(context) {
     //  vscode.languages.registerImplementationProvider("magik", new cExplorer.codeExplorer()));
     
     // ---- gisAliases
-    let gAl = new gAliases.swSessions();
+    let gAl = new gAliases.gisAliases();
     gAl.run(context);
-    vscode.languages.registerHoverProvider('swgis', new gAliases.swSessions());
-    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.swSessions());
+    vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases());
+    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases());
 
     //button click run aliases
+    let swS = new swSessions.swSessions();
     let disposable = vscode.commands.registerCommand(
-        "swSessions.runaliases",
-        function() {
-        gAl.runaliases();
-        }
-        );
+        "swSessions.runaliases",  function() { swS.runaliases(); }
+    );
     
 };
 exports.activate = activate;
