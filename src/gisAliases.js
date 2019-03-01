@@ -3,11 +3,9 @@
 // ---------------------------------------------------------
 'use strict';
 const vscode = require('vscode');
-const swSessions = require('./swSessions');
-
 
 class gisAliases{
-    constructor() {
+    constructor(swgis) {
         this.swgis = swgis;
 
     }
@@ -69,6 +67,7 @@ class gisAliases{
     }
     
     provideCodeActions(document, range, context, token) {
+        let swgis=this.swgis;
         if ( swgis.sessions != null) return;
         if (!swgis.gisPath) return;
 
@@ -98,7 +97,7 @@ class gisAliases{
     }
 
     provideHover(document, position, token) {
-        
+        let swgis=this.swgis;
         var alias = document.lineAt(position.line).text;
         alias = alias.split("#")[0].trim()
         if (swgis.aliasePattern.test(alias)){
@@ -108,6 +107,7 @@ class gisAliases{
     }
 
     errorHover(alias) {
+        let swgis=this.swgis;
         if (!swgis.errorHover ) {
             let hoverTexts = new vscode.MarkdownString();
             hoverTexts.appendCodeblock("Run GIS: invalid \"swgis.gisPath\" ","magik");
