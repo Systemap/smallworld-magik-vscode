@@ -1,109 +1,124 @@
-
 {
-    "name": "smallworld-magik",
-    "displayName": "Smallworld Magik",
-    "description": "Smallworld Magik for Visual Studio Code",
-    "version": "1.1.1",
-    "publisher": "siamz",
-    "icon": "images/swmagik.png",
+	"name": "smallworld-magik",
+	"displayName": "Smallworld Magik",
+	"description": "Smallworld Magik for Visual Studio Code",
+	"version": "1.1.3",
+	"publisher": "siamz",
+	"icon": "images/swmagik.png",
 	"keywords": [
 		"smallworld",
 		"magik",
 		"gis_aliases"
 	],
-    "engines": {
-        "vscode": "^1.20.0"
-    },
-    "categories": [
-        "Programming Languages",
-        "Snippets",
-        "Themes"
-    ],
-    "activationEvents": [
-        "onCommand:magik.set",
-        "onLanguage:swgis",
-        "onLanguage:magik",
-        "workspaceContains:*.magik,*.def,gis_aliases"
-    ],
-    "main": "./src/extension",
-    "contributes": {
-        "configuration":{
-            "title": "Smallworld GIS path",
-            "properties": {
-                "Smallworld.gisPath":{
-                "type": ["string", "null"],
-                "default": "C:/Smallworld/430/product/bin/x86/gis.exe",
-                "description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
-                }
-            }
-        },
-        "commands": [
-            {
-            "command": "swSessions.runaliases",
-            "title": "SW Run GIS Alias"
-            }
-        ],
-        "themes": [
-            {
-                "label": "Smallworld Magik Light",
+	"engines": {
+		"vscode": "^1.20.0"
+	},
+	"categories": [
+		"Programming Languages",
+		"Snippets",
+		"Themes"
+	],
+	"activationEvents": [
+		"onCommand:magik.set",
+		"onLanguage:swgis",
+		"onLanguage:magik",
+		"workspaceContains:*.magik,*.def,gis_aliases"
+	],
+	"main": "./src/extension",
+	"contributes": {
+		"configuration": {
+			"title": "Smallworld GIS path",
+			"properties": {
+				"Smallworld.gisPath": {
+					"type": [
+						"string",
+						"null"
+					],
+					"default": "C:/Smallworld/core/bin/x86/gis.exe",
+					"description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+				}
+			}
+		},
+		"commands": [
+			{
+				"command": "swSessions.runaliases",
+				"title": "SW Run GIS Alias"
+			}
+		],
+		"themes": [
+			{
+				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
 				"path": "./cfg/magik-light.color-theme.json"
-            }
-        ],
-        "languages": [
-            {
-                "id": "magik",
-                "aliases": [
-                    "magik",
-                    "Smallworld Magik"
-                ],
-                "extensions": [
-                    ".magik",
-                    ".msg"
-                ],
-                "filenames": [
-                    "config.xml",
-                    "gui.xml"
-                ],
-                "configuration": "./cfg/magik-configuration.json"
-            },
-            {
-                "id": "swgis",
-                "aliases": [
-                    "swgis",
-                    "Smallworld GIS"
-                ],
-                "extensions": [],
-                "filenames": [
-                    "gis_aliases",
-                    "product.def",
-                    "module.def",
-                    "load_list.txt",
-                    "patch_list.txt"
-                ],
-                "configuration": "./cfg/swgis-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "magik",
-                "scopeName": "source.magik",
-                "path": "./cfg/magik.grammars.json"
-            },
-            {
-                "language": "swgis",
-                "scopeName": "source.swgis",
-                "path": "./cfg/swgis.grammars.json"
-            }
-        ],
-        "snippets": [
-            {
-                "language": "magik",
-                "path": "./cfg/magik.snippets.json"
-            }
-        ]     
-    },
-    "bugs": {
+			}
+		],
+		"languages": [
+			{
+				"id": "magik",
+				"aliases": [
+					"magik",
+					"Smallworld Magik"
+				],
+				"extensions": [
+					".magik"
+				],
+				"filenames": [
+					"config.xml",
+					"gui.xml"
+				],
+				"configuration": "./cfg/magik-configuration.json"
+			},
+			{
+				"id": "swxml",
+				"aliases": [
+					"swxml",
+					"Smallworld XML Resources"
+				],
+				"extensions": [],
+				"filenames": [
+					"config.xml",
+					"gui.xml"
+				]
+			},
+			{
+				"id": "swgis",
+				"aliases": [
+					"swgis",
+					"Smallworld GIS"
+				],
+				"extensions": [
+					".msg"
+				],
+				"filenames": [
+					"gis_aliases",
+					"product.def",
+					"module.def",
+					"load_list.txt",
+					"patch_list.txt"
+				],
+				"configuration": "./cfg/swgis-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "magik",
+				"scopeName": "source.magik",
+				"path": "./cfg/magik.grammars.json"
+			},
+			{
+				"language": "swgis",
+				"scopeName": "source.swgis",
+				"path": "./cfg/swgis.grammars.json"
+			}
+		],
+		"snippets": [
+			{
+				"language": "magik",
+				"path": "./cfg/magik.snippets.json"
+			}
+		]
+	},
+	"bugs": {
 		"url": "https://github.com/siamz/smallworld-magik-vscode.git/issues",
 		"email": "siamz@live.com"
 	},
@@ -112,16 +127,16 @@
 		"type": "git",
 		"url": "https://github.com/siamz/smallworld-magik-vscode/tree/master"
 	},
-    "scripts": {
-        "postinstall": "node ./node_modules/vscode/bin/install",
-        "test": "node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "vscode": "^1.31.1"
+	"scripts": {
+		"postinstall": "node ./node_modules/vscode/bin/install",
+		"test": "node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"vscode": "^1.31.1"
 	},
 	"__metadata": {
 		"id": "79db1554-2964-43e4-bc4f-5060b5d9eca2",
 		"publisherId": "7094f1cf-cf53-43cd-b0d2-7bda8ba8d306",
 		"publisherDisplayName": "Siamak Zolghadri"
-    }
+	}
 }
