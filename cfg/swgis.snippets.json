@@ -82,7 +82,7 @@
 				"system_installation\n\t# list of system_installations\nend\n",
 				"auth_installation\n\t# list of auth_installations\nend\n",
 				"\n"]
-		},
+		}
 	},
 	".source.gis_aliases": {
 		"gis_alias": {
