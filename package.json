@@ -115,6 +115,10 @@
 			{
 				"language": "magik",
 				"path": "./cfg/magik.snippets.json"
+			},
+			{
+				"language": "swgis",
+				"path": "./cfg/swgis.snippets.json"
 			}
 		]
 	},
