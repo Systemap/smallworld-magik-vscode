@@ -56,13 +56,6 @@
 			"prefix": "condition_message_accessor",
 			"body": "condition_message_accessor\t${1:NAME}\n"
 		},
-
-
-
-
-
-
-
 		"layered_product": {
 			"prefix": "layered_product",
 			"body": "layered_product"
@@ -89,6 +82,29 @@
 				"system_installation\n\t# list of system_installations\nend\n",
 				"auth_installation\n\t# list of auth_installations\nend\n",
 				"\n"]
+		},
+	},
+	".source.gis_aliases": {
+		"gis_alias": {
+			"prefix": "alias",
+			"body": [
+				"<alias>:",
+				"\ttitle          = #--- title ---\n",
+				"\tdirectory      = #--- directory ---\n",
+				"\tprogram        = #--- program ---\n",
+				"\tsplash_screen  = #--- image file, e.g. mysplash.gif ---\n",
+				"\tsession        = #--- product:name ---\n",
+				"\tjava           = #--- pathname of Java executable ---\n",
+				"\tjava_log       = #--- file ---\n",
+				"\tscript         = #--- command ---\n",
+				"\tosgi_directory = #--- directory ---\n",
+				"\targs           = #--- args ---\n",
+				"\tlog_file       = #--- file ---\n",
+				"\ttimeout        = #--- seconds ---\n",
+				"\twait_line      = #--- text ---\n",
+				"\tinteractive    = #--- interactive_or_not ---\n",
+				"\n"]
 		}
 	}
 }
+
