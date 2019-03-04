@@ -1,0 +1,94 @@
+{
+	".source.def": {
+		"desription end": {
+			"prefix": "desription",
+			"body":   "desription\n\t${1:PRODUCT_DESCRIPTION}\nend\n"
+		},
+		"desription": {
+			"prefix": "desription",
+			"body":   "desription\n"
+		},
+		"title end": {
+			"prefix": "title",
+			"body": "title\n\t${1:PRODUCT_TITLE}\nend\n"
+		},
+		"title": {
+			"prefix": "title",
+			"body":   "title\n"
+		},
+		"templates end": {
+			"prefix": "templates",
+			"body": "templates\n\t# list of template Magik file names\n\nend\n"
+		},
+		"requires_datamodel  end": {
+			"prefix": "requires_datamodel ",
+			"body": "requires_datamodel \n\t# list of datamodel details \n\nend\n"
+		},
+		"install_requires end": {
+			"prefix": "install_requires",
+			"body": "install_requires\n\t# list of implementors \n\nend\n"
+		},
+		"requires end": {
+			"prefix": "requires",
+			"body": "requires\n\t${1:PRODUCT_REQUIRES}\nend\n"
+		},
+		"requires": {
+			"prefix": "requires",
+			"body":   "requires\n"
+		},
+		"optional end": {
+			"prefix": "optional",
+			"body": "optional\n\t${1:OPTIONAL_REQUIRES}\nend\n"
+		},
+		"optional": {
+			"prefix": "optional",
+			"body": "optional"
+		},
+		"hidden": {
+			"prefix": "hidden",
+			"body": "hidden"
+		},
+		"version": {
+			"prefix": "version",
+			"body": "version\t${2:RELEASE}.${2:MAJOR}.${2:MINOR}.{1:BUILD}-${2:REVISION}"
+		},
+		"condition_message_accessor": {
+			"prefix": "condition_message_accessor",
+			"body": "condition_message_accessor\t${1:NAME}\n"
+		},
+
+
+
+
+
+
+
+		"layered_product": {
+			"prefix": "layered_product",
+			"body": "layered_product"
+		},
+		"customisation_product": {
+			"prefix": "customisation_product",
+			"body": "customisation_product"
+		},
+		"product def": {
+			"prefix": "_product",
+			"body": [
+				"title\n\t# PRODUCT_TITLE\nend\n",
+				"desription\n\t# PRODUCT_DESCRIPTION\nend\n",
+				"requires\n\t# PRODUCT_REQUIRES\nend\n",
+				"version\t#RELEASE.MAJOR.MINOR.BUILD-REVISION",
+				"language en_gb\tLANGUAGE_NAME\n"]
+		},
+		"installations": {
+			"prefix": "_product",
+			"body": [
+				"case_installation\n\t# list of case_installations\nend\n",
+				"style_installation\n\t# list of style_installations\nend\n",
+				"ace_installation\n\t# list of ace_installations\nend\n",
+				"system_installation\n\t# list of system_installations\nend\n",
+				"auth_installation\n\t# list of auth_installations\nend\n",
+				"\n"]
+		}
+	}
+}
