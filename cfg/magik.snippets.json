@@ -195,17 +195,50 @@
 				"\t${5:FLAVOUR}",
 				")\n"]
 		},
-		"%newline": {
-			"prefix": "%n",
-			"body": "%newline"
+		"register_application": {
+			"prefix": "smallworld_product.register_application",
+			"body": [
+				"smallworld_product.register_application(${1:NAME}, ",
+				"\t${:application}, # application_class_name ",
+				"\t#:external_name, ",
+				"\t#:description, ",
+				"\t#:resource_module_name, ",
+				"\t#:icon_location, ",
+				"\t#:html_help_file_name, ",
+				"\t#:product_name, ",
+				"\t#:soc_name, ",
+				"\t#:ace_name, ",
+				"\t#:hidden, ${|_true,_false|}",
+				"\t#:default_application_coordinate_system_name, ",
+				"\t#:application_coordinate_system_unit, ${2|:mm,:cm,:ft|}",
+					")\n"]
 		},
-		"%tab": {
-			"prefix": "%t",
-			"body": "%tab"
+		"magik_session.register": {
+			"prefix": "magik_session",
+			"body": [
+				"magik_session.register_new(${1:NAME}, ",
+				"\t:parent_session, ${2:PARENT_PRODUCT}:${3:PARENT_SESSION}, #  Name of the parent session to start from",
+				"\t:package,                ${4|user,sw|}, # Package to load the code", 
+				"\t:startup_proc,           ${5:startup},# Session startup proc",
+				"\t:open_database_proc,     ${6:open_database}, # Proc for opening the database",
+				"\t:add_products,           {},",
+				"\t:load_modules,           {},",
+				"\t:load_modules_arguments, {},",
+				"\t#:optional_products,     {},",
+				"\t#:optional_modules,      {},",
+				"\t#:load_files,            {},", 
+				"\t#:init_build_proc,       {},", 
+				"\t#:pre_build_proc,        {},", 
+				"\t#:post_build_proc,       {},",
+				"\t#:startup_options,       {},",
+				"\t#:startup_procedures,    {},",
+				"\t#:soc_names,             {},",
+				"\t#:load_code_proc,        {},",
+				")\n"]
 		},
-		"%space": {
-			"prefix": "%s",
-			"body": "%space"
+		"%": {
+			"prefix": "%",
+			"body": "%${1|newline,tab,space|}"
 		},
 		"Application": {
 			"prefix": "app",

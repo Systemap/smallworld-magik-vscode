@@ -1,94 +1,83 @@
 {
 	".source.def": {
-		"desription end": {
-			"prefix": "desription",
-			"body":   "desription\n\t${1:PRODUCT_DESCRIPTION}\nend\n"
-		},
-		"desription": {
-			"prefix": "desription",
-			"body":   "desription\n"
-		},
-		"title end": {
-			"prefix": "title",
-			"body": "title\n\t${1:PRODUCT_TITLE}\nend\n"
+		"description": {
+			"prefix": "description",
+			"body":   "description\n\t${1:PRODUCT_DESCRIPTION}\nend\n"
 		},
 		"title": {
 			"prefix": "title",
-			"body":   "title\n"
+			"body": "title\n\t${1:PRODUCT_TITLE}\nend\n"
 		},
-		"templates end": {
+		"templates": {
 			"prefix": "templates",
 			"body": "templates\n\t# list of template Magik file names\n\nend\n"
 		},
-		"requires_datamodel  end": {
+		"requires_datamodel": {
 			"prefix": "requires_datamodel ",
 			"body": "requires_datamodel \n\t# list of datamodel details \n\nend\n"
 		},
 		"install_requires end": {
 			"prefix": "install_requires",
-			"body": "install_requires\n\t# list of implementors \n\nend\n"
-		},
-		"requires end": {
-			"prefix": "requires",
-			"body": "requires\n\t${1:PRODUCT_REQUIRES}\nend\n"
+			"body": "install_requires\n\t# list of implementors \n${1:}\nend\n\n"
 		},
 		"requires": {
 			"prefix": "requires",
-			"body":   "requires\n"
+			"body": "requires\n\t${1}\nend\n"
 		},
 		"optional end": {
 			"prefix": "optional",
 			"body": "optional\n\t${1:OPTIONAL_REQUIRES}\nend\n"
 		},
-		"optional": {
-			"prefix": "optional",
-			"body": "optional"
-		},
 		"hidden": {
 			"prefix": "hidden",
-			"body": "hidden"
+			"body": "hidden\n\n"
 		},
 		"version": {
 			"prefix": "version",
-			"body": "version\t${2:RELEASE}.${2:MAJOR}.${2:MINOR}.{1:BUILD}-${2:REVISION}"
+			"body": "version\t ${5|5.2.0.0-001,5.1.0.0-001,5.0.0.0-001,4.3.0.0-001,4.2.0.0-001,4.1.0.0-001|}\n"
 		},
 		"condition_message_accessor": {
 			"prefix": "condition_message_accessor",
-			"body": "condition_message_accessor\t${1:NAME}\n"
+			"body": "condition_message_accessor\t${1:NAME}\n\n"
 		},
-		"layered_product": {
-			"prefix": "layered_product",
-			"body": "layered_product"
-		},
-		"customisation_product": {
-			"prefix": "customisation_product",
-			"body": "customisation_product"
+		"language": {
+			"prefix": "language",
+			"body": [
+				"language ${1|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
 		},
 		"product def": {
-			"prefix": "_product",
+			"prefix": "product",
 			"body": [
-				"title\n\t# PRODUCT_TITLE\nend\n",
-				"desription\n\t# PRODUCT_DESCRIPTION\nend\n",
-				"requires\n\t# PRODUCT_REQUIRES\nend\n",
-				"version\t#RELEASE.MAJOR.MINOR.BUILD-REVISION",
-				"language en_gb\tLANGUAGE_NAME\n"]
+				"${1:PRODUCT NAME} ${2|layered_product,customisation_product,config_product|}\n\n",
+				"title\n\t# TITLE\n$3\nend\n\n",
+				"requires\n\t# List of required products\n$4\nend\n\n",
+				"version\t ${5|5.2.0.0-001,5.1.0.0-001,5.0.0.0-001,4.3.0.0-001,4.2.0.0-001,4.1.0.0-001|}\n"]
+		},
+		"module def": {
+			"prefix": "module",
+			"body": [
+				"${1:<MODULE_NAME>} ${2:VERSION_NUMBER} \n\n",
+				"description\n\tModule definition for {1:MODULE NAME}\nend\n\n",
+				"requires\n\t# List of required modules\nend\n\n",
+				"condition_message_accessor\t# NAME\n\n",
+				"language ${3|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
 		},
 		"installations": {
-			"prefix": "_product",
+			"prefix": "installations",
 			"body": [
-				"case_installation\n\t# list of case_installations\nend\n",
-				"style_installation\n\t# list of style_installations\nend\n",
-				"ace_installation\n\t# list of ace_installations\nend\n",
-				"system_installation\n\t# list of system_installations\nend\n",
-				"auth_installation\n\t# list of auth_installations\nend\n",
+				"case_installation\n\t# list of case_installations\nend\n\n",
+				"style_installation\n\t# list of style_installations\nend\n\n",
+				"ace_installation\n\t# list of ace_installations\nend\n\n",
+				"system_installation\n\t# list of system_installations\nend\n\n",
+				"auth_installation\n\t# list of auth_installations\nend\n\n",
 				"\n"]
 		}
 	},
-	".source.gis_aliases": {
+	"gis_aliases": {
 		"gis_alias": {
-			"prefix": "alias",
+			"prefix": "gis_alias",
 			"body": [
-				"<alias>:",
+				"${1:<alias>}:",
 				"\ttitle          = #--- title ---\n",
 				"\tdirectory      = #--- directory ---\n",
 				"\tprogram        = #--- program ---\n",
@@ -107,4 +96,3 @@
 		}
 	}
 }
-
