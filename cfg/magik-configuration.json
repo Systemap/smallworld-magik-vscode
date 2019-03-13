@@ -66,7 +66,7 @@
         "_local", // Introduces variable declaration.
         "_lock", // Introduces a _lock statement to gain exclusive access to an object.
         "_loop", // Introduces the body of a loop.
-        "_loopbody()", // Used in an iterator method or procedure to yield values to a controlled loop.
+        "_loopbody", // Used in an iterator method or procedure to yield values to a controlled loop.
         "_maybe", // Enumerated object with value maybe.
         "_method", // Introduces method definition.
         "_mod", // Remainder operator.

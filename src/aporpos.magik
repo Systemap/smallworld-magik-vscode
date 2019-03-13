@@ -1,0 +1,77 @@
+_proc(_optional pckg,class,mthd,private?,system?,object?,super?)   
+	#class<< class.default("conf")
+	#mthd<<  mthd.default("conf")
+	fname<< fname.default("c:\temp\aporpos.txt")
+
+	private?<<  private?.default(_false)
+	system?<<   system?.default(_false)
+	object?<<   object?.default(_false)
+	super?<<    super?.default(_false)
+	
+	_local c,n,mf
+	_local f<< external_text_output_stream.new(fname)
+	_protect 
+	_for p _over package.all_packages.elements()
+	_loop 
+		_if pckg _isnt _unset _andif p.name.as_charvec().index_of_seq(pckg) _is _unset
+		_then 
+			_continue 
+		_endif 
+		_local elist<< rope.new()
+		_for e _over p.associations()
+		_loop @exemplar
+			_if class _is _unset _orif 
+			    e.key.as_charvec().index_of_seq(class) _isnt _unset
+			_then
+				f.write(p.name,%tab,e.key,%tab,:exemplar,%tab)
+				_if (mf<< e.module_file) _is _unset 
+				_then 
+					mf<< "Source file is not available."
+				_elif mf.responds_to?(:relative_path)
+				_then 
+					#system.pathname_down(mf.module.full_directory,mf.relative_path)
+					mf<< system.canonicalise(mf.relative_path,mf.module.safe_full_directory)
+				_endif 	
+					f.write(mf,%newline)
+				elist.add(e)
+			_endif 	
+			_if super? _andif class _isnt _unset 
+			_then 
+				_for s _over e.parents()
+				_loop 
+					elist.add(s)
+				_endloop 	
+			_endif 	
+		_endloop 		
+			
+		_for e _over elist.elements() 
+		_loop 
+			_if _not object? _andif e.key _is :object _then _continue _endif 
+			_for m _over e.value.define_method_target.elements()
+			_loop
+				_if _not private? _andif m.private?  _then _continue _endif
+				_if _not symbol.is_class_of?(m.key) _then _continue _endif
+				_if _not system? _andif m.key.includes?(%!) _then _continue _endif
+				_if mthd _is _unset _orif 
+					m.key.as_charvec().index_of_seq(mthd) _isnt _unset
+				_then
+					f.write(p.name,%tab,e.key,%tab,m.key,%tab)
+					# "S:/RD/adjust.IT433/modules/adjustit_core"  "source\wdi!adjustit.magik" 
+					_if( mf<< m.module_file) _is _unset 
+					_then 
+						mf<< "Source file is not available."
+					_elif mf.responds_to?(:relative_path)
+					_then 
+						#system.pathname_down(mf.module.full_directory,mf.relative_path)
+						mf<< system.canonicalise(mf.relative_path,mf.module.safe_full_directory)
+					_endif 	
+					f.write(mf,%newline)
+				_endif
+			_endloop
+		_endloop
+	_endloop
+	_protection 
+		f.close()
+	_endprotect
+	
+_endproc()#pckg,class,mthd,private?,system?,object?,local?,fname)

@@ -6,6 +6,9 @@
 	"publisher": "siamz",
 	"icon": "images/swmagik.png",
 	"keywords": [
+		"workspace",
+		"symbolprovider",
+		"autocorrection",
 		"smallworld",
 		"magik",
 		"gis_aliases"
@@ -16,6 +19,7 @@
 	"categories": [
 		"Programming Languages",
 		"Snippets",
+		"Keymaps",
 		"Themes"
 	],
 	"activationEvents": [
@@ -30,11 +34,8 @@
 			"title": "Smallworld GIS path",
 			"properties": {
 				"Smallworld.gisPath": {
-					"type": [
-						"string",
-						"null"
-					],
-					"default": "C:/Smallworld/430/product/bin/x86/gis.exe",
+					"type": ["string","null"],
+					"default": "C:/Smallworld/core/bin/x86/gis.exe",
 					"description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
 				}
 			}
@@ -57,11 +58,49 @@
 				"title": "Compile Magik Code Range"
 			}
 		],
+		"keybindings": [
+			{
+				"key": "Ctrl+f9",
+				"command": "swSessions.compileCode",
+				"args": ["Code"],
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f9",
+				"command": "swSessions.compileCode",
+				"args": ["Range"],
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f2 b",
+				"command": "swSessions.compileCode",
+				"when": "editorTextFocus"
+			},
+			{ 
+				"key": "f2 r", 
+				"command": "swSessions.compileRange",
+				"when": "editorTextFocus" 
+			},
+			{ 
+				"key": "f2 s", 
+				"command": "swSessions.compileSelection",
+				"when": "editorTextFocus" 
+			},
+			{ 
+				"key": "f3 f3", 
+				"command": "swSessions.apropos",
+				"args": [],
+				"when": "editorTextFocus" 
+			}
+
+		],
         "menus": {
 			"editor/context": [
 				{
 					"command": "swSessions.compileCode",
-					"group": "swGroup@1"
+					"group": "swGroup@1",
+					"when": "editorLangId == magik"
+
 				}
 			]
 		},
@@ -80,8 +119,8 @@
 					"Smallworld Magik"
 				],
 				"extensions": [
-					".magik",
-					".msg"
+					".xml",
+					".magik"
 				],
 				"filenames": [
 					"config.xml",
@@ -90,12 +129,26 @@
 				"configuration": "./cfg/magik-configuration.json"
 			},
 			{
+				"id": "swxml",
+				"aliases": [
+					"swxml",
+					"Smallworld XML Resources"
+				],
+				"extensions": [],
+				"filenames": [
+					"config.xml",
+					"gui.xml"
+				]
+			},
+			{
 				"id": "swgis",
 				"aliases": [
 					"swgis",
 					"Smallworld GIS"
 				],
-				"extensions": [],
+				"extensions": [
+					".msg"
+				],
 				"filenames": [
 					"gis_aliases",
 					"product.def",
@@ -122,6 +175,10 @@
 			{
 				"language": "magik",
 				"path": "./cfg/magik.snippets.json"
+			},
+			{
+				"language": "swgis",
+				"path": "./cfg/swgis.snippets.json"
 			}
 		]
 	},

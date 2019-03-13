@@ -21,83 +21,37 @@
     ],
     // symbols that that can be used to surround a selection
     "surroundingPairs": [
-        ["_proc", "_endproc"],
-        ["_block", "_endblock"],
         ["{", "}"],
         ["[", "]"],
         ["(", ")"],
         ["\"", "\""],
         ["'", "'"]
     ],
-
-    "Keywords": [
-        "_abstract", // Introduces an abstract method; that is, a method defined by a parent class which must be implemented by a subclass.
-        "_allresults", // Collects multiple results from a method or procedure invocation into a simple vector.  
-        "_and", // Boolean operator; result is true if both operands are true.
-        "_andif", // Boolean operator equivalent to _and except that evaluation stops once the result is determined.
-        "_block", // Introduces a block body.
-        "_catch", // Destination for transfer of control with a _throw statement. Can be labelled with an expression.
-        "_clone", // Within a method, refers to a copy of self (the current object). Receivers _self, _super, _private and _clone 
-        "_constant", // In a declaration, prevents reassignment to the variable after initialisation.
-        "_continue", // In a controlled or infinite loop, terminates execution of one iteration of the loop.
-        "_div", // Binary operator for integer division.
-        "_dynamic", // Introduces variable declaration. 
-        "_elif", // Introduces second and subsequent condition in a conditional.
-        "_else", // Introduces final block body in a conditional.
-        "_endblock", // Terminates _block statement.
-        "_endcatch", // Terminates _catch statement.
-        "_endif", // Terminates _if statement.
-        "_endlock", // Terminates _lock statement.
-        "_endloop", // Terminates _loop statement.
-        "_endmethod", // Terminates _method definition.
-        "_endproc", // Terminates _proc definition.
-        "_endprotect", // Terminates _protect statement.
-        "_endtry", // Terminates _try statement.
-        "_false", // Enumerated object with value false.
-        "_finally", // Used in controlled loops.
-        "_for", // Introduces controlled loop.
-        "_gather", // In an lvalue tuple, collects all remaining values into a simple vector.
-        "_global", // Introduces variable declaration.
-        "_handling", // Introduces statement sequence for handling a condition.
-        "_if", // Introduces conditional.
-        "_import", // Used in variable declarations.
-        "_is", // 
-        "_isnt", // Identity operators.
-        "_iter", // Introduces an iterator method or procedure definition.
-        "_leave", // Terminates execution of a block or loop.
-        "_local", // Introduces variable declaration.
-        "_lock", // Introduces a _lock statement to gain exclusive access to an object.
-        "_loop", // Introduces the body of a loop.
-        "_loopbody()", // Used in an iterator method or procedure to yield values to a controlled loop.
-        "_maybe", // Enumerated object with value maybe.
-        "_method", // Introduces method definition.
-        "_mod", // Remainder operator.
-        "_no_way", // Enumerated object with value no_way.
-        "_not", // Unary boolean operator.
-        "_optional", // In an argument list for a method or procedure definition, introduces optional arguments.
-        "_or", // Boolean operator; result is true if either operand is true.
-        "_orif", // Boolean operator equivalent to _or except that evaluation stops once the result is determined.
-        "_over", // Introduces iterator in controlled loop statement.
-        "_package", // Used at the top level to define the current package.
-        "_pragma", // Introduces classification of methods, classes, global variables, shared variables and so on.
-        "_private", // Introduces a private method definition.
-        "_proc", // Introduces a procedure definition.
-        "_protect", // Introduces a protected block.
-        "_locking", // _protect _locking Introduces a protected block with a lock.
-        "_protection", // Introduces protection code, executed if a protected block is abandoned.
-        "_recursive", // Used in a parallel variable declaration to declare the variables recursively.
-        "_return", // Introduces a _return statement, returning control from a method or procedure.
-        "_scatter", // In an rvalue tuple, distributes a vector into individual values.
-        "_self", // Within a method, refers to the target object. Within a procedure, refers to the procedure.
-        "_super", // Within a method, refers to a superclass of the target object.
-        "_then", // Introduces first condition in conditional.
-        "_thisthread", // The current thread.
-        "_throw", // Introduces a _throw statement to transfer control to a matching _catch statement.
-        "_true", // Enumerated object with value true.
-        "_try ", //Introduces a statement sequence which may give rise to particular conditions; the statements for handling a condition are introduced by _when.
-        "_unset", //Enumerated object with value unset.
-        "_when", //Introduces a list of conditions which may be raised by a _try statement.
-        "_with", //Introduces value or value list in statements such as _leave, _throw, _handling.
-        "_xor" //
-       ]
+    "Keywords": [ "title","description","end","requires","version","optional","language"],
+    "languages":{
+        "da_dk": "Dansk i Danmark",
+        "de_ch": "Deutsch in der Schweiz",
+        "de_de": "Deutsch in Deutschland",
+        "en_au": "English in Australia",
+        "en_gb": "English in United Kingdom",
+        "en_us": "English in United States",
+        "es_es": "Espanol de Espana",
+        "et_ee": "Eesti Eestis",
+        "fi_fi": "Suomea Suomessa",
+        "fr_be": "Francais en Belgique",
+        "fr_ca": "Francais au Canada",
+        "fr_ch": "Francais en Suisse",
+        "fr_fr": "Francais en France",
+        "it_it": "Italiano in Italia",
+        "jp_jp": "Japanese",
+        "ko_kr": "Korean",
+        "nl_be": "Vlaams in Belgie",
+        "nl_nl": "Hollands in Nederland",
+        "no_no": "Norsk i Norge",
+        "pt_br": "Portuges de Brasil",
+        "pt_pt": "Portugues de Portugal",
+        "sv_fi": "Svenska i Finland",
+        "sv_se": "Svenska i Sverige",
+        "zh_tw": "Chinese in ROC"
+    }
 }

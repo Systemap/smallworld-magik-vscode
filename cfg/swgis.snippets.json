@@ -1,0 +1,98 @@
+{
+	".source.def": {
+		"description": {
+			"prefix": "description",
+			"body":   "description\n\t${1:PRODUCT_DESCRIPTION}\nend\n"
+		},
+		"title": {
+			"prefix": "title",
+			"body": "title\n\t${1:PRODUCT_TITLE}\nend\n"
+		},
+		"templates": {
+			"prefix": "templates",
+			"body": "templates\n\t# list of template Magik file names\n\nend\n"
+		},
+		"requires_datamodel": {
+			"prefix": "requires_datamodel ",
+			"body": "requires_datamodel \n\t# list of datamodel details \n\nend\n"
+		},
+		"install_requires end": {
+			"prefix": "install_requires",
+			"body": "install_requires\n\t# list of implementors \n${1:}\nend\n\n"
+		},
+		"requires": {
+			"prefix": "requires",
+			"body": "requires\n\t# list of requires \n\nend\n\n"
+		},
+		"optional end": {
+			"prefix": "optional",
+			"body": "optional\n\t# list of optional requires \n\nend\n"
+		},
+		"hidden": {
+			"prefix": "hidden",
+			"body": "hidden\n\n"
+		},
+		"version": {
+			"prefix": "version",
+			"body": "version\t ${5|5.2.0.0-001,5.1.0.0-001,5.0.0.0-001,4.3.0.0-001,4.2.0.0-001,4.1.0.0-001|}\n"
+		},
+		"condition_message_accessor": {
+			"prefix": "condition_message_accessor",
+			"body": "condition_message_accessor\t${1:NAME}\n\n"
+		},
+		"language": {
+			"prefix": "language",
+			"body": [
+				"language ${1|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
+		},
+		"product def": {
+			"prefix": "product",
+			"body": [
+				"${1:PRODUCT NAME} ${2|layered_product,customisation_product,config_product|}\n\n",
+				"title\n\t# TITLE\n$3\nend\n\n",
+				"requires\n\t# List of required products\n$4\nend\n\n",
+				"version\t ${5|5.2.0.0-001,5.1.0.0-001,5.0.0.0-001,4.3.0.0-001,4.2.0.0-001,4.1.0.0-001|}\n"]
+		},
+		"module def": {
+			"prefix": "module",
+			"body": [
+				"${1:<MODULE_NAME>} ${2:VERSION_NUMBER} \n\n",
+				"description\n\tModule definition for {1:MODULE NAME}\nend\n\n",
+				"requires\n\t# List of required modules\nend\n\n",
+				"condition_message_accessor\t# NAME\n\n",
+				"language ${2|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
+		},
+		"installations": {
+			"prefix": "installations",
+			"body": [
+				"case_installation\n\t# list of case_installations\nend\n\n",
+				"style_installation\n\t# list of style_installations\nend\n\n",
+				"ace_installation\n\t# list of ace_installations\nend\n\n",
+				"system_installation\n\t# list of system_installations\nend\n\n",
+				"auth_installation\n\t# list of auth_installations\nend\n\n",
+				"\n"]
+		}
+	},
+	"gis_aliases": {
+		"gis_alias": {
+			"prefix": "gis_alias",
+			"body": [
+				"${1:<alias>}:",
+				"\ttitle          = #--- title ---\n",
+				"\tdirectory      = #--- directory ---\n",
+				"\tprogram        = #--- program ---\n",
+				"\tsplash_screen  = #--- image file, e.g. mysplash.gif ---\n",
+				"\tsession        = #--- product:name ---\n",
+				"\tjava           = #--- pathname of Java executable ---\n",
+				"\tjava_log       = #--- file ---\n",
+				"\tscript         = #--- command ---\n",
+				"\tosgi_directory = #--- directory ---\n",
+				"\targs           = #--- args ---\n",
+				"\tlog_file       = #--- file ---\n",
+				"\ttimeout        = #--- seconds ---\n",
+				"\twait_line      = #--- text ---\n",
+				"\tinteractive    = #--- interactive_or_not ---\n",
+				"\n"]
+		}
+	}
+}

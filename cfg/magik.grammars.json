@@ -14,7 +14,7 @@
 		"keywords": {
 			"patterns": [{
 				"name": "keyword.control",
-				"match": "\\b(_abstract|_allresults|_and|_andif|_block|_catch|_clone|_constant|_continue|_div|_dynamic|_elif|_else|_endblock|_endcatch|_endif|_endlock|_endloop|_endmethod|_endproc|_endprotect|_endtry|_false|_finally|_for|_gather|_global|_handling|_if|_import|_is|_isnt|_iter|_leave|_local|_lock|_loop|_loopbody()|maybe|_method|_mod|_no_way|_not|_optional|_or|_orif|_over|_package|_pragma|_private|_proc|_protect|_locking|_protection|_recursive|_return|_scatter|_self|_super|_then|_thisthread|_throw|_true|_try|_unset|_when|_with|_xor)\\b"
+				"match": "\\b(_abstract|_allresults|_and|_andif|_block|_catch|_clone|_constant|_continue|_div|_dynamic|_elif|_else|_endblock|_endcatch|_endif|_endlock|_endloop|_endmethod|_endproc|_endprotect|_endtry|_false|_finally|_for|_gather|_global|_handling|_if|_import|_is|_isnt|_iter|_leave|_local|_lock|_loop|_loopbody|_maybe|_method|_mod|_no_way|_not|_optional|_or|_orif|_over|_package|_pragma|_private|_proc|_protect|_locking|_protection|_recursive|_return|_scatter|_self|_super|_then|_thisthread|_throw|_true|_try|_unset|_when|_with|_xor)\\b"
 			}]
 		},
 		"pragma": {

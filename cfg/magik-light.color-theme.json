@@ -2,7 +2,7 @@
   "name": "Magik Light",
   "type": "light",
   "colors": {
-    "editor.background": "#ddc",
+    "editor.background": "#bba",
     "editor.foreground": "#222"
   },
   "tokenColors": [
@@ -10,21 +10,21 @@
       "name": "pragma",
       "scope": ["constant.regexp"],
       "settings": {
-        "foreground": "#cf78cf"
+        "foreground": "#8d4cac"
       }
     },
     {
       "name": "Comment",
       "scope": ["comment"],
       "settings": {
-        "foreground": "#287c00"
+        "foreground": "#369509"
       }
     },
     {
       "name": "Keywords",
       "scope": ["keyword.control"],
       "settings": {
-        "foreground": "#0072dd",
+        "foreground": "#1e4ba3",
         "fontStyle": "bold"
       }
     },
@@ -39,7 +39,7 @@
       "name": "Variables",
       "scope": ["variable", "string constant.other.placeholder"],
       "settings": {
-        "foreground": "#999999"
+        "foreground": "#5f5f5f"
       }
     },
     {
@@ -101,7 +101,7 @@
         "punctuation.definition.string"
       ],
       "settings": {
-        "foreground": "#b32006"
+        "foreground": "#a13b00"
       }
     },
     {
