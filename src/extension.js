@@ -36,33 +36,31 @@ function activate(context) {
     //  vscode.languages.registerSignatureHelpProvider("magik", new cExplorer.codeExplorer(), '(', ','));
     //  vscode.languages.registerImplementationProvider("magik", new cExplorer.codeExplorer()));
 
+     //button click run aliases
+     let swS = new swSessions.swSessions();
+     disposable[0] = vscode.commands.registerCommand(
+         "swSessions.runaliases",  function() { swS.runaliases(); }
+     );
     // ---- magikAgent for code actions (compiling)
-    let swgisAgent = new gAliases.swSessions();
-    let magikAgent = new cExplorer.codeExplorer(swgisAgent.swgis);
+
+    let magikAgent = new cExplorer.codeExplorer(swS.swgis);
     vscode.languages.registerCodeActionsProvider('magik', magikAgent);
-    disposable[0] = vscode.commands.registerTextEditorCommand(
+    disposable[1] = vscode.commands.registerTextEditorCommand(
         "swSessions.compileCode", function(editor,edit) { magikAgent.compileCode('Code',editor,edit); }
     );
-    disposable[1] = vscode.commands.registerCommand(
+    disposable[2] = vscode.commands.registerCommand(
         "swSessions.compileRange", function(editor,edit) { magikAgent.compileCode('Range',editor,edit); }
     );
-    disposable[2] = vscode.commands.registerCommand(
+    disposable[3] = vscode.commands.registerCommand(
         "swSessions.compileSelection", function(editor,edit) { magikAgent.compileCode('Selection',editor,edit); }
     );
 
     // ---- gisAliases
-    let gAl = new gAliases.gisAliases();
+    let gAl = new gAliases.gisAliases(swS.swgis);
     gAl.run(context);
-    vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases());
-    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases());
-
-    //button click run aliases
-    let swS = new swSessions.swSessions();
-    disposable[3] = vscode.commands.registerCommand(
-        "swSessions.runaliases",  function() { swS.runaliases(); }
-    );
-    
-};
+    vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases(swS.swgis));
+    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases(swS.swgis));    
+}
 exports.activate = activate;
 
 // this method is called when your extension is deactivated
