@@ -5,6 +5,7 @@
 const vscode = require('vscode');
 const { spawn,exec } = require('child_process');
 const fs = require("fs");
+const os = require("os");
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
 const swgis = {
     swWorkspaceSymbols: {index: [], cache: [], paths: []},
@@ -13,7 +14,25 @@ const swgis = {
     sessions: null, 
     aliasStanza: null, 
     errorHover:null, 
-    aliasePattern: /[A-Za-z_0-9-]:$/i};
+    aliasePattern: /[A-Za-z_0-9-]:$/i,
+    activeSession: function(){
+        var cp = swgis.sessions;
+        if(!cp) return;
+        const pId = os.tmpdir()+"\\"+ Math.trunc(Math.random()*1e5) +".tmp"; 
+        try {      
+            var res= cp.sendText("external_text_output_stream.new(\""+pId+"\").close()");
+            //fs.statSync(javaHome);
+            const util = require('util');
+            const setTimeoutPromise = util.promisify(setTimeout);
+            setTimeoutPromise(1000).then((cp) => {
+                if (!fs.existsSync(pId))
+                    swgis.sessions = null;
+            });
+            return swgis.sessions;     
+        }
+        catch(err) { }
+    }   
+};
 
 
 class swSessions{
@@ -34,6 +53,7 @@ class swSessions{
             if (gisPath) {
                 try {
                 var stat = fs.statSync(gisPath);
+
                 }
                 catch(err) {
                     gisPath = null;
@@ -44,15 +64,22 @@ class swSessions{
         return swgis.gisPath.length > 0 ;       
     }
 
+    check_javaPath(){
+        var javaHome = workbenchConfig.get('JAVA_HOME');
+        if (javaHome && javaHome != "") 
+        try {      
+            if (javaHome) {
+                fs.statSync(javaHome);
+                cp.sendText("SET JAVA_HOME="+javaHome);
+            }
+        }
+        catch(err) { }
+
+    }
+
     check_gisExec(execCommand){
         var eCmd = execCommand.split(/gis.exe/i);
         var swDir = eCmd[0].trim();
-        var myDir = eCmd[1].split(/gis_aliases/i)[0].split(' -a ')[1].trim();
-        try {
-            fs.statSync(myDir + "environment.bat");
-            execCommand = execCommand.replace(' -a '," -e "+myDir+"environment.bat -a ");
-        }
-        catch(err) { }
 
         var lunchers = ["runalias.exe"];// ,"sw_magik_win32.exe"]
         for (var i in lunchers) {
@@ -70,7 +97,7 @@ class swSessions{
         // ---------------------------------------------------------
         // https://github.com/MarkerDave
         
-        if (swgis.sessions) return;
+        if (swgis.activeSession()) return;
         try
         {
             if (!aliasStanza) {
@@ -82,7 +109,14 @@ class swSessions{
            
               aliasPath = aliasPath.replace(/\//g,'\\');
          //Start Smallworld with the correct alias
-           var execCommand = gisPath +  ' -a ' + "\"" + aliasPath + "\""+ ' ' + aliasStanza;
+           var execCommand = gisPath;
+           try {      
+                var envbatCmd =  aliasPath.replace("gis_aliases","environment.bat")
+                fs.statSync(envbatCmd);
+                execCommand += ' -e ' + "\"" + envbatCmd + "\"";
+            }
+            catch(err) { }
+                execCommand += ' -a ' + "\"" + aliasPath + "\""+ ' ' + aliasStanza;
 
             //Show some messages.
             var sessionInfo = "Smallworld GIS Starting...\n" + execCommand;
@@ -97,28 +131,27 @@ class swSessions{
                     swgis.aliasStanza = aliasStanza;
                     cp.show(workbenchConfig.get("preserveFocus"));
                     vscode.commands.executeCommand("workbench.action.terminal.clear");
-                         }
+                }
             });
-
             vscode.window.onDidCloseTerminal( function(terminal) { 
                 if (terminal === swgis.sessions)  {
                     swgis.sessions = null; 
                     swgis.aliasStanza = null;
                 }
             });
- 
+
+            this.check_javaPath();
             cp.sendText(execCommand);
 
             try {            
                 vscode.window.onDidChangeActiveTerminal(function(terminal) { 
-                    if (terminal === swgis.sessions)   
-                        console.log(t);
+                    if (terminal != swgis.sessions) return ;  
+                        console.log("onDidChangeActiveTerminal "+terminal);
+                    if (!terminal.processId) swgis.sessions = null;
                 });
             }
             catch(err)
-           {
-               vscode.window.showInformationMessage(err.message);  
-           }
+            { vscode.window.showInformationMessage(err.message); }
    
 
             // //    currentOpenTabFilePath = currentOpenTabFilePath.replace(/\\/g,'/');
@@ -149,6 +182,7 @@ class swSessions{
             vscode.window.showInformationMessage(err.message);  
         }
     }
+
 	// ---------------------------------------------------------
 }
 exports.swSessions = swSessions    

@@ -56,19 +56,12 @@ function activate(context) {
     vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases(swgis));
     vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases(swgis), codeActionKind);    
 
-    disposable[1] = vscode.commands.registerTextEditorCommand(
-        "swSessions.compileCode", function(editor,edit,context) { magikAgent.compileCode('Code',editor,edit); }
-    );
-    disposable[2] = vscode.commands.registerCommand(
-        "swSessions.compileRange", function(editor,edit) { magikAgent.compileCode(editor,edit,); }
-    );
-    disposable[3] = vscode.commands.registerCommand(
-        "swSessions.compileSelection", function(editor,edit) { magikAgent.compileCode('Selection',editor,edit); }
+    disposable[1] = vscode.commands.registerTextEditorCommand( "swSessions.compileCode", 
+        function(editor,edit,context) { magikAgent.compileCode(context,editor,edit); }
     );
 
-    disposable[3] = vscode.commands.registerCommand(
-        "swSessions.apropos", function(editor,edit,context) { 
-            magikAgent.apropos(context,editor,edit); }
+    disposable[2] = vscode.commands.registerCommand( "swSessions.apropos",
+        function(context) { magikAgent.apropos(context); }
     );
 
     // ---- gisAliases

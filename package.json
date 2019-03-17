@@ -31,12 +31,17 @@
 	"main": "./src/extension",
 	"contributes": {
 		"configuration": {
-			"title": "Smallworld GIS path",
+			"title": "Smallworld GIS",
 			"properties": {
 				"Smallworld.gisPath": {
 					"type": ["string","null"],
 					"default": "C:/Smallworld/core/bin/x86/gis.exe",
 					"description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+				},
+				"Smallworld.JAVA_HOME": {
+					"type": ["string","null"],
+					"default": null,
+					"description": "Optional setting for Smallworld 5 %JAVA_HOME% **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
 				}
 			}
 		},
@@ -72,24 +77,33 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"key": "Alt+f9",
+				"command": "swSessions.compileCode",
+				"args": ["Selection"],
+				"when": "editorTextFocus"
+			},
+			{
 				"key": "f2 b",
 				"command": "swSessions.compileCode",
+				"args": ["Code"],
 				"when": "editorTextFocus"
 			},
 			{ 
 				"key": "f2 r", 
-				"command": "swSessions.compileRange",
+				"command": "swSessions.compileCode",
+				"args": ["Selection"],
 				"when": "editorTextFocus" 
 			},
 			{ 
-				"key": "f2 s", 
-				"command": "swSessions.compileSelection",
+				"key": "f2 m", 
+				"command": "swSessions.compileCode",
+				"args": ["Range"],
 				"when": "editorTextFocus" 
 			},
 			{ 
 				"key": "f3 f3", 
 				"command": "swSessions.apropos",
-				"args": [],
+				"args": ["ClassBrowser"],
 				"when": "editorTextFocus" 
 			}
 
@@ -151,6 +165,7 @@
 				],
 				"filenames": [
 					"gis_aliases",
+					"environment.bat",
 					"product.def",
 					"module.def",
 					"load_list.txt",

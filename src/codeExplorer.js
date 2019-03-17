@@ -24,21 +24,52 @@ class codeExplorer {
 
     provideHover(document, position, token) {
 
-        var range = document.getWordRangeAtPosition(position,/[a-z_0-9!?]+.[a-z_0-9!?]+/i);
-        if (!range || range.isEmpty) return [];
-        var codeWord = document.getText(range).split(".");
-        if (range.start.character+codeWord[0].length<position.character) 
-            codeWord = codeWord[0]+".apropos(:"+codeWord[1]+")";
-        else 
-            codeWord = "apropos(:"+codeWord[0]+")";
+        var commands = this.get_aproposCommands(document, position)
+        if (!commands) return;
+
         const contents = new vscode.MarkdownString();
-            const args = [null,null,codeWord];
-            args = encodeURIComponent(JSON.stringify(args));
+        for (var i in commands ){
+            var cmd = commands[i];
+            const args = encodeURIComponent(JSON.stringify( [cmd]))
             const commandUri = vscode.Uri.parse(`command:swSessions.apropos?${args}`);
-            // if (i >0) contents.appendMarkdown(`${"\n"}---${"\n"}`);
-            contents.appendMarkdown(`[${codeWord}](${commandUri})`);
+            if (i >0) contents.appendMarkdown(`  ${"\n"}`);
+            contents.appendMarkdown(` [${cmd}](${commandUri})`,"magik");
+        }
         contents.isTrusted = true;
         return new vscode.Hover(contents);
+    }
+
+    get_aproposCommands(document, pos) {
+
+        let swgis = this.swgis;
+        if ( !swgis.sessions ) return;
+        var codeWord = document.lineAt(pos).text;
+
+        var range = document.getWordRangeAtPosition(pos,/\W[a-z_0-9!?]+.[a-z_0-9!?]+/i);
+        if (!range || range.isEmpty) return;
+        codeWord = document.getText(range).trim().split(".");
+        if (codeWord.length < 2) return;
+
+        var commands = [];
+        var exm = codeWord[0].toLowerCase();
+        var mtd = codeWord[1].toLowerCase();
+        if (!/\b_method\b/i.test(codeWord) || magikParser.testInString(codeWord,pos,true) )
+            commands.push("apropos(:"+exm+")");
+        commands.push(exm+".apropos(:"+mtd+")");
+        commands.push("print_shadowing_classes_for("+exm+",:"+mtd+")");
+        commands.push("print_implementors_of(:"+mtd+")");
+        
+        commands.push("print_hierarchy("+exm+")");       
+        commands.push("print_ancestry("+exm+")");       
+
+        commands.push("apropos_instances("+exm+")");       
+        commands.push("print_local_methods("+exm+")");       
+        commands.push("print_shared_variables("+exm+")");       
+        commands.push("print_shadowing_methods_in("+exm+")");      
+        commands.push("print_inherited_methods_in("+exm+")");       
+        commands.push("print_conflict_methods("+exm+")");       
+  
+        return commands ;
     }
 
     provideCodeActions(document, range, diagnostics, token) {
@@ -242,7 +273,7 @@ class codeExplorer {
         var codeBlock = '';
         switch(context) {
             case 'Error':
-                return  "condition.raise(:information, :string, \"VSCode failed to detect Magik code to compile\")";
+                return  "\"VSCode: failed to compile Magik code.\"";
             case 'Code':
                 codeBlock = doc.getText(range);
                 break;
@@ -274,7 +305,7 @@ class codeExplorer {
             }
             catch(err) {
                 if(n>9) 
-                    return "condition.raise(:information, :string, \"VSCode failed to package Magik code "+tmp+n+"\")";
+                    return "\"VSCode: failed to package Magik code "+tmp+n+"\"";
             }
         }
     }
@@ -298,36 +329,25 @@ class codeExplorer {
     }
     
     apropos(context,editor,edit){
-
+        
         let swgis = this.swgis;
         if ( !swgis.sessions ) return;
         if ( !editor) editor = vscode.window.activeTextEditor;
+        var doc = editor.document
 
         if (!context){
-        var doc = editor.document
-            var range = editor.selection;
-            if (range) 
-                codeBlock = doc.getText(range);
-            else 
-                return;
-            var pos = range.start;
-            if (magikParser.testInString(codeBlock,pos,true) )
-                return;
+            context = this.get_aproposCommands(doc, position);
+            if (!context) return;
+        } else if (context=="ClassBrowser"){
+                context = this.get_aproposCommand(doc, position);
+                if (!context) return;
         }
-            var i = codeBlock.indexOf(".");
-            var context;
-            if( i < pos.character ){
-                context = "apropos(\""+context+"\")";
-            } else  {  
-                context = codeBlock.split(" ")[0].split(".")[0];
-                context = context[0]+".apropos(\""+context[1]+"\")";
-            }
-     codeBlock = this.packageCode(context, doc, range)
+//        context = this.packageCode(context, doc, range);
 
-        if (!codeBlock) 
-            codeBlock = this.packageCode('Error', doc);
+        if (!context) 
+            context = this.packageCode('Error', doc);
         var cp = swgis.sessions
-        cp.sendText(codeBlock);
+        cp.sendText(context);
     }
 
 }

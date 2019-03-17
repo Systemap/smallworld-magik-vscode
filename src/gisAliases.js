@@ -44,21 +44,23 @@ class gisAliases{
                 return;
             // create a decorator type that we use to decorate labels
             const crosshairType = vscode.window.createTextEditorDecorationType({
-                cursor: 'alias',
+                // cursor: 'alias',
                // backgroundColor: 'rgba(0,0,0,0.5)',
                 border: "1px solid rgba(255,64,0,0.2)",
                 width: "1px",
                 color: 'rgba(255,64,0,1)'
             });
-
+            var doc = activeEditor.document;
             // const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
-            var regEx = /[A-Za-z_0-9-]+:(\s\n|\n)/ig; // 
-            const text = activeEditor.document.getText();
+            var regEx = /[A-Za-z_0-9-!?]+:/ig; // 
+            const text = doc.getText();
             const labelLines = [];
             let match;
             while (match = regEx.exec(text)) {
-                const startPos = activeEditor.document.positionAt(match.index);
-                const endPos = activeEditor.document.positionAt(match.index + match[0].length);
+                const startPos = doc.positionAt(match.index);
+                var stanza = doc.lineAt(startPos.line).text.trim();
+                if (match[0] != stanza) continue;
+                const endPos = doc.positionAt(match.index + match[0].length);
                 const decoration = { range: new vscode.Range(startPos, endPos)};//, hoverMessage: gis+match[0] };
                 labelLines.push(decoration);
             };
@@ -70,7 +72,7 @@ class gisAliases{
     
     provideCodeActions(document, range, context, token) {
         const swgis = this.swgis;
-        if ( swgis.sessions != null) return;
+        if (swgis.activeSession()) return;
         if (swgis.gisPath.length==0) return;
 
         var pos = range.start;
@@ -100,12 +102,12 @@ class gisAliases{
         alias = alias.split("#")[0].trim()
         if (swgis.aliasePattern.test(alias)){
             alias = alias.split(":")[0].trim()
-            if (swgis.sessions) {
+            if (swgis.activeSession()) {
                 return this.mHover('Session is runing');
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");
             } else {
-                return this.mHover(alias,document.fileName);
+                // return this.mHover(alias,document.fileName);
             }
         }
     }
@@ -124,17 +126,17 @@ class gisAliases{
 
         if  (!msgHover[message]){
             let hoverTexts = new vscode.MarkdownString();
-            if (aliasPath) {
-                var commands = this.get_aliasCommands(message,aliasPath);
-                for (var i in commands) {
-                    let cmd = commands[i];
-                    const args = encodeURIComponent(JSON.stringify(cmd.arguments))
-                    const commandUri = vscode.Uri.parse(`command:swSessions.runaliases?${args}`);
-                    if (i >0) hoverTexts.appendMarkdown(`${"\n"}---${"\n"}`);
-                    hoverTexts.appendMarkdown(`* [${cmd.title}](${commandUri})`);
-                }
-                hoverTexts.isTrusted = true;
-            } else 
+            // if (aliasPath) {
+            //     var commands = this.get_aliasCommands(message,aliasPath);
+            //     for (var i in commands) {
+            //         let cmd = commands[i];
+            //         const args = encodeURIComponent(JSON.stringify(cmd.arguments))
+            //         const commandUri = vscode.Uri.parse(`command:swSessions.runaliases?${args}`);
+            //         if (i >0) hoverTexts.appendMarkdown(`${"\n"}---${"\n"}`);
+            //         hoverTexts.appendMarkdown(`* [${cmd.title}](${commandUri})`);
+            //     }
+            //     hoverTexts.isTrusted = true;
+            // } else 
                 hoverTexts.appendCodeblock(message);
             msgHover[message]= new vscode.Hover(hoverTexts);
         };

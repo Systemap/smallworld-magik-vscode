@@ -3,50 +3,65 @@
 	"name": "swgis",
 	"patterns": [
 		{ "include": "#keywords" },
+		{ "include": "#variables" },
 		{ "include": "#comments" },
 		{ "include": "#products" },
-		{ "include": "#languages" },
 		{ "include": "#strings"  }
 	],
 	"repository": {
 		"keywords": {
 			"patterns": [{
-				"name": "keyword.control.swgis",
+				"name": "keyword",
 				"match": "\\b(title|description|optional|templates|end|requires|install_requires|requires_datamodel|hidden|version|condition_message_accessor|language|hiddencase_installation|style_installation|ace_installation|system_installation|auth_installation)\\b"
 			},{
+				"name": "keyword",
 				"begin": "",
 				"end": "\\s\n",
-				"name": "keyword.control.swgis",
 				"match": "[A-Za-z0-9!?_\\s]+="
 			}]
+		},
+		"variables": {
+			"patterns": [{
+				"name": "variable",
+				"begin": "",
+				"end": "\\s\n",
+				"match": "[A-Za-z0-9!?_\\s]+="
+			},{
+				"name": "variable",
+				"begin": "%",
+				"end": "[%\n]",
+				"match": "."
+		}]
 		},
 		"comments": {
 			"name": "comment",
 			"begin": "#",
 			"end": "\n",
 			"patterns": [{"match": "."}]
+			},{
+				"name": "comment",
+				"begin": "REM ",
+				"end": "\n",
+				"patterns": [{"match": "."}]
+				},{
+					"name": "comment",
+					"begin": ":: ",
+					"end": "\n",
+					"patterns": [{"match": "."}]
+				}]
 			},
 			"products": {
 				"patterns": [{
-					"name": "constant.string",
+					"name": "string",
 					"match": "\\b(layered_product|config_product|customisation_product)\\b"
 				}]
 			},
-			"languages": {
+			"string": {
 				"patterns": [{
-					"name": "constant.character",
+					"name": "string",
 					"match": "\\b(da_dk|de_ch|de_de|en_au|en_gb|en_us|es_es|et_ee|fi_fi|fr_be|fr_ca|fr_ch|fr_fr|it_it|jp_jp|ko_kr|nl_be|nl_nl|no_no|pt_br|pt_pt|sv_fi|sv_se|zh_tw)\\b"
 				}]
-			},
-		"strings": {
-			"name": "constant.string",
-				"begin": "%",
-				"end": "%",
-				"patterns": [	
-				{	"name": "constant.character",
-				"match": "."
-				}]
-		}
+			}
 	},
 	"scopeName": "source.swgis"
 }
