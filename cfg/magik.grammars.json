@@ -53,50 +53,32 @@
 				"name": "string",
 				"begin": "\"",
 				"end": "[\"\n]",
-				"patterns": [	
-				{	"name": "string.value",
-					"match": "\\."
-				}]
+				"patterns": [{"match": "\\."}]
 			},
 			{	"name": "string",
 				"begin": "'",
 				"end": "['\n]",
-				"patterns": [	
-				{	"name": "string.value",
-					"match": "."
-				}]
+				"patterns": [{"match": "."}]
 			},
 			{	"name": "string",
 				"begin": "%",
 				"end": "tab|space|newline|.",
-				"patterns": [	
-				{	"name": "string.value",
-					"match": ""
-				}]
+				"patterns": [{"match": ""}]
 			},
 			{	"name": "string",
 				"begin": ":\\|",
 				"end": "\\||\n",
-				"patterns": [	
-				{	"name": "string.value",
-					"match": "[a-z!?_]"
-				}]
+				"patterns": [{"match": "[a-z!?_]"}]
 			},
 			{	"name": "string",
 				"begin": ":[a-z!?_A-Z0-9]+\\|",
 				"end": "\\||\n",
-				"patterns": [	
-				{	"name": "string.value",
-					"match": "."
-				}]
+				"patterns": [{"match": "."}]
 			},
 			{	"name": "string",
 				"begin": ":\\w",
 				"end": "[a-z!?_A-Z0-9]+||\\w",
-				"patterns": [	
-					{	"name": "string.value",
-						"match": "[a-z!?_A-Z0-9]"
-					}]
+				"patterns": [{"match": "[a-z!?_A-Z0-9]"}]
 					}
 			]
 		}

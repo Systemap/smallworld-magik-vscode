@@ -133,7 +133,7 @@
 					"Smallworld Magik"
 				],
 				"extensions": [
-					".xml",
+					".msg",
 					".magik"
 				],
 				"filenames": [
@@ -161,11 +161,10 @@
 					"Smallworld GIS"
 				],
 				"extensions": [
-					".msg"
+					".png"
 				],
 				"filenames": [
 					"gis_aliases",
-					"environment.bat",
 					"product.def",
 					"module.def",
 					"load_list.txt",
