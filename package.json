@@ -67,43 +67,43 @@
 			{
 				"key": "Ctrl+f9",
 				"command": "swSessions.compileCode",
-				"args": ["Code"],
+				"args": "Code",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "f9",
 				"command": "swSessions.compileCode",
-				"args": ["Range"],
+				"args": "Range",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "Alt+f9",
 				"command": "swSessions.compileCode",
-				"args": ["Selection"],
+				"args": "Selection",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "f2 b",
 				"command": "swSessions.compileCode",
-				"args": ["Code"],
+				"args": "Code",
 				"when": "editorTextFocus"
 			},
 			{ 
 				"key": "f2 r", 
 				"command": "swSessions.compileCode",
-				"args": ["Selection"],
+				"args": "Selection",
 				"when": "editorTextFocus" 
 			},
 			{ 
 				"key": "f2 m", 
 				"command": "swSessions.compileCode",
-				"args": ["Range"],
+				"args": "Range",
 				"when": "editorTextFocus" 
 			},
 			{ 
 				"key": "f3 f3", 
 				"command": "swSessions.apropos",
-				"args": ["ClassBrowser"],
+				"args": "ClassBrowser",
 				"when": "editorTextFocus" 
 			}
 

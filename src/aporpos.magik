@@ -1,7 +1,7 @@
 _proc(_optional pckg,class,mthd,private?,system?,object?,super?)   
 	#class<< class.default("conf")
 	#mthd<<  mthd.default("conf")
-	fname<< fname.default("c:\temp\aporpos.txt")
+	fname<< fname.default(system.getenv("%TEMP%")+"\aporpos.txt")
 
 	private?<<  private?.default(_false)
 	system?<<   system?.default(_false)

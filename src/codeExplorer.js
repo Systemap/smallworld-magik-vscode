@@ -42,33 +42,35 @@ class codeExplorer {
     get_aproposCommands(document, pos) {
 
         let swgis = this.swgis;
-        if ( !swgis.sessions ) return;
-        var codeWord = document.lineAt(pos).text;
+     //   if ( !swgis.sessions ) return;
 
-        var range = document.getWordRangeAtPosition(pos,/\W[a-z_0-9!?]+.[a-z_0-9!?]+/i);
+
+        var range = document.getWordRangeAtPosition(pos,/\w[a-z_0-9!?]+\.\w[a-z_0-9!?]+/i);
         if (!range || range.isEmpty) return;
-        codeWord = document.getText(range).trim().split(".");
+        var codeWord = document.getText(range).trim().split(".");
         if (codeWord.length < 2) return;
 
         var commands = [];
         var exm = codeWord[0].toLowerCase();
         var mtd = codeWord[1].toLowerCase();
-        if (!/\b_method\b/i.test(codeWord) || magikParser.testInString(codeWord,pos,true) )
-            commands.push("apropos(:"+exm+")");
+        commands.push("apropos(:"+exm+")");
         commands.push(exm+".apropos(:"+mtd+")");
-        commands.push("print_shadowing_classes_for("+exm+",:"+mtd+")");
         commands.push("print_implementors_of(:"+mtd+")");
-        
-        commands.push("print_hierarchy("+exm+")");       
-        commands.push("print_ancestry("+exm+")");       
 
-        commands.push("apropos_instances("+exm+")");       
-        commands.push("print_local_methods("+exm+")");       
-        commands.push("print_shared_variables("+exm+")");       
-        commands.push("print_shadowing_methods_in("+exm+")");      
-        commands.push("print_inherited_methods_in("+exm+")");       
-        commands.push("print_conflict_methods("+exm+")");       
-  
+         var codeLine = document.lineAt(pos).text;
+       if (/\b_method\b/i.test(codeLine) && !magikParser.testInString(codeWord,pos,true) ) {
+            commands.push("print_shadowing_classes_for("+exm+",:"+mtd+")");
+            
+            commands.push("print_hierarchy("+exm+")");       
+            commands.push("print_ancestry("+exm+")");       
+
+            commands.push("apropos_instances("+exm+")");       
+            commands.push("print_local_methods("+exm+")");       
+            commands.push("print_shared_variables("+exm+")");       
+            commands.push("print_shadowing_methods_in("+exm+")");      
+            commands.push("print_inherited_methods_in("+exm+")");       
+            commands.push("print_conflict_methods("+exm+")");       
+        }
         return commands ;
     }
 
@@ -213,7 +215,7 @@ class codeExplorer {
             codeBlock = this.packageCode("Range",document)
 
         } else {
-            codeBlock = this.packageCode("Code",document,range);
+            codeBlock = this.packageCode("Selection",document,range);
             p1 = (range.start.line+1) + ":" + (range.start.character+1);
             p2 = (range.end.line+1) + ":" + (range.end.character+1);
             titleAction += "Compile Code Range "+ p1+ " - "+  p2;
@@ -295,6 +297,7 @@ class codeExplorer {
                 codeBlock = context;
         }
         if (codeBlock.trim().length==0) return;
+        else if (context != 'Code')  return codeBlock;
 
         var tmp = doc.fileName.split('\\');
         tmp = os.tmpdir()+"/"+tmp[tmp.length-1]

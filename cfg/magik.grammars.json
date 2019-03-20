@@ -45,7 +45,7 @@
 		"conditions": {
 			"patterns": [{
 				"name": "string.regexp",
-				"match": "\\b(error|information|warning|system)\\b"
+				"match": "\\s\\b(error|information|warning|system)\\b\\s"
 			}]
 		},
 		"strings": {

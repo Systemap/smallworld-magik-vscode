@@ -18,13 +18,15 @@ const swgis = {
     activeSession: function(){
         var cp = swgis.sessions;
         if(!cp) return;
+        else return cp;
+        
         const pId = os.tmpdir()+"\\"+ Math.trunc(Math.random()*1e5) +".tmp"; 
         try {      
             var res= cp.sendText("external_text_output_stream.new(\""+pId+"\").close()");
             //fs.statSync(javaHome);
             const util = require('util');
             const setTimeoutPromise = util.promisify(setTimeout);
-            setTimeoutPromise(1000).then((cp) => {
+            setTimeoutPromise(5000).then((cp) => {
                 if (!fs.existsSync(pId))
                     swgis.sessions = null;
             });

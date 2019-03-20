@@ -57,7 +57,7 @@ function activate(context) {
     vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases(swgis), codeActionKind);    
 
     disposable[1] = vscode.commands.registerTextEditorCommand( "swSessions.compileCode", 
-        function(editor,edit,context) { magikAgent.compileCode(context,editor,edit); }
+        function(editor,edit,args) { magikAgent.compileCode(args,editor,edit); }
     );
 
     disposable[2] = vscode.commands.registerCommand( "swSessions.apropos",
