@@ -4,7 +4,9 @@
 	"patterns": [
 		{ "include": "#keywords" },
 		{ "include": "#comments" },
+		{ "include": "#variables" },
 		{ "include": "#products" },
+		{ "include": "#stanzas" },
 		{ "include": "#strings"  }
 	],
 	"repository": {
@@ -19,11 +21,32 @@
 				"match": "\\b(title|directory|program|product|splash_screen|session|java|java_log|script|osgi_directory|args|log_file|timeout|wait_line|interactive)\\b"
 			}]
 		},
+		"stanzas": {
+			"name": "constant.regexp",
+			"begin": "",
+			"end": "",
+			"patterns": [{"match": "^\\([^#]\\S-+\\):\\s-*$"}]
+		},
 		"comments": {
 			"name": "comment",
 			"begin": "#",
 			"end": "\n",
 			"patterns": [{"match": "."}]
+		},
+		"variables": {
+			"patterns": [{
+				"name": "variable",
+				"match": "^\\s-+\\([A-Z_]+\\)\\s-*="
+			},{
+				"name": "variable.type",
+				"match": "^\\s-+\\([A-Z_]+\\)\\s-*:="
+			},{
+				"name": "variable.builtin",
+				"match": "^\\s-+\\(\\sw+\\)\\s-*="
+			},{
+				"name": "variable.constant",
+				"match": "\\s$\\sw+\\s$"
+			}]
 		},
 		"products": {
 			"patterns": [{

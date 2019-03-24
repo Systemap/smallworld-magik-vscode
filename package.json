@@ -99,14 +99,7 @@
 				"command": "swSessions.compileCode",
 				"args": "Range",
 				"when": "editorTextFocus" 
-			},
-			{ 
-				"key": "f3 f3", 
-				"command": "swSessions.apropos",
-				"args": "ClassBrowser",
-				"when": "editorTextFocus" 
 			}
-
 		],
         "menus": {
 			"editor/context": [
@@ -118,7 +111,7 @@
 				}
 			]
 		},
-			"themes": [
+		"themes": [
 			{
 				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
@@ -141,18 +134,6 @@
 					"gui.xml"
 				],
 				"configuration": "./cfg/magik-configuration.json"
-			},
-			{
-				"id": "swxml",
-				"aliases": [
-					"swxml",
-					"Smallworld XML Resources"
-				],
-				"extensions": [],
-				"filenames": [
-					"config.xml",
-					"gui.xml"
-				]
 			},
 			{
 				"id": "swgis",

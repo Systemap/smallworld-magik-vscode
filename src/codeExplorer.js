@@ -44,8 +44,7 @@ class codeExplorer {
         let swgis = this.swgis;
      //   if ( !swgis.sessions ) return;
 
-
-        var range = document.getWordRangeAtPosition(pos,/\w[a-z_0-9!?]+\.\w[a-z_0-9!?]+/i);
+       	var range = document.getWordRangeAtPosition(pos,/\w[a-z_0-9!?]+\.\w[a-z_0-9!?]+/i);
         if (!range || range.isEmpty) return;
         var codeWord = document.getText(range).trim().split(".");
         if (codeWord.length < 2) return;
@@ -56,21 +55,6 @@ class codeExplorer {
         commands.push("apropos(:"+exm+")");
         commands.push(exm+".apropos(:"+mtd+")");
         commands.push("print_implementors_of(:"+mtd+")");
-
-         var codeLine = document.lineAt(pos).text;
-       if (/\b_method\b/i.test(codeLine) && !magikParser.testInString(codeWord,pos,true) ) {
-            commands.push("print_shadowing_classes_for("+exm+",:"+mtd+")");
-            
-            commands.push("print_hierarchy("+exm+")");       
-            commands.push("print_ancestry("+exm+")");       
-
-            commands.push("apropos_instances("+exm+")");       
-            commands.push("print_local_methods("+exm+")");       
-            commands.push("print_shared_variables("+exm+")");       
-            commands.push("print_shadowing_methods_in("+exm+")");      
-            commands.push("print_inherited_methods_in("+exm+")");       
-            commands.push("print_conflict_methods("+exm+")");       
-        }
         return commands ;
     }
 
@@ -339,10 +323,11 @@ class codeExplorer {
         var doc = editor.document
 
         if (!context){
-            context = this.get_aproposCommands(doc, position);
+            var pos = editor.selection.start;
+            context = this.get_aproposCommands(doc,  pos);
             if (!context) return;
         } else if (context=="ClassBrowser"){
-                context = this.get_aproposCommand(doc, position);
+                context = this.get_classBrowser();
                 if (!context) return;
         }
 //        context = this.packageCode(context, doc, range);

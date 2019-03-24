@@ -210,7 +210,7 @@ class codeBrowser{
                             parentName = arr[0].trim();
                         break; 
                         case '_proc':
-                            if (tagTxt.indexOf("<<") < 0){
+                            if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
                                 var lastline = document.lineAt(tag.keyPosition.line-1).text;
                                 if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
                             } ;   

@@ -19,7 +19,7 @@ const swgis = {
         var cp = swgis.sessions;
         if(!cp) return;
         else return cp;
-        
+
         const pId = os.tmpdir()+"\\"+ Math.trunc(Math.random()*1e5) +".tmp"; 
         try {      
             var res= cp.sendText("external_text_output_stream.new(\""+pId+"\").close()");
@@ -66,23 +66,35 @@ class swSessions{
         return swgis.gisPath.length > 0 ;       
     }
 
-    check_javaPath(){
-        var javaHome = workbenchConfig.get('JAVA_HOME');
-        if (javaHome && javaHome != "") 
+    check_environmentPaths(cp){
+        var swgisHome = workbenchConfig.get('SMALLWORLD_GIS');
+        if (!swgisHome || swgisHome == "") {  
+            swgisHome = workbenchConfig.get('gisPath');
+            if (swgisHome && swgisHome != "") 
+                swgisHome = swgisHome.replace("/bin/x86/gis.exe","");
+        }
+        if (swgisHome) 
         try {      
-            if (javaHome) {
-                fs.statSync(javaHome);
-                cp.sendText("SET JAVA_HOME="+javaHome);
-            }
+            swgisHome = swgisHome.replace(/\//g,"\\");
+            cp.sendText("SET SMALLWORLD_GIS="+swgisHome);
         }
         catch(err) { }
 
+        var javaHome = workbenchConfig.get('JAVA_HOME');
+        if (javaHome && javaHome != "") 
+            try {      
+                if (javaHome) {
+                    fs.statSync(javaHome);
+                    cp.sendText("SET JAVA_HOME="+javaHome);
+                }
+            }
+            catch(err) { }
+
     }
 
-    check_gisExec(execCommand){
+    check_gisExec(execCommand,cp){
         var eCmd = execCommand.split(/gis.exe/i);
         var swDir = eCmd[0].trim();
-
         var lunchers = ["runalias.exe"];// ,"sw_magik_win32.exe"]
         for (var i in lunchers) {
             let luncher = lunchers[i];
@@ -142,7 +154,7 @@ class swSessions{
                 }
             });
 
-            this.check_javaPath();
+            this.check_environmentPaths(cp);
             cp.sendText(execCommand);
 
             try {            

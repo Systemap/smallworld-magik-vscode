@@ -15,8 +15,7 @@ class gisAliases{
 
         let activeEditor = vscode.window.activeTextEditor;
         if (!activeEditor || !activeEditor.document.fileName.endsWith("gis_aliases")) return ;
-
-        triggerUpdateDecorations();
+            triggerUpdateDecorations();
  
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor) {
@@ -52,14 +51,12 @@ class gisAliases{
             });
             var doc = activeEditor.document;
             // const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
-            var regEx = /[A-Za-z_0-9-!?]+:/ig; // 
+            var regEx = /[A-Za-z_0-9-!?]+:(\s\n|\n)/ig; // 
             const text = doc.getText();
             const labelLines = [];
             let match;
             while (match = regEx.exec(text)) {
                 const startPos = doc.positionAt(match.index);
-                var stanza = doc.lineAt(startPos.line).text.trim();
-                if (match[0] != stanza) continue;
                 const endPos = doc.positionAt(match.index + match[0].length);
                 const decoration = { range: new vscode.Range(startPos, endPos)};//, hoverMessage: gis+match[0] };
                 labelLines.push(decoration);
@@ -88,8 +85,8 @@ class gisAliases{
             const cak = {value: cmd.title, tooltip: cmd.title};    
             const runAction = new vscode.CodeAction(cmd.title, cak);// vscode.CodeActionKind.Empty);
             runAction.command = cmd;
-            //runAction.diagnostics = [ diagnostic ];
-            codeActions.push(runAction);
+        //runAction.diagnostics = [ diagnostic ];
+        codeActions.push(runAction);
         }
 
         swgis.codeAction = codeActions;
@@ -111,7 +108,7 @@ class gisAliases{
             }
         }
     }
-
+    
     mHover(message, aliasPath) {
         let swgis=this.swgis;
         let msgHover = swgis.errorHover;
@@ -126,24 +123,13 @@ class gisAliases{
 
         if  (!msgHover[message]){
             let hoverTexts = new vscode.MarkdownString();
-            // if (aliasPath) {
-            //     var commands = this.get_aliasCommands(message,aliasPath);
-            //     for (var i in commands) {
-            //         let cmd = commands[i];
-            //         const args = encodeURIComponent(JSON.stringify(cmd.arguments))
-            //         const commandUri = vscode.Uri.parse(`command:swSessions.runaliases?${args}`);
-            //         if (i >0) hoverTexts.appendMarkdown(`${"\n"}---${"\n"}`);
-            //         hoverTexts.appendMarkdown(`* [${cmd.title}](${commandUri})`);
-            //     }
-            //     hoverTexts.isTrusted = true;
-            // } else 
-                hoverTexts.appendCodeblock(message);
+            hoverTexts.appendCodeblock(message);
             msgHover[message]= new vscode.Hover(hoverTexts);
         };
         return msgHover[message];
     }
-    
-    
+
+           
     get_aliasCommands(aliasName, aliasPath) {
         const swgis = this.swgis;
        const codeActions = this.aliasCommands;
@@ -165,9 +151,9 @@ class gisAliases{
             //runAction.diagnostics = [ diagnostic ];
             codeActions[aliasName].push(command);
         }
-        
+
         return codeActions[aliasName];
-    }
+        }
 
 
 }
