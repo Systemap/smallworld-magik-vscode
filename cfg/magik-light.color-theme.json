@@ -2,29 +2,29 @@
   "name": "Magik Light",
   "type": "light",
   "colors": {
-    "editor.background": "#ddc",
+    "editor.background": "#ccb",
     "editor.foreground": "#222"
   },
   "tokenColors": [
     {
       "name": "pragma",
-      "scope": ["constant.regexp"],
+      "scope": ["pragma","constant.regexp"],
       "settings": {
-        "foreground": "#cf78cf"
+        "foreground": "#8d4cac"
       }
     },
     {
       "name": "Comment",
       "scope": ["comment"],
       "settings": {
-        "foreground": "#287c00"
+        "foreground": "#369509"
       }
     },
     {
       "name": "Keywords",
-      "scope": ["keyword.control"],
+      "scope": ["keyword","keyword.control"],
       "settings": {
-        "foreground": "#0072dd",
+        "foreground": "#14a",
         "fontStyle": "bold"
       }
     },
@@ -39,12 +39,12 @@
       "name": "Variables",
       "scope": ["variable", "string constant.other.placeholder"],
       "settings": {
-        "foreground": "#999999"
+        "foreground": "#025"
       }
     },
     {
       "name": "Conditions",
-      "scope": ["string.regexp"],
+      "scope": ["string.regexp","Conditions"],
       "settings": {
         "foreground": "#b20",
         "fontStyle": "italic"     }
@@ -60,19 +60,17 @@
         "punctuation.definition.tag.html",
         "punctuation.definition.tag.begin.html",
         "punctuation.definition.tag.end.html",
-        "punctuation.section.embedded",
-        "keyword.other.template",
-        "keyword.other.substitution"
+        "punctuation.section.embedded"
       ],
       "settings": {
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {
       "name": "Function, Decorator",
-      "scope": ["meta.decorator entity.name.function", "punctuation.decorator"],
+      "scope": ["meta.decorator","entity.name.function", "punctuation.decorator"],
       "settings": {
-        "foreground": "#9ceb75"
+        "foreground": "#9e7"
       }
     },
     {
@@ -81,12 +79,10 @@
         "constant.numeric",
         "support.constant",
         "constant.character",
-        "constant.escape",
-        "keyword.other.unit",
-        "keyword.other"
+        "constant.escape"
       ],
       "settings": {
-        "foreground": "#660008"
+        "foreground": "#501"
       }
     },
    {
@@ -101,14 +97,14 @@
         "punctuation.definition.string"
       ],
       "settings": {
-        "foreground": "#b32006"
+        "foreground": "#a50"
       }
     },
     {
       "name": "String value",
       "scope": ["string.value"],
       "settings": {
-        "foreground": "#991155"
+        "foreground": "#915"
       }
     },
     {
@@ -126,7 +122,7 @@
       ],
       "settings": {
         "fontStyle": "italic",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
 
@@ -156,7 +152,7 @@
       "scope": ["markup.italic"],
       "settings": {
         "fontStyle": "italic",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {
@@ -164,7 +160,7 @@
       "scope": ["markup.bold", "markup.bold string"],
       "settings": {
         "fontStyle": "bold",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {
@@ -179,7 +175,7 @@
       ],
       "settings": {
         "fontStyle": "bold",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {
@@ -187,7 +183,7 @@
       "scope": ["markup.underline"],
       "settings": {
         "fontStyle": "underline",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {
@@ -202,8 +198,7 @@
       "name": "Markdown - Blockquote",
       "scope": ["markup.quote punctuation.definition.blockquote.markdown"],
       "settings": {
-        "background": "#999999",
-        "foreground": "#999999"
+        "foreground": "#999"
       }
     },
     {

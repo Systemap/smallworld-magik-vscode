@@ -22,11 +22,11 @@
 		},
 		"requires": {
 			"prefix": "requires",
-			"body": "requires\n\t${1}\nend\n"
+			"body": "requires\n\t# list of requires \n\nend\n\n"
 		},
 		"optional end": {
 			"prefix": "optional",
-			"body": "optional\n\t${1:OPTIONAL_REQUIRES}\nend\n"
+			"body": "optional\n\t# list of optional requires \n\nend\n"
 		},
 		"hidden": {
 			"prefix": "hidden",
@@ -60,7 +60,7 @@
 				"description\n\tModule definition for {1:MODULE NAME}\nend\n\n",
 				"requires\n\t# List of required modules\nend\n\n",
 				"condition_message_accessor\t# NAME\n\n",
-				"language ${3|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
+				"language ${2|en_gb,de_ch,de_de,en_au,en_us,es_es,et_ee,fi_fi,fr_be,fr_ca,fr_ch,fr_fr,it_it,jp_jp|}\n"]
 		},
 		"installations": {
 			"prefix": "installations",

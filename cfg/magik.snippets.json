@@ -236,9 +236,17 @@
 				"\t#:load_code_proc,        {},",
 				")\n"]
 		},
-		"%": {
-			"prefix": "%",
-			"body": "%${1|newline,tab,space|}"
+		"%space": {
+			"prefix": "%space",
+			"body": "%space"
+		},
+		"%newline": {
+			"prefix": "%newline",
+			"body": "%newline}"
+		},
+		"%tab": {
+			"prefix": "%tab",
+			"body": "%tab"
 		},
 		"Application": {
 			"prefix": "app",
