@@ -111,7 +111,7 @@
 				}
 			]
 		},
-		"themes": [
+    "themes": [
 			{
 				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
