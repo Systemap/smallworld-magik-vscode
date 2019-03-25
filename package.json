@@ -6,6 +6,9 @@
 	"publisher": "siamz",
 	"icon": "images/swmagik.png",
 	"keywords": [
+		"workspace",
+		"symbolprovider",
+		"autocorrection",
 		"smallworld",
 		"magik",
 		"gis_aliases"
@@ -16,6 +19,7 @@
 	"categories": [
 		"Programming Languages",
 		"Snippets",
+		"Keymaps",
 		"Themes"
 	],
 	"activationEvents": [
@@ -27,15 +31,17 @@
 	"main": "./src/extension",
 	"contributes": {
 		"configuration": {
-			"title": "Smallworld GIS path",
+			"title": "Smallworld GIS",
 			"properties": {
 				"Smallworld.gisPath": {
-					"type": [
-						"string",
-						"null"
-					],
+					"type": ["string","null"],
 					"default": "C:/Smallworld/core/bin/x86/gis.exe",
 					"description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+				},
+				"Smallworld.JAVA_HOME": {
+					"type": ["string","null"],
+					"default": null,
+					"description": "Optional setting for Smallworld 5 %JAVA_HOME% **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
 				}
 			}
 		},
@@ -43,9 +49,69 @@
 			{
 				"command": "swSessions.runaliases",
 				"title": "SW Run GIS Alias"
+			},
+			{
+				"command": "swSessions.compileCode",
+				"title": "Compile Magik Code"
+			},
+			{
+				"command": "swSessions.compileSelection",
+				"title": "Compile Magik Code Selection"
+			},
+			{
+				"command": "swSessions.compileRange",
+				"title": "Compile Magik Code Range"
 			}
 		],
-		"themes": [
+		"keybindings": [
+			{
+				"key": "Ctrl+f9",
+				"command": "swSessions.compileCode",
+				"args": "Code",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f9",
+				"command": "swSessions.compileCode",
+				"args": "Range",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "Alt+f9",
+				"command": "swSessions.compileCode",
+				"args": "Selection",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f2 b",
+				"command": "swSessions.compileCode",
+				"args": "Code",
+				"when": "editorTextFocus"
+			},
+			{ 
+				"key": "f2 r", 
+				"command": "swSessions.compileCode",
+				"args": "Selection",
+				"when": "editorTextFocus" 
+			},
+			{ 
+				"key": "f2 m", 
+				"command": "swSessions.compileCode",
+				"args": "Range",
+				"when": "editorTextFocus" 
+			}
+		],
+        "menus": {
+			"editor/context": [
+				{
+					"command": "swSessions.compileCode",
+					"group": "swGroup@1",
+					"when": "editorLangId == magik"
+
+				}
+			]
+		},
+    "themes": [
 			{
 				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
@@ -60,6 +126,7 @@
 					"Smallworld Magik"
 				],
 				"extensions": [
+					".msg",
 					".magik"
 				],
 				"filenames": [
@@ -69,25 +136,13 @@
 				"configuration": "./cfg/magik-configuration.json"
 			},
 			{
-				"id": "swxml",
-				"aliases": [
-					"swxml",
-					"Smallworld XML Resources"
-				],
-				"extensions": [],
-				"filenames": [
-					"config.xml",
-					"gui.xml"
-				]
-			},
-			{
 				"id": "swgis",
 				"aliases": [
 					"swgis",
 					"Smallworld GIS"
 				],
 				"extensions": [
-					".msg"
+					".png"
 				],
 				"filenames": [
 					"gis_aliases",

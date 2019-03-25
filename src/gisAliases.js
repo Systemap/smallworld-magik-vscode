@@ -3,17 +3,20 @@
 // ---------------------------------------------------------
 'use strict';
 const vscode = require('vscode');
-const { exec } = require('child_process');
-const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
-const swgis = {codeAction: [], sessions:[]};
 
-class swSessions{
+class gisAliases{
+    constructor(swgis) {
+        this.swgis = swgis;
+        this.codeActions=[]
+        this.aliasCommands=[];
+    }
+        
     run(context) {
 
         let activeEditor = vscode.window.activeTextEditor;
-        if (activeEditor) {
+        if (!activeEditor || !activeEditor.document.fileName.endsWith("gis_aliases")) return ;
             triggerUpdateDecorations();
-        }
+ 
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor) {
                 activeEditor= editor
@@ -40,21 +43,21 @@ class swSessions{
                 return;
             // create a decorator type that we use to decorate labels
             const crosshairType = vscode.window.createTextEditorDecorationType({
-                cursor: 'alias',
+                // cursor: 'alias',
                // backgroundColor: 'rgba(0,0,0,0.5)',
-                border: "1px solid orange",
+                border: "1px solid rgba(255,64,0,0.2)",
                 width: "1px",
                 color: 'rgba(255,64,0,1)'
             });
-
+            var doc = activeEditor.document;
             // const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
-            var regEx = /[A-Za-z_0-9-]+:(\s\n|\n)/ig; // 
-            const text = activeEditor.document.getText();
+            var regEx = /[A-Za-z_0-9-!?]+:(\s\n|\n)/ig; // 
+            const text = doc.getText();
             const labelLines = [];
             let match;
             while (match = regEx.exec(text)) {
-                const startPos = activeEditor.document.positionAt(match.index);
-                const endPos = activeEditor.document.positionAt(match.index + match[0].length);
+                const startPos = doc.positionAt(match.index);
+                const endPos = doc.positionAt(match.index + match[0].length);
                 const decoration = { range: new vscode.Range(startPos, endPos)};//, hoverMessage: gis+match[0] };
                 labelLines.push(decoration);
             };
@@ -65,80 +68,93 @@ class swSessions{
     }
     
     provideCodeActions(document, range, context, token) {
-        var pos = range.start;
-        var selectedAlias = document.lineAt(pos.line).text;
-        selectedAlias = selectedAlias.split("#")[0].trim()
-        if (/[A-Za-z_0-9-]+:$/i.test(selectedAlias))
-            console.log(selectedAlias);
-        else return null;
+        const swgis = this.swgis;
+        if (swgis.activeSession()) return;
+        if (swgis.gisPath.length==0) return;
 
-       var currentOpenTabFilePath = document.fileName;
+        var pos = range.start;
+        var aliasName = document.lineAt(pos.line).text;
+        aliasName = aliasName.split("#")[0].trim()
+        if (!swgis.aliasePattern.test(aliasName)) return null;
+            if (aliasName.split(" ").length>1) return null;
+        aliasName = aliasName.split(":")[0]
         var codeActions = [];
-        var titleAction = "Run GIS "+selectedAlias;
-        const args = [selectedAlias.split(":")[0], currentOpenTabFilePath ];
-        const cak = {value: titleAction, tooltip: titleAction};
-        const runAction = new vscode.CodeAction(titleAction, cak);// vscode.CodeActionKind.Empty);
-        runAction.command = {
-            title:    titleAction,
-            command:  "swSessions.runaliases",
-            arguments: args,
-            tooltip: titleAction
-        };
-        swgis.codeAction = runAction;
+        var commands = this.get_aliasCommands(aliasName, document.fileName);
+        for (var i in commands) {
+            let cmd = commands[i];
+            const cak = {value: cmd.title, tooltip: cmd.title};    
+            const runAction = new vscode.CodeAction(cmd.title, cak);// vscode.CodeActionKind.Empty);
+            runAction.command = cmd;
         //runAction.diagnostics = [ diagnostic ];
         codeActions.push(runAction);
+        }
 
+        swgis.codeAction = codeActions;
         return codeActions;
     }
 
     provideHover(document, position, token) {
-        
+        const swgis = this.swgis;
         var alias = document.lineAt(position.line).text;
         alias = alias.split("#")[0].trim()
-        if (/[A-Za-z_0-9-]+:$/i.test(alias)){
-            let hoverTexts = new vscode.MarkdownString();
-            hoverTexts.appendMarkdown("Click for Action to run GIS Alias");
-            let hover = new vscode.Hover(hoverTexts);
-            return hover;
+        if (swgis.aliasePattern.test(alias)){
+            alias = alias.split(":")[0].trim()
+            if (swgis.activeSession()) {
+                return this.mHover('Session is runing');
+            } else if (swgis.gisPath.length==0) {
+                return this.mHover("Configure swgis.gisPath");
+            } else {
+                // return this.mHover(alias,document.fileName);
+            }
         }
-    
     }
     
-	// ---------------------------------------------------------
-   	// https://github.com/MarkerDave
-    runaliases(selectedAlias, currentOpenTabFilePath){
+    mHover(message, aliasPath) {
+        let swgis=this.swgis;
+        let msgHover = swgis.errorHover;
+        if (!msgHover){
+            msgHover = [];
+            let hoverTexts = new vscode.MarkdownString();
+            hoverTexts.appendCodeblock("Set swgis.gisPath in Settings to run an alias:","magik");
+            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : [\"C:/Smallworld/core/bin/x86/gis.exe\"] }","magik");
+            msgHover['Configure swgis.gisPath'] = new vscode.Hover(hoverTexts);
+        };
+        swgis.errorHover = msgHover;
 
-        try
-        {
-            if (!selectedAlias) {
-                var args = swgis.codeAction.command.arguments
-                selectedAlias = args[0];
-                currentOpenTabFilePath = args[1];
-            };
-                //Get gis.exe path
-            var gisPath = workbenchConfig.get('gisPath');
-            console.log("path: " + gisPath);
+        if  (!msgHover[message]){
+            let hoverTexts = new vscode.MarkdownString();
+            hoverTexts.appendCodeblock(message);
+            msgHover[message]= new vscode.Hover(hoverTexts);
+        };
+        return msgHover[message];
+    }
 
            
-            //Start Smallworld with the correct alias
-           var execCommand = gisPath +  ' -a ' + "\"" + currentOpenTabFilePath + "\""+ ' ' + selectedAlias;
+    get_aliasCommands(aliasName, aliasPath) {
+        const swgis = this.swgis;
+       const codeActions = this.aliasCommands;
+        if (codeActions[aliasName]) 
+            return codeActions[aliasName];
+        else 
+            codeActions[aliasName]=[];    
 
-            //Show some messages.
-            var sessionInfo = 'Smallworld GIS Starting...' + selectedAlias + "\n" + execCommand;
-           vscode.window.showInformationMessage(sessionInfo);
+        for (var i in swgis.gisPath) {
+            let gisPath = swgis.gisPath[i];
+            var titleAction = "Run GIS " +gisPath + " " + aliasName;
+            const args = [aliasName, aliasPath, gisPath ];
+            let command = {
+                title:    titleAction,
+                command:  "swSessions.runaliases",
+                arguments: args,
+                tooltip: titleAction
+            };
+            //runAction.diagnostics = [ diagnostic ];
+            codeActions[aliasName].push(command);
+        }
 
-           exec(execCommand, (err, stdout, stderr) => { 
-                if (err)
-                   return console.error(err);
-                else 
-                   console.log(stdout);
-            });
+        return codeActions[aliasName];
         }
-         catch(err)
-        {
-            vscode.window.showInformationMessage(err.message);  
-        }
-    }
-	// ---------------------------------------------------------
+
+
 }
-exports.swSessions = swSessions    
+exports.gisAliases = gisAliases    
