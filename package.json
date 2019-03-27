@@ -34,14 +34,14 @@
 			"title": "Smallworld GIS",
 			"properties": {
 				"Smallworld.gisPath": {
-					"type": ["string","null"],
+					"type": ["string","array","null"],
 					"default": "C:/Smallworld/core/bin/x86/gis.exe",
-					"description": "Specifies the path of gis.exe that the project uses. **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+					"description": "Specifies the path of gis.exe that the project uses. Use double backslash '\\' or single forward slash '/'. Example:\n\t\"Smallworld.gisPath\": [\"C:/SW5/core/bin/x86/gis.exe\",\"C:/SW4/product/bin/x86/gis.exe\"]."
 				},
-				"Smallworld.JAVA_HOME": {
-					"type": ["string","null"],
-					"default": null,
-					"description": "Optional setting for Smallworld 5 %JAVA_HOME% **USE double backslash '\\' or single forward slash '/'** \n \"Smallworld.gisPath\": \"gis path\" "
+				"Smallworld.startup": {
+					"type":["array","null"],
+					"default": [],
+					"description": "Optional startup batch commands to run before gis.exe. Invalid commands do not stop the startup. Example:\n\"Smallworld.startup\": [\"set PROJECT_DIR=C:/SW5/cambridge_db\",\"call %PROJECT_DIR%/config/test_env.bat\"]"
 				}
 			}
 		},
@@ -111,7 +111,7 @@
 				}
 			]
 		},
-    "themes": [
+		"themes": [
 			{
 				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
