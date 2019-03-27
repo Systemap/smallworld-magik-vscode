@@ -66,29 +66,30 @@ class swSessions{
         return swgis.gisPath.length > 0 ;       
     }
 
-    check_environmentPaths(cp){
+    check_startup(gisPath, cp){
         var swgisHome = workbenchConfig.get('SMALLWORLD_GIS');
         if (!swgisHome || swgisHome == "") {  
-            swgisHome = workbenchConfig.get('gisPath');
+            swgisHome = gisPath;
             if (swgisHome && swgisHome != "") 
                 swgisHome = swgisHome.replace("/bin/x86/gis.exe","");
         }
         if (swgisHome) 
         try {      
             swgisHome = swgisHome.replace(/\//g,"\\");
-            cp.sendText("SET SMALLWORLD_GIS="+swgisHome);
+            cp.sendText("SET SMALLWORLD_GIS="+swgisHome+"\nCALL %SMALLWORLD_GIS%\\config\\environment.bat")
         }
         catch(err) { }
 
-        var javaHome = workbenchConfig.get('JAVA_HOME');
-        if (javaHome && javaHome != "") 
-            try {      
-                if (javaHome) {
-                    fs.statSync(javaHome);
-                    cp.sendText("SET JAVA_HOME="+javaHome);
+        var startup = workbenchConfig.get('startup');
+        for (var i in startup)
+            // try 
+            {      
+                var cmd = startup[i].replace(/\//g,"\\");
+                if (cmd) {
+                    cp.sendText(cmd);
                 }
             }
-            catch(err) { }
+            // catch(err) { }
 
     }
 
@@ -154,7 +155,7 @@ class swSessions{
                 }
             });
 
-            this.check_environmentPaths(cp);
+            this.check_startup(gisPath, cp);
             cp.sendText(execCommand);
 
             try {            
