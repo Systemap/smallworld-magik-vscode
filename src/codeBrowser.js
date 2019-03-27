@@ -317,7 +317,7 @@ class codeBrowser{
                 containerName: null,
                 nodeName:    null,   
                 params :     tagParams,
-                vsKind:      mSymb[2] 
+                vsKind:      mSymb[3] 
             };
 
             tagKeys.push(tag);
