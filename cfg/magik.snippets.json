@@ -31,8 +31,8 @@
 		"_loop _endloop": {
 			"prefix": "loop @",
 			"body": [
-				"_loop @${1:LOOP_NAME}",
-				"\t${2:# --- loop body ---}",
+				"_loop",
+				"\t${1:# --- loop body ---}",
 				"_endloop\n"]
 		},
 		"_for key,element _endloop": {

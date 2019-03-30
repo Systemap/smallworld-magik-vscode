@@ -2,7 +2,7 @@
 	"name": "smallworld-magik",
 	"displayName": "Smallworld Magik",
 	"description": "Smallworld Magik for Visual Studio Code",
-	"version": "1.1.3",
+	"version": "1.2.0",
 	"publisher": "siamz",
 	"icon": "images/swmagik.png",
 	"keywords": [
@@ -14,7 +14,7 @@
 		"gis_aliases"
 	],
 	"engines": {
-		"vscode": "^1.20.0"
+		"vscode": "^1.32.0"
 	},
 	"categories": [
 		"Programming Languages",
@@ -34,12 +34,19 @@
 			"title": "Smallworld GIS",
 			"properties": {
 				"Smallworld.gisPath": {
-					"type": ["string","array","null"],
+					"type": [
+						"string",
+						"array",
+						"null"
+					],
 					"default": "C:/Smallworld/core/bin/x86/gis.exe",
 					"description": "Specifies the path of gis.exe that the project uses. Use double backslash '\\' or single forward slash '/'. Example:\n\t\"Smallworld.gisPath\": [\"C:/SW5/core/bin/x86/gis.exe\",\"C:/SW4/product/bin/x86/gis.exe\"]."
 				},
 				"Smallworld.startup": {
-					"type":["array","null"],
+					"type": [
+						"array",
+						"null"
+					],
 					"default": [],
 					"description": "Optional startup batch commands to run before gis.exe. Invalid commands do not stop the startup. Example:\n\"Smallworld.startup\": [\"set PROJECT_DIR=C:/SW5/cambridge_db\",\"call %PROJECT_DIR%/config/test_env.bat\"]"
 				}
@@ -88,26 +95,25 @@
 				"args": "Code",
 				"when": "editorTextFocus"
 			},
-			{ 
-				"key": "f2 r", 
+			{
+				"key": "f2 r",
 				"command": "swSessions.compileCode",
 				"args": "Selection",
-				"when": "editorTextFocus" 
+				"when": "editorTextFocus"
 			},
-			{ 
-				"key": "f2 m", 
+			{
+				"key": "f2 m",
 				"command": "swSessions.compileCode",
 				"args": "Range",
-				"when": "editorTextFocus" 
+				"when": "editorTextFocus"
 			}
 		],
-        "menus": {
+		"menus": {
 			"editor/context": [
 				{
 					"command": "swSessions.compileCode",
 					"group": "swGroup@1",
 					"when": "editorLangId == magik"
-
 				}
 			]
 		},
@@ -129,10 +135,7 @@
 					".msg",
 					".magik"
 				],
-				"filenames": [
-					"config.xml",
-					"gui.xml"
-				],
+				"filenames": [],
 				"configuration": "./cfg/magik-configuration.json"
 			},
 			{
@@ -191,7 +194,7 @@
 		"test": "node ./node_modules/vscode/bin/test"
 	},
 	"devDependencies": {
-		"vscode": "^1.31.1"
+		"vscode": "^1.32.3"
 	},
 	"__metadata": {
 		"id": "79db1554-2964-43e4-bc4f-5060b5d9eca2",

@@ -54,7 +54,7 @@ class codeExplorer {
         var mtd = codeWord[1].toLowerCase();
         commands.push("apropos(:"+exm+")");
         commands.push(exm+".apropos(:"+mtd+")");
-        commands.push("print_implementors_of(:"+mtd+")");
+        commands.push(exm+".apropos(\"\")");
         return commands ;
     }
 
@@ -302,8 +302,9 @@ class codeExplorer {
         let swgis = this.swgis;
         if ( !swgis.sessions ) return;
         if ( !editor) editor = vscode.window.activeTextEditor;
-
         var doc = editor.document
+        if (doc.languageId != "magik") return;
+        
         var codeBlock,range 
         if(context =='Selection')
             range = editor.selection;
