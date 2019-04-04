@@ -132,7 +132,6 @@
 					"Smallworld Magik"
 				],
 				"extensions": [
-					".msg",
 					".magik"
 				],
 				"filenames": [],
@@ -145,7 +144,7 @@
 					"Smallworld GIS"
 				],
 				"extensions": [
-					".png"
+					".msg"
 				],
 				"filenames": [
 					"gis_aliases",
