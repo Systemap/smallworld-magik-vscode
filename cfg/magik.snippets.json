@@ -9,8 +9,8 @@
 			"body": "_package ${1:user}\n"
 		},
 		"_block @name _endblock": {
-			"prefix": "block",
-			"body": "_block ${1:@BLOCK_NAME \n\t${2:# --- body ---}\n_endblock\n"
+			"prefix": "bloc",
+			"body": "_block ${1:@BLOCK_NAME} \n\t${2:# --- block body ---}\n_endblock\n"
 		},
 		"_dynamic": {
 			"prefix": "dynamic",
@@ -26,13 +26,13 @@
 		},
 		"_proc @name() _endproc": {
 			"prefix": "proc",
-			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- body ---}\n_endproc\n"
+			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- proc body ---}\n_endproc\n"
 		},
 		"_loop _endloop": {
-			"prefix": "loop @",
+			"prefix": "loo",
 			"body": [
-				"_loop",
-				"\t${1:# --- loop body ---}",
+				"_loop # @LOOP_NAME",
+				"\t${2:# --- loop body ---}",
 				"_endloop\n"]
 		},
 		"_for key,element _endloop": {

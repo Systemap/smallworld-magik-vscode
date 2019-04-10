@@ -42,9 +42,9 @@ class codeExplorer {
     get_aproposCommands(document, pos) {
 
         let swgis = this.swgis;
-     //   if ( !swgis.sessions ) return;
+        if ( !swgis.sessions ) return;
 
-       	var range = document.getWordRangeAtPosition(pos,/\w[a-z_0-9!?]+\.\w[a-z_0-9!?]+/i);
+       	var range = document.getWordRangeAtPosition(pos,/^[a-z_0-9!?]+\.\w[a-z_0-9!?]+/i);
         if (!range || range.isEmpty) return;
         var codeWord = document.getText(range).trim().split(".");
         if (codeWord.length < 2) return;
@@ -52,6 +52,7 @@ class codeExplorer {
         var commands = [];
         var exm = codeWord[0].toLowerCase();
         var mtd = codeWord[1].toLowerCase();
+        if (exm=="self") return;
         commands.push("apropos(:"+exm+")");
         commands.push(exm+".apropos(:"+mtd+")");
         commands.push(exm+".apropos(\"\")");
@@ -196,10 +197,12 @@ class codeExplorer {
 
         } else if (p1.line==p2.line && p1.character==p2.character){
             titleAction += "Compile Code Line " + (p1.line+1) + ":" + (p1.character+1);
-            codeBlock = this.packageCode("Range",document)
+            // codeBlock = this.packageCode("Range",document);
+            codeBlock = "Range";
 
         } else {
-            codeBlock = this.packageCode("Selection",document,range);
+            // codeBlock = this.packageCode("Selection",document,range);
+            codeBlock = "Selection";
             p1 = (range.start.line+1) + ":" + (range.start.character+1);
             p2 = (range.end.line+1) + ":" + (range.end.character+1);
             titleAction += "Compile Code Range "+ p1+ " - "+  p2;
@@ -279,6 +282,7 @@ class codeExplorer {
                 break;
              default: 
                 codeBlock = context;
+                context = 'Code';
         }
         if (codeBlock.trim().length==0) return;
         else if (context != 'Code')  return codeBlock;
@@ -303,11 +307,17 @@ class codeExplorer {
         if ( !swgis.sessions ) return;
         if ( !editor) editor = vscode.window.activeTextEditor;
         var doc = editor.document
-        if (doc.languageId != "magik") return;
         
+        // check the context comes from a valid language id
         var codeBlock,range 
-        if(context =='Selection')
-            range = editor.selection;
+        switch (context) {
+            case 'Selection':
+                range = editor.selection;
+            case 'Code','Range':
+                if (doc.languageId != "magik") return;      
+            default:
+                //codeBlock already built   
+        }
         codeBlock = this.packageCode(context, doc, range)
 
         if (!codeBlock) 
