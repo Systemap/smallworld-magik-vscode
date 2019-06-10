@@ -44,6 +44,10 @@
 				"name": "variable.builtin",
 				"match": "^\\s-+\\(\\sw+\\)\\s-*="
 			},{
+			},{
+				"name": "variable.builtin",
+				"match": "\\b(SW_ACE_DB_DIR|SW_LANGUAGE|SW_FONT_PATH|SW_FONT_CONFIG|SW_LAUNCH_JAVA_MEMORY|SW_ACP_PATH)\\b"
+			},{
 				"name": "variable.constant",
 				"match": "\\s$\\sw+\\s$"
 			}]
@@ -58,10 +62,28 @@
 			}]
 		},
 		"strings": {
-			"name": "string",
-			"begin": "%",
-			"end": "[%\n]",
-			"patterns": [{"match": "\\."}]
+			"patterns": [
+				{	"name": "string",
+					"begin": "#",
+					"end": "\\d",
+					"patterns": [{"match": ""}]
+				},
+				{	"name": "string",
+					"begin": ":\\|",
+					"end": "\\||\n",
+					"patterns": [{"match": "[a-z!?_]"}]
+				},
+				{	"name": "string",
+					"begin": ":[a-z!?_A-Z0-9]+\\|",
+					"end": "\\||\n",
+					"patterns": [{"match": "."}]
+				},
+				{	"name": "string",
+					"begin": ":\\w",
+					"end": "[a-z!?_A-Z0-9]+||\\w",
+					"patterns": [{"match": "[a-z!?_A-Z0-9]"}]
+				}
+			]
 		}
 	},
 	"scopeName": "source.swgis"

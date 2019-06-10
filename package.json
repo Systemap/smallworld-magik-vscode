@@ -2,7 +2,7 @@
 	"name": "smallworld-magik",
 	"displayName": "Smallworld Magik",
 	"description": "Smallworld Magik for Visual Studio Code",
-	"version": "1.2.0",
+	"version": "1.3.0",
 	"publisher": "siamz",
 	"icon": "images/swmagik.png",
 	"keywords": [
@@ -59,18 +59,39 @@
 			},
 			{
 				"command": "swSessions.compileCode",
-				"title": "Compile Magik Code"
+				"title": "SW Compile Magik Code"
 			},
 			{
 				"command": "swSessions.compileSelection",
-				"title": "Compile Magik Code Selection"
+				"title": "SW Compile Magik Selection"
 			},
 			{
 				"command": "swSessions.compileRange",
-				"title": "Compile Magik Code Range"
+				"title": "SW Compile Magik Range"
+			},
+			{
+				"command": "swSessions.compileLine",
+				"title": "SW Compile Magik Line"
 			}
 		],
 		"keybindings": [
+			{
+				"key": "f2 f2",
+				"command": "swCb.open",
+				"args": "open"
+			},
+			{
+				"key": "f2 j",
+				"command": "swCb.jump",
+				"args": "jump",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f2 f",
+				"command": "swCb.find",
+				"args": "m",
+				"when": "editorTextFocus"
+			},
 			{
 				"key": "Ctrl+f9",
 				"command": "swSessions.compileCode",
@@ -79,13 +100,19 @@
 			},
 			{
 				"key": "f9",
-				"command": "swSessions.compileCode",
+				"command": "swSessions.compileRange",
 				"args": "Range",
 				"when": "editorTextFocus"
 			},
 			{
 				"key": "Alt+f9",
-				"command": "swSessions.compileCode",
+				"command": "swSessions.compileSelection",
+				"args": "Selection",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "Shift+f9",
+				"command": "swSessions.compileLine",
 				"args": "Selection",
 				"when": "editorTextFocus"
 			},
@@ -96,15 +123,27 @@
 				"when": "editorTextFocus"
 			},
 			{
-				"key": "f2 r",
-				"command": "swSessions.compileCode",
+				"key": "f2 s",
+				"command": "swSessions.compileSelection",
 				"args": "Selection",
 				"when": "editorTextFocus"
 			},
 			{
-				"key": "f2 m",
-				"command": "swSessions.compileCode",
+				"key": "f2 r",
+				"command": "swSessions.compileRange",
 				"args": "Range",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f2 m",
+				"command": "swSessions.compileRange",
+				"args": "Range",
+				"when": "editorTextFocus"
+			},
+			{
+				"key": "f2 l",
+				"command": "swSessions.compileLine",
+				"args": "Line",
 				"when": "editorTextFocus"
 			}
 		],
@@ -112,7 +151,7 @@
 			"editor/context": [
 				{
 					"command": "swSessions.compileCode",
-					"group": "swGroup@1",
+					"group": "swSessions",
 					"when": "editorLangId == magik"
 				}
 			]

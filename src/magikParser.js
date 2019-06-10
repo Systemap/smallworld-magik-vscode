@@ -2,7 +2,6 @@
 //   siamz.smallworld-magik
 //  --------------------------------------------------------
 'use strict';
-Object.defineProperty(exports, "__esModule", { value: true });
 const vscode = require('vscode');
 const vsSK = vscode.SymbolKind;
 const magikTagKeys={
@@ -11,18 +10,19 @@ const magikTagKeys={
 };
 const magikSymbols = {
     _method                : ['_method',            '_endmethod', '()', vsSK.Method],
-    _proc                  : [ '_proc',               '_endproc', '()', vsSK.Function],
-    _block                 : ['_block',              '_endblock', '', vsSK.Function],
+    _proc                  : [ '_proc',               '_endproc', '()', vsSK.Array],
+    _block                 : ['_block',                '_endblock', '', vsSK.Array],
     _global                : ['_global',               '_global', '<<', vsSK.Variable],
-    _constant              : ['_constant',           '_constant', '<<', vsSK.Variable],
+    _constant              : ['_constant',           '_constant', '<<', vsSK.Constant],
     _dynamic               : ['_dynamic',             '_dynamic', '<<', vsSK.Variable],
     def_mixin              : ['def_mixin',                   ')', '()', vsSK.Property], 
     def_slotted_exemplar   : ['def_slotted_exemplar',        ')', '()', vsSK.Property], 
     define_slot_access     : ['define_slot_access',          ')', '()', vsSK.Property], 
-    define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable], 
-    define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant], 
+    define_pseudo_slot     : ['define_pseudo_slot',          ')', '()', vsSK.Property], 
     define_property        : ['define_property',             ')', '()', vsSK.Property], 
     def_property           : ['def_property' ,               ')', '()', vsSK.Property],
+    define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable], 
+    define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant], 
     condition              : ['condition.define_condition',  ')', '()', vsSK.Constant],
     register_new           : ['magik_session.register_new',  ')', '()', vsSK.Module],
     register_application   : ['smallworld_product.register_application', ')','()', vsSK.Module],
@@ -30,14 +30,36 @@ const magikSymbols = {
 }
 exports.magikSymbols = magikSymbols;
 
-const magikStringPattern = {           
-    '"': /[^"]/,
-   "'":  /[^']/,
-   ":|": /[^|]/,
-   ":" : /[a-z!?_A-Z0-9]/,
-   "%":  /(%\.|%space|%tab|%newline)/
+const keyPattern = {
+	class_dot_method: /[\w_\d!?]+\s?\.\s?[\w_\d!?]+\s?[\[\(<]?/,
+	class_dot:        /[\w_\d!?]+\s?\./,
+	dot_method:       /\.\s?[\w_\d!?]+\s?[\[\(<]?/,
+	variable:         /\W?\s?[\w_\d!?]+\s?\W?/,
+	product_module_keyword:  /\b(title|description|optional|templates|end|requires|install_requires|requires_datamodel|hidden|version|condition_message_accessor|language|hiddencase_installation|style_installation|ace_installation|system_installation|auth_installation)\b/i,
+	string:  { '"':/[^"]/, "'":/[^']/, ":|": /[^|]/, ":":/[a-z!?_A-Z0-9]/, "%":/(%\.|%space|%tab|%newline)/},
+	_method: ["^\\s-*\\(_abstract\\(\n\\|\\s-\\)+\\)?\\(_private\\(\n\\|\\s-\\)+\\)?\\(_iter\\(\n\\|\\s-\\)+\\)?_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)\\)",
+		"^\\s-*_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+   		"^\\s-*\\(_abstract\\(\n\\|\\s-\\)+\\)?\\(_private\\(\n\\|\\s-\\)+\\)?_iter\\(\n\\|\\s-\\)+_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*_private\\(\n\\|\\s-\\)+\\(_iter\\(\n\\|\\s-\\)+\\)?_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*_abstract\\(\n\\|\\s-\\)+\\(_private\\(\n\\|\\s-\\)+\\)?\\(_iter\\(\n\\|\\s-\\)+\\)?_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\(show\\|write\\|print\\|debug_print\\|trace\\)\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\(new\\|init\\)\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)\\s-*?\\["],
+	_proc:	["\\b_\\sw+\\(\n\\|\\s-\\)+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)\\s-*<<\\(\n\\|\\s-\\)*_proc\\s-*(",
+		"_proc\\s-*\\(@\\s-*\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)\\s-*("],
+	condition: ["^\\s-*condition.define_condition([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	property:  ["^\\s-*\\(.+\\)\.def\\(\\|ine\\)_property([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	shared_variable:[ "^\\s-*\\(.+\\)\.define_shared_variable([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	shared_constants:  ["^\\s-*\\(.+\\)\.define_shared_constant([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	def: ["^\\s-*\\(.+\\)\.define_slot_access([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*\\(.+\\)\.define_pseudo_slot([ \t\n]*:\\s-*\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*def_mixin([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		"^\\s-*define_binary_operator_case([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
+		 "^\\s-*def_slotted_exemplar([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	_global : ["^\\s-*_global\\(\n\\|\\s-\\)+\\(_constant\\(\n\\|\\s-\\)+\\)?\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	_package :["^\\s-*_package[ \t\n]*\\(\\sw+\\)"]
 }
-exports.magikStringPattern = magikStringPattern ;
+exports.keyPattern = keyPattern;
 
 function magikKeys(){
 	if (!magikTagKeys.index) {
@@ -63,7 +85,6 @@ function  getTagText(lineText, tagKey) {
         if (tagIdx < 0) return;
  
         var tagTxt = trimComments(lineText);
-//        var syntax = parse_magikLine(lineText) ;
         if (tagTxt.length < tagIdx) return;
         tagIdx = tagTxt.indexOf(tagKey);     
         if (tagKey[0]=="_" &&  tagIdx >= 0)   {            
@@ -85,7 +106,7 @@ function  testInString(tagTxt,pos,inComment) {
 		if (i>0 && tagTxt[i-1]=='%') continue;
 		if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
 		i = i + ch.length; 
-		var strPttrn = magikStringPattern[ch];
+		var strPttrn = keyPattern.string[ch];
 		while(i<n && strPttrn.test(tagTxt[i])) ++i;
 		if (i > pos) return true;
 	}
@@ -104,58 +125,95 @@ function trimComments(tagTxt) {
 }
 exports.trimComments = trimComments;
 
-function get_SyntaxArguments(syntaxText,keyPos) {
-	// params
-	var params = [], n = -1;
-	var pCount = 0;
-		for (var i= keyPos; i< syntaxText.length; ++i) {
-			var ch = syntaxText[i];
-			if (pCount) 
-				if (ch==',' && !testInString(syntaxText,i)) {params.push(""); n++}  
-				else if (ch==')' && !testInString(syntaxText,i))
-					if (--pCount) params[n] +=ch;
-					else break; 
-				else if (ch=='(' && !testInString(syntaxText,i)) {params[n]+=ch; pCount++} 
-				else params[n] +=ch;
-			else if (ch ==')') --pCount;
-			else if (ch =='('){params.push(""); n++; pCount++}  
-		};
-	return params
-}
-exports.get_SyntaxArguments = get_SyntaxArguments    
+function getSyntaxCode(lineText,keyPos) {
+	// removes comments and extra spaces 
+	var syntax = lineText.slice(0,keyPos).replace(/\s+/g,' ');
 
-function parse_magikLine(lineText) {
-
-	var c,s;
-	var syntax = [""];
-	for(var i=0; i< lineText.length; ++i ){
+	for(var i=keyPos; i< lineText.length; ++i ){
 		var s = lineText[i];
 		if (s=='#'){
-			s = lineText.slice(i, lineText.length-1);
-			syntax.push(s);
 			break;
-		} else if (/[a-z!?_A-Z:]/.test(s)){
-			while (/[a-z!?_A-Z0-9]/.test(c = lineText[++i])) s+=c;
-			syntax.push(s);
-		} else if (/[\+\-0-9]/.test(s)){
-			while (/[eE.0-9]/.test(c = lineText[++i])) s+=c;
-			syntax.push(s);
-		} else if (/({|\"|\'|:\|)/.test(s)){
-			[['{','}'],["'","'"],[":|","|"]].forEach( function(ch){
-				if (ch[0] != s) return;
-				while ((c = lineText[++i]) != ch[1]) s+=c;
-				s += ch[1];
-				syntax.push(s);
+		} else if (/\s/.test(s)){
+		 	continue;
+		} else if (/\s/.test(s)){
+			continue;
+	   } else if (/["'|]/.test(s)){
+			['\"','\'','|'].forEach( function(ch){
+				if (ch != s) return;
+				while ( ++i < lineText.length  && lineText[i] != ch) s+=lineText[i];
+				s += ch;
+				syntax += s;
 			}); 
 			continue;
-		} else if (/[+-,()[\]]/.test(s)){
-			syntax.push(s);
-		} else if (/\S/.test(s)){
-			syntax.push(s);
+		} else {
+			syntax += s;
 		};   
-		syntax[0] += s;
+		
 	};
 	return syntax;
 }
-exports.parse_magikLine = parse_magikLine    
+exports.getSyntaxCode = getSyntaxCode    
+
+function maskStringComments(lineText) {
+	// removes comments and masks strings with dash
+	var syntax = "";
+	for(var i=0; i< lineText.length; ++i ){
+		var s = lineText[i];
+		if (s=='#'){
+			break;
+		} else if (/["'|]/.test(s)){
+			['\"','\'','|'].forEach( function(ch){
+				if (ch != s) return;
+				while ( ++i < lineText.length  && lineText[i] != ch) s+='*';
+				s += ch;
+				syntax += s;
+			}); 
+			continue;
+		} else if (s=='%'){
+			s+='%*';
+			++i;
+			} else {
+			syntax += s;
+		};   
+		
+	};
+	return syntax;
+}
+exports.maskStringComments = maskStringComments    
+
+function proofMethodName(partialName) {
+	
+	partialName = partialName.replace(/\s/g,'').split(".");
+	partialName = partialName[partialName.length-1].toLowerCase()
+	if (partialName.endsWith('<'))
+		 	partialName += '<';
+		 else if (partialName.endsWith('('))
+			 partialName += ')';
+		 else if (partialName.endsWith('['))
+			 partialName += ']';
+	return partialName;
+}
+ exports.proofMethodName = proofMethodName    
+
+function getClassMethodAtPosition(document, pos) {
+
+	var range = document.getWordRangeAtPosition(pos,keyPattern.class_dot_method);
+	 if (!range || range.isEmpty) return;
+	 var codeWord = document.getText(range).replace(/\s/g,'').split(".");
+	 if (codeWord.length == 2) {
+	codeWord[2] = codeWord[1];
+	 codeWord[1] = this.proofMethodName(codeWord[1]);
+	return codeWord;
+	 }
+}
+exports.getClassMethodAtPosition = getClassMethodAtPosition    
+
+function get_ProductModuleName(document) {
+	for (var i=0 ; i < document.lineCount; ++i){
+		var p2 = document.lineAt(i).text.trim().split(/[#\s]/)[0]
+		if (keyPattern.product_module_keyword.test(p2)) return;
+		if (p2!="") return p2;
+	}
+}
+exports.get_ProductModuleName = get_ProductModuleName    
 

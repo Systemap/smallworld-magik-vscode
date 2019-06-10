@@ -25,65 +25,91 @@
 			"body": "_global ${1:VARIABLE_NAME} << ${2:VALUE}"
 		},
 		"_proc @name() _endproc": {
-			"prefix": "proc",
+			"prefix": "pro",
 			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- proc body ---}\n_endproc\n"
 		},
 		"_loop _endloop": {
 			"prefix": "loo",
 			"body": [
 				"_loop # @LOOP_NAME",
-				"\t${2:# --- loop body ---}",
+				"\t# --- loop body ---",
 				"_endloop\n"]
 		},
-		"_for key,element _endloop": {
-			"prefix": "for keys_and_elements()",
+		"elements() _loop _endloop": {
+			"prefix": "elements",
 			"body": [
-				"_for ${1:KEY,ELEMENT} _over  ${2:COLLECTION.keys_and_elements()}",
-				"_loop @${3:LOOP_NAME}",
-				"\t${4:# --- loop body ---}",
+				"elements()",
+				"_loop # @ --- loop name ---",
+				"\t# --- loop body ---",
 				"_finally",
-				"\t${5:# --- last iteration ---}",
+				"\t# --- last iteration ---",
 				"_endloop\n"]
 		},
-		"_for element _endloop": {
-			"prefix": "for elements()",
+		"_for keys_and_elements() _endloop": {
+			"prefix": "for ",
 			"body": [
-				"_for ${1:ELEMENT} _over  ${2:COLLECTION.fast_elements()}",
-				"_loop @${3:LOOP_NAME}",
-				"\t${4:# --- loop body ---}",
+				"_for key,element _over  ${1:COLLECTION}.keys_and_elements()",
+				"_loop # @ --- loop name ---",
+				"\t# --- loop body ---",
 				"_finally",
-				"\t${5:# --- last iteration ---}",
+				"\t# --- last iteration ---",
+				"_endloop\n"]
+		},
+		"_for elements() _endloop": {
+			"prefix": "for ",
+			"body": [
+				"_for element _over  ${1:COLLECTION}.elements()",
+				"_loop # @ --- loop name ---",
+				"\t# --- loop body ---",
+				"_finally",
+				"\t# --- last iteration ---",
 				"_endloop\n"]
 		},
 		"_over _endloop": {
-			"prefix": "over iterator",
+			"prefix": "over ",
 			"body": [
-				"_over  ${1:iterator()}",
-				"_loop @${2:LOOP_NAME}",
-				"\t${3:# --- loop body ---}",
+				"_over  ${1:ITERATOR}()",
+				"_loop # @ --- loop name ---",
+				"\t# --- loop body ---",
 				"_finally",
-				"\t${4:# --- last iteration ---}",
+				"\t# --- last iteration ---",
 				"_endloop\n"]
 		},
 		"_if _endif": {
 			"prefix": "if",
-			"body": "_if ${1:#--- condition ---} \n_then  \n\t${2:#--- if body ---} \n_else \n\t${3:# --- else body ---}\n_endif\n"
+			"body": "_if ${1:#--- condition ---} \n_then  \n\t#--- if body ---\n_else \n\t# --- else body ---\n_endif\n"
+		},
+		"_then _endif": {
+			"prefix": "the",
+			"body": "_then  \n\t#--- if body ---\n_else \n\t# --- else body ---\n_endif\n"
+		},
+		"_else _endif": {
+			"prefix": "els",
+			"body": "_else \n\t# --- else body ---\n_endif\n"
 		},
 		"_try _endtry": {
 			"prefix": "try",
-			"body": "_try ${1:_with a_cond} \n\t# --- body ---\n_when ${2:error}\n\t# --- condition handling ---\n_endtry\n"
+			"body": "_try ${2:_with a_cond} \n\t# --- body ---\n_when ${1|error,user_error,warning,information|}\n\t# --- condition handling ---\n_endtry\n"
+		},
+		"_when _endtry": {
+			"prefix": "whe",
+			"body": "_when ${1|error,user_error,warning,information|}\n\t# --- condition handling ---\n_endtry\n"
 		},
 		"_protect _endprotect": {
-			"prefix": "protect",
-			"body": "_protect \n\t$0:# --- body ---\n_protection\n\t$1:# --- protected ---\n_endprotect\n"
+			"prefix": "protec",
+			"body": "_protect \n# --- body ---\n_protection\n\t# --- protected ---\n_endprotect\n"
 		},
-		"_lock": {
+		"_protection _endprotect": {
+			"prefix": "protectio",
+			"body": "_protection\n\t${1:# --- protected ---}\n_endprotect\n"
+		},
+		"_lock _endlock": {
 			"prefix": "lock",
-			"body": "_lock _self  \n\t$0:# --- lock body ---\n_endlock\n"
+			"body": "_lock _self  \n\t# --- lock body ---\n_endlock\n"
 		},
 		"_pragma": {
 			"prefix": "pragma",
-			"body": "_pragma(classify_level=${1:basic,advanced,restricted,debug,depricated}, topic=${2:CLASS_NAME}, usage=${3:external,internal})\r\n"
+			"body": "_pragma(classify_level=${1|basic,advanced,restricted,debug,deprecated|}, topic=${2:CLASS_NAME}, usage=${3|external,internal|})\r\n"
 		},
 		"_method _endmethod": {
 			"prefix": "method",
@@ -94,7 +120,7 @@
 				"\t## Arguments: ",
 				"\t##   Returns: ",
 				"\t# --- body ---",
-				"\t_return ${3:VAL1,VAL2,...# --- return values  ---}",
+				"\t_return ${3:  ---}",
 				"_endmethod\n"]
 		},
 		"_iter _method _endmethod": {
@@ -164,13 +190,13 @@
 			"prefix": "operator",
 			"body": [
 				"_pragma(classify_level=basic, topic={$1,$2})",
-				"define_binary_operator_case(:|${0:OPERATOR}|,",
-				"\t${1:<class_1>}, ${2:<class_2>},",
+				"define_binary_operator_case(:|${1:OPERATOR}|,",
+				"\t${2:<class_1>}, ${3:<class_2>},",
 				"\t_proc(a, b)",
 				"\t\t##   Remarks: ",
 				"\t\t##   Returns: ",
-				"\t\t ${3:# --- operator body ---",
-				"\t\t _return ${4:VALUE} # --- operator results ---",
+				"\t\t ${4:# --- operator body ---",
+				"\t\t _return ${5:VALUE} # --- operator results ---",
 				"\t_endproc",
 				")\n"]
 		},
@@ -196,7 +222,7 @@
 				")\n"]
 		},
 		"register_application": {
-			"prefix": "smallworld_product.register_application",
+			"prefix": ["smallworld_","register_application"],
 			"body": [
 				"smallworld_product.register_application(${1:NAME}, ",
 				"\t${:application}, # application_class_name ",
@@ -214,7 +240,7 @@
 					")\n"]
 		},
 		"magik_session.register": {
-			"prefix": "magik_session",
+			"prefix": ["magik_session","register"],
 			"body": [
 				"magik_session.register_new(${1:NAME}, ",
 				"\t:parent_session, ${2:PARENT_PRODUCT}:${3:PARENT_SESSION}, #  Name of the parent session to start from",
@@ -249,24 +275,36 @@
 			"body": "%tab"
 		},
 		"Application": {
-			"prefix": "app",
+			"prefix": ["app","smallworld_"],
 			"body": "app<< smallworld_product.application(:${1:APPLICATION_NAME})"
+		},
+		"current_map_view": {
+			"prefix": ["map","smallworld_"],
+			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
+		},
+		"current_map...": {
+			"prefix": ["current_map","current_selection","current_trail","map","smallworld_"],
+			"body": "smallworld_product.applications.an_element().plugin(:maps).current_map_view${1|.map,.map.current_selection,.map.trail|}"
+		},
+		"smallworld_product": {
+			"prefix": "smallworld_product",
+			"body": "smallworld_product.${1|applications,application_definitions,products|}"
 		},
 		"spatial_object_manager": {
 			"prefix": "soc",
 			"body": "manage_soc()"
 		},
-		"current_map_view": {
-			"prefix": "map",
-			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
-		},
 		"gis_program_manager": {
-			"prefix": "gis",
-			"body": "gis_program_manager"
+			"prefix": "gis_",
+			"body": "gis_program_manager${1|.ace_top_view,.ace_view,.authorisation_view,.databases,.dataset_pool,.has_open_ace?,.login_name,.open_soc_definitions,.scratch_view,.soc_definitions,.startup_actions,.style_view|}"
 		},
 		"databases": {
-			"prefix": "gis",
+			"prefix": ["gis_","databases"],
 			"body": "dbv<< gis_program_manager.databases"
+		},
+		"external_": {
+			"prefix": "external_",
+			"body": "${1|external_binary_input_stream,external_binary_output_stream,external_channel,external_checksum_binary_input_stream,external_checksum_binary_output_stream,external_grid_input_stream,external_ref,external_text_file_mixin,external_text_input_stream,external_text_output_stream,external_text_simple_output_stream,external_xml_input_stream,externally_keyed_collection_mixin|}"
 		}
 	}
 }

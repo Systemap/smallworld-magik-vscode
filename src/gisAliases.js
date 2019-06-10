@@ -69,7 +69,7 @@ class gisAliases{
     
     provideCodeActions(document, range, context, token) {
         const swgis = this.swgis;
-        if (swgis.activeSession()) return;
+        if (swgis.getActiveSession()) return;
         if (swgis.gisPath.length==0) return;
 
         var pos = range.start;
@@ -99,7 +99,7 @@ class gisAliases{
         alias = alias.split("#")[0].trim()
         if (swgis.aliasePattern.test(alias)){
             alias = alias.split(":")[0].trim()
-            if (swgis.activeSession()) {
+            if (swgis.getActiveSession()) {
                 return this.mHover('Session is runing');
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");

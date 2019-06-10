@@ -31,15 +31,16 @@ function activate(context) {
     vscode.languages.registerDocumentSymbolProvider('magik', new cBrowser.codeBrowser(swgis));
     vscode.languages.registerDocumentSymbolProvider('swgis', new cBrowser.codeBrowser(swgis));
 
+	vscode.languages.registerDefinitionProvider( 'magik', new cExplorer.codeExplorer(swgis));
+
     // var CompletionProvider =  new keyCheck.keywordCheck();
     // vscode.languages.registerCompletionItemProvider('magik',CompletionProvider );
 
-    vscode.languages.registerWorkspaceSymbolProvider( new cExplorer.codeExplorer(swgis));
+    let cE =  new cExplorer.codeExplorer(swgis);
+	vscode.languages.registerWorkspaceSymbolProvider(cE);
+	cE.run(context);
     
-    //  vscode.languages.registerHoverProvider('magik', new cExplorer.codeExplorer()));
-    //  vscode.languages.registerDefinitionProvider("magik", new cExplorer.codeExplorer()));
-    //  vscode.languages.registerReferenceProvider("magik", new cExplorer.codeExplorer()));
-    //  vscode.languages.registerDocumentSymbolProvider("magik", new cExplorer.codeExplorer()));
+     vscode.languages.registerReferenceProvider("magik", new cExplorer.codeExplorer(swgis));
     //  vscode.languages.registerSignatureHelpProvider("magik", new cExplorer.codeExplorer(), '(', ','));
     //  vscode.languages.registerImplementationProvider("magik", new cExplorer.codeExplorer()));
 
@@ -48,21 +49,18 @@ function activate(context) {
     var magikAgent; 
     magikAgent = new cExplorer.codeExplorer(swgis);
     vscode.languages.registerCodeActionsProvider('magik', magikAgent, codeActionKind);
-    magikAgent = new cExplorer.codeExplorer(swgis);
     vscode.languages.registerHoverProvider('magik', magikAgent);
 
     magikAgent = new cExplorer.codeExplorer(swgis);
     vscode.languages.registerCodeActionsProvider('swgis', magikAgent, codeActionKind);
-    vscode.languages.registerHoverProvider('swgis', new gAliases.gisAliases(swgis));
-    vscode.languages.registerCodeActionsProvider('swgis', new gAliases.gisAliases(swgis), codeActionKind);    
+    vscode.languages.registerHoverProvider('swgis', magikAgent);
 
-    disposable[1] = vscode.commands.registerTextEditorCommand( "swSessions.compileCode", 
-        function(editor,edit,args) { magikAgent.compileCode(args,editor,edit); }
-    );
+	const vscCmd =  vscode.commands;
+ 	["Code","Range","Selection","Line"].forEach(function(cmd,idx,set){
+		disposable.push( vscCmd.registerTextEditorCommand( "swSessions.compile"+cmd , function(edt,chg,cmd,rng) { magikAgent.compileCode(cmd,rng,edt,chg) }) );
+	});
 
-    disposable[2] = vscode.commands.registerCommand( "swSessions.apropos",
-        function(context) { magikAgent.apropos(context); }
-    );
+	disposable.push( vscCmd.registerTextEditorCommand( "swSessions.apropos",  function(edt,chg,cmd) { magikAgent.aproposCode(cmd,edt,chg) }) );
 
     // ---- gisAliases
     let gAl = new gAliases.gisAliases(swS.swgis);
@@ -70,9 +68,10 @@ function activate(context) {
 }
 exports.activate = activate;
 
-// this method is called when your extension is deactivated
 function deactivate() {
-
+	disposable.forEach(element => { 
+		element.dispose() 
+	});
 }
 exports.deactivate = deactivate;
 //# sourceMappingURL=extension.js.map 
