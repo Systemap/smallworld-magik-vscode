@@ -23,8 +23,8 @@
 		},
 		"stanzas": {
 			"name": "constant.regexp",
-			"begin": "",
-			"end": "",
+			"begin": "^\\S:\\s?",
+			"end": "\\n",
 			"patterns": [{"match": "^\\([^#]\\S-+\\):\\s-*$"}]
 		},
 		"comments": {

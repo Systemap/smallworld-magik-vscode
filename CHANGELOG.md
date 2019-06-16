@@ -13,6 +13,7 @@ All notable changes to the " Smallworld Magik" extension will be documented in t
 * Session startup commands improvements. 
 
 # Road Map
+
 * Magik Class Browser for Smallworld 5.
 * Enabling Magik language extension in the Session Terminal. 
 * Code Outline for XML configuration resources.

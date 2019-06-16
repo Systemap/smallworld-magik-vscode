@@ -48,10 +48,10 @@ class codeBrowser{
             swWorkspace.symbs.push(symInfos);   
             swWorkspace.index.push(fileName);  
             swWorkspace.refes.push(refInfos);    
-        } else 
+        } else {
             swWorkspace.symbs[i] = symInfos;         
             swWorkspace.refes[i] = refInfos;         
-
+		}
         return  symInfos;   
     };
 
@@ -93,9 +93,7 @@ class codeBrowser{
 					count += grab(file);
 				} else if( isFileSignature(file,includePattern) && swWorkspace.index.indexOf(file) < 0 ) {    
                     try {
-                        var symbols = cB.get_fileSymbols(file);
-                        swWorkspace.symbs.push(symbols);    
-                        swWorkspace.index.push(file); 
+						cB.get_fileSymbols(file);
                         // console.log("--- get_workspaceSymbols: "+symbols.length+" -"+file);	
                     } catch(err) {
                         console.log("--- get_workspaceSymbols Error:  "+err.message+" - "+file);		
@@ -168,7 +166,7 @@ class codeBrowser{
 
     get_magikReferences(codeBlock, codeUri, token) {
 		const commonObjects =/\b(rope|property_list|hash_table)/i;
-        const commonmethods =/\b(new\(|new_with\(|add\(|def_shared_constant\(|def_shared_variable\(|empty\?)/i;
+        const commonmethods =/\b(init|new|new_with|add|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\(/i;
         const dot_method_regex = new RegExp(magikParser.keyPattern.dot_method,"g");
         var refes = {};
         var codeLines = codeBlock.split("\n");
@@ -296,10 +294,11 @@ class codeBrowser{
                             if ((i = tagTxt.indexOf("<<")) > -1) {
                                 var arr = tagTxt.slice(0,i).trim().split(" ");
                                 methd += arr[arr.length-1].trim();
-                            } else if (tagTxt.indexOf("@") > -1)
-                                methd += "@"+tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
-                            else 
+                            } else if (tagTxt.indexOf("@") > -1){
+                                methd += tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
+                            } else {
                                 methd += "@unammed";
+							}
                             if (tagTxt.indexOf("(") > -1) 
                                 parms = "()";    
                             break;    
@@ -432,8 +431,17 @@ class codeBrowser{
 				nestedBrackets += ((p1)? p1.length : 0) - ((p2)? p2.length : 0);
 				if (nestedBrackets == 0) break;
 			}; 
-		//} else 
-		//	endLine = Math.min(keyLine + 1,doc_length);
+		// const prefixes = /\b(_iter|_abstract|_private|_pragma)\b/i;
+		const prefixes = /\b(_iter|_abstract|_private)\b/i;
+		for(var n = keyLine; n>=0; --n){
+				let match = prefixes.exec(code[n]);
+				if (match){
+					keyLine = n;
+					keyPos = match.index;
+					if (match[0]=="_pragma") break; 
+				}
+				if (n < keyLine && code[n].length>0) break;
+		}
 		keyPos = new vscode.Position(keyLine,keyPos);
 		endPos = Math.max(0, lastLine.lastIndexOf(endWord) + endWord.length);
 		endPos = new vscode.Position(endLine,endPos);

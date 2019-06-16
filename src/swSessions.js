@@ -265,4 +265,4 @@ class swSessions{
 
 	// ---------------------------------------------------------
 }
-exports.swSessions = swSessions    
+exports.swSessions = swSessions;

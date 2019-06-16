@@ -45,18 +45,19 @@ class gisAliases{
             const crosshairType = vscode.window.createTextEditorDecorationType({
                 // cursor: 'alias',
                // backgroundColor: 'rgba(0,0,0,0.5)',
+			    color: 'rgba(255,64,0,1)',
                 border: "1px solid rgba(255,64,0,0.2)",
-                width: "1px",
-                color: 'rgba(255,64,0,1)'
+                width: "1px"
             });
             var doc = activeEditor.document;
             // const gis = '%SMALLWORLD_GIS%\\bin\\x86\\gis.exe -a '+activeEditor.document.uri.fsPath+' ';
-            var regEx = /[A-Za-z_0-9-!?]+:(\s\n|\n)/ig; // 
+            var regEx = /[\w_\d-!?]+:\s?\n/g; // 
             const text = doc.getText();
             const labelLines = [];
             let match;
             while (match = regEx.exec(text)) {
                 const startPos = doc.positionAt(match.index);
+				if (startPos.character > 0) continue;
                 const endPos = doc.positionAt(match.index + match[0].length);
                 const decoration = { range: new vscode.Range(startPos, endPos)};//, hoverMessage: gis+match[0] };
                 labelLines.push(decoration);

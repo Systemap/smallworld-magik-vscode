@@ -192,13 +192,31 @@ class codeExplorer {
 		// --- sift the symbols for 'query'
 		const swgis = this.swgis;
 		const symbsCache = swgis.swWorkspace.symbs;
+		var nodeName, container;
+		var dot = filter.indexOf(".");
+		var filters = filter.split(".")
+		if (filter='') {
+			// no filter	
+		} else if (filters.length>1) {
+			nodeName = filters[1];
+			container = filters[0];
+		} else if (dot < 1){
+			nodeName = filters[0];
+		} else {	
+			container = filters[0];
+		}
 		var list = [], total = 0;
 			for (var n in symbsCache) {
 				if (token && token.isCancellationRequested) 
 					return;
                 symbsCache[n].forEach(function(symb){
                     try {
-                        if(filter=='' || symb.name.indexOf(filter)>-1) list.push(symb);
+						if(nodeName && symb.name.indexOf(nodeName)<0) {
+							// ignore
+						} else if (container && symb.containerName.indexOf(container)<0) {
+							// ignore
+						} else 
+							list.push(symb);
                     } catch (err) {
                         console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -error: " + err.message);
                     }
@@ -224,7 +242,7 @@ class codeExplorer {
 
     get_compileCommands(document, range, context, token) {
         let swgis = this.swgis;
-        // if ( swgis.getActiveSession() == null) return[];
+        if ( swgis.getActiveSession() == null) return[];
 
         var fName = document.fileName.split("\\");
         fName = fName[fName.length-1];

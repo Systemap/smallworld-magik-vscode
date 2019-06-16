@@ -17,16 +17,16 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 * Open a Magik file to see the code outline for classes and methods in the file.
 * Start typing Magik code to get keyword autocorrections and autocomplete features.
 
-![Snippet](images/snippet.png)
+![Snippet](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/snippet.png)
 
 * open the Symbol browser by CTRL-T and see a list of Object Exemplars, Methods, and Procs in the entire product tree, and click to jump to a definition.
 
-![CTRL-T](images/CodeOutline.png)
+![CTRL-T](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
 * Click on a "Class.Method" combination, hold down CTRL to get Definition Peak or get Definition and References in the context menu  
 
-![References](images/CodeReferences.png)
+![References](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeReferences.png)
 
 ## Start Smallworld sessions from gis_aliases stanzas. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
 
@@ -35,7 +35,7 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 * Click the Light Bulb to get the command to Start a Smallworld Session.
 * An 'environment.bat' in the same path as gis_aliases will automatically be loaded.
 
-![Run GIS Alias](SWRunGisAlias.png)
+![Run GIS Alias](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SWRunGisAlias.png)
 
 This is tested with Smallworld 4.3 and Smallworld 5.1.9
 
@@ -87,10 +87,12 @@ To define F7 key combinations for the Magik compiler:
 
 ## Release Notes
 
-### 1.3.0
+### 1.3.3
 
 * New Reference and Definition Provider 
 * Performance improvement in Workspace Symbol Provider 
 * Enhancements to syntax colouring for the Smallworld Light Theme 
 * Magik Compiler commands for user key bindings swSessions.compileSelection(F2-s), swSessions.compileFile(F2-b), swSessions.compileLine(F2-l) and swSessions.compileRange(F2-r). 
+* Bug fixes for gis_aliases syntax grammar.
+* Bug fixes for duplicate Workspace Symbol refrrences
 
