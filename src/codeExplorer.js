@@ -76,8 +76,8 @@ class codeExplorer {
         if (!codeWord) return;
 
         var commands = [];
-        var exm = codeWord[0].toLowerCase();
-        var mtd = codeWord[1].toLowerCase();
+        var exm = codeWord[0];
+        var mtd = codeWord[1];
         if (exm=="_self"||exm=="_super"||exm=="_clone") return;
 		
     	var onMethod = document.getWordRangeAtPosition(pos, magikParser.keyPattern.dot_method);
@@ -95,12 +95,19 @@ class codeExplorer {
         const swgis = this.swgis;
         return new Promise((resolve, reject) => {
 
+            token.onCancellationRequested(() => reject() );
+
             // get current word
 			var codeWord = magikParser.getClassMethodAtPosition(document, position);
-			if (!codeWord) return resolve([]);
+			if (!codeWord) 
+			    codeWord = magikParser.getSymbolNameAtPosition(document, position);
+            if (!codeWord) 
+			    codeWord = magikParser.getEnvironVarAtPosition(document, position);
+            if (!codeWord) 
+                return resolve([]);
 
 			this.scanWorkspace(token);			
-			var mtd = codeWord[1].toLowerCase();
+			var filter = codeWord[2].toLowerCase();
 			// var exm = codeWord[0].toLowerCase();
 			// var searchExp = "." + mtd;
 			// var codeText = document.getText();
@@ -108,7 +115,7 @@ class codeExplorer {
             try {
                 let results = [];
                 swgis.swWorkspace.refes.forEach(function(refcache){
-                    var refes = refcache[mtd];
+                    var refes = refcache[filter];
                     if (refes) {
                         for (let i in refes) {
                             results.push(refes[i]) 
@@ -120,35 +127,55 @@ class codeExplorer {
             catch (e) {
                 reject(e);
             }
-            token.onCancellationRequested(() => reject() );
         });
     }
 	
 	provideDefinition(document, pos, token){
         var ClassMethod = magikParser.getClassMethodAtPosition(document, pos);
 		if (!ClassMethod) return;
-		
+
 		this.scanWorkspace(token);			
 
 		var className = ClassMethod[0];
 		var methodName = ClassMethod[1];
+		var filter =  ClassMethod[2];
+//    	var onClass = document.getWordRangeAtPosition(pos, magikParser.keyPattern.class_dot);
 
-    	var onClass = document.getWordRangeAtPosition(pos, magikParser.keyPattern.class_dot);
+		switch (className) {
+			case "_self":
+				var foldR = this.find_foldingRange(document,pos);
+				if (foldR){
+					className = foldR.symbol.containerName
+					if (className && className.length) break;
+				}
+			case "_super":
+				className = null;
+				onClass = false;	
+		}
 
 		const swgis = this.swgis ;
-        var swWorkspace = swgis.swWorkspace;
-		var locations = [];
-		swWorkspace.symbs.forEach(function(symbols) {
+		const provideDefinition = function (filter, className, methodName){
+			filter = new RegExp(filter,'i')
+			var swWorkspace = swgis.swWorkspace;
+			var locations = [];
+			swWorkspace.symbs.forEach(function(symbols) {
             for (var i in symbols){
 				var symbol = symbols[i];
-				if (methodName == symbol.name)
-					if (!onClass || symbol.containerName == className)
-						locations.push( symbol.location );
-			}
-		});  
+						if (symbol.name.search(filter)!=0) 
+							continue;
+						else if (methodName == symbol.name)  
+							locations.unshift( symbol.location );
+						else if (className == symbol.containerName)  
+							locations.unshift( symbol.location );
+						else 
+							locations.push( symbol.location );
+                }
+			});
 
-		if (locations.length >0)		
-			return  locations;		 
+			if (locations.length >0) 
+				return  locations;		 
+  		}
+		return provideDefinition(filter, className, methodName);
 	}
 
     provideCodeActions(document, range, diagnostics, token) {
@@ -168,69 +195,84 @@ class codeExplorer {
         return codeActions;
     }
 
-    scanWorkspace(token) {
+    scanWorkspace(token, rootPath) {
 		const swgis = this.swgis;
-		var rootPath = vscode.workspace.rootPath;
-		if ( swgis.swWorkspace.paths.indexOf(rootPath)<0 ) {
-            const cB =  new cBrowser.codeBrowser(swgis);
-			cB.get_workspaceSymbols(rootPath);
-		}
-		for(var i in vscode.workspace.workspaceFolders){
-            var subPath = vscode.workspace.workspaceFolders[i].uri.fsPath;
-            if (subPath.indexOf(rootPath) <0 && swgis.swWorkspace.paths.indexOf(subPath)<0) {
+		if(rootPath){
+			if (swgis.swWorkspace.index.indexOf(rootPath)<0) {
 				const cB =  new cBrowser.codeBrowser(swgis);
 				cB.get_workspaceSymbols(subPath);
+			}			
+		} else {
+			rootPath = vscode.workspace.rootPath;
+			if ( swgis.swWorkspace.paths.indexOf(rootPath)<0 ) {
+				const cB =  new cBrowser.codeBrowser(swgis);
+				cB.get_workspaceSymbols(rootPath);
 			}
-		};
-
+			for(var i in vscode.workspace.workspaceFolders){
+				var subPath = vscode.workspace.workspaceFolders[i].uri.fsPath;
+				if (subPath.indexOf(rootPath) <0 && swgis.swWorkspace.paths.indexOf(subPath)<0) {
+					const cB =  new cBrowser.codeBrowser(swgis);
+					cB.get_workspaceSymbols(subPath);
+				}
+			}
+		}
     }
 
     provideWorkspaceSymbols(filter, token) {
 
-		this.scanWorkspace(token);
+		return new Promise((resolve, reject) => {
 
-		// --- sift the symbols for 'query'
-		const swgis = this.swgis;
-		const symbsCache = swgis.swWorkspace.symbs;
-		var nodeName, container;
-		var dot = filter.indexOf(".");
-		var filters = filter.split(".")
-		if (filter='') {
-			// no filter	
-		} else if (filters.length>1) {
-			nodeName = filters[1];
-			container = filters[0];
-		} else if (dot < 1){
-			nodeName = filters[0];
-		} else {	
-			container = filters[0];
-		}
-		var list = [], total = 0;
-			for (var n in symbsCache) {
-				if (token && token.isCancellationRequested) 
-					return;
-                symbsCache[n].forEach(function(symb){
-                    try {
-						if(nodeName && symb.name.indexOf(nodeName)<0) {
-							// ignore
-						} else if (container && symb.containerName.indexOf(container)<0) {
-							// ignore
-						} else 
-							list.push(symb);
-                    } catch (err) {
-                        console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -error: " + err.message);
-                    }
-                    total += 1;
-                });      
-				if (list.length>1000) {
-					var tag =  "...limited to "+list.length+" entries, refine filter for more...";
-					var symRnge = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0));
-					list.push(new vscode.SymbolInformation(tag, vscode.SymbolKind.Null,symRnge));
-					break;
-				}		   
-			}	
-		console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -found: " + list.length+"/"+total);
-		return list;      
+		
+			token.onCancellationRequested(() => reject() );
+
+			this.scanWorkspace(token);
+			// --- sift the symbols for 'query'
+			const swgis = this.swgis;
+			const symbsCache = swgis.swWorkspace.symbs;
+			var nodeName, container;
+			var dot = filter.indexOf(".");
+			var filters = filter.split(".")
+			if (filter='') {
+				// no filter	
+			} else if (filters.length>1) {
+				nodeName = filters[1];
+				container = filters[0];
+			} else if (dot < 1){
+				nodeName = filters[0];
+			} else {	
+				container = filters[0];
+			}
+			var list = [], total = 0;
+				for (var n in symbsCache) {
+					if (token && token.isCancellationRequested) reject(e);
+					symbsCache[n].forEach(function(symb){
+						try {
+							if(!symb.name) {
+								// ignore
+								console.log("--- provideWorkspaceSymbols... symbol.name is null:"+symb);
+								console.log(symb);
+							} else if(nodeName && symb.name.indexOf(nodeName)<0) {
+								// ignore
+							} else if (container && symb.containerName && symb.containerName.indexOf(container)<0) {
+								// ignore
+							} else 
+								list.push(symb);
+						} catch (err) {
+							console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -error: " + err.message);
+							console.log(symb);
+						}
+						total += 1;
+					});      
+					if (list.length>1000) {
+						var tag =  "...limited to "+list.length+" entries, refine filter for more...";
+						var symRnge = new vscode.Range(new vscode.Position(0, 0), new vscode.Position(1, 0));
+						list.push(new vscode.SymbolInformation(tag, vscode.SymbolKind.Null,symRnge));
+						break;
+					}		   
+				}	
+			console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -found: " + list.length+"/"+total);
+			return resolve(list);
+		});	
 	}
 
     resolveWorkspaceSymbol(symbolInfo, token) {

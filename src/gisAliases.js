@@ -11,32 +11,32 @@ class gisAliases{
         this.aliasCommands=[];
     }
         
-    run(context) {
+    run(context,disposable) {
 
-        let activeEditor = vscode.window.activeTextEditor;
-        if (!activeEditor || !activeEditor.document.fileName.endsWith("gis_aliases")) return ;
-            triggerUpdateDecorations();
- 
         vscode.window.onDidChangeActiveTextEditor(editor => {
             if (editor) {
-                activeEditor= editor
-                triggerUpdateDecorations();
+                triggerUpdateDecorations(editor);
             }
-        }, null, context.subscriptions);
+		}, null, context.subscriptions);
+		
         vscode.workspace.onDidChangeTextDocument(event => {
-            if (activeEditor && event.document === activeEditor.document) {
-                triggerUpdateDecorations();
+			let editor = vscode.window.activeTextEditor;
+            if (editor && event.document === editor.document) {
+                triggerUpdateDecorations(editor);
             }
-        }, null, context.subscriptions);
+		}, null, context.subscriptions);
+		
         var timeout = null;
-        function triggerUpdateDecorations() {
+        function triggerUpdateDecorations(editor) {
+            if(editor.document.languageId != "swgis")  
+                return;
             if (timeout) {
                 clearTimeout(timeout);
             }
-            timeout = setTimeout(updateDecorations, 500);
+            timeout = setTimeout(updateDecorations,500,editor);
         }
 
-        function updateDecorations() {
+        function updateDecorations(activeEditor) {
             if (!activeEditor) 
                 return;
             else if(activeEditor.document.languageId != "swgis")  
@@ -66,6 +66,10 @@ class gisAliases{
                 activeEditor.setDecorations(crosshairType, labelLines);
         }
 
+        let editor = vscode.window.activeTextEditor;
+        if (editor && editor.document && editor.document.languageId == "swgis") {
+            triggerUpdateDecorations(editor);
+        }
     }
     
     provideCodeActions(document, range, context, token) {
@@ -110,7 +114,7 @@ class gisAliases{
         }
     }
     
-    mHover(message, aliasPath) {
+    mHover(message) {
         let swgis=this.swgis;
         let msgHover = swgis.errorHover;
         if (!msgHover){
@@ -131,7 +135,7 @@ class gisAliases{
     }
 
            
-    get_aliasCommands(aliasName, aliasPath) {
+    get_aliasCommands(aliasName,aliasFile) {
         const swgis = this.swgis;
        const codeActions = this.aliasCommands;
         if (codeActions[aliasName]) 
@@ -142,10 +146,10 @@ class gisAliases{
         for (var i in swgis.gisPath) {
             let gisPath = swgis.gisPath[i];
             var titleAction = "Run GIS " +gisPath + " " + aliasName;
-            const args = [aliasName, aliasPath, gisPath ];
+            const args = [gisPath + " -a " + aliasFile + " "+ aliasName];
             let command = {
                 title:    titleAction,
-                command:  "swSessions.runaliases",
+                command:  "swSessions.gisCommand",
                 arguments: args,
                 tooltip: titleAction
             };
