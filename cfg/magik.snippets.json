@@ -8,8 +8,12 @@
 			"prefix": "package",
 			"body": "_package ${1:user}\n"
 		},
+		"_endblock": {
+			"prefix": "endblock",
+			"body": "_endblock\n"
+		},
 		"_block @name _endblock": {
-			"prefix": "bloc",
+			"prefix": "block",
 			"body": "_block ${1:@BLOCK_NAME} \n\t${2:# --- block body ---}\n_endblock\n"
 		},
 		"_dynamic": {
@@ -27,6 +31,10 @@
 		"_proc @name() _endproc": {
 			"prefix": "pro",
 			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- proc body ---}\n_endproc\n"
+		},
+		"_endproc": {
+			"prefix": "endproc",
+			"body": "_endproc\n"
 		},
 		"_loop _endloop": {
 			"prefix": "loo",
@@ -75,9 +83,17 @@
 				"\t# --- last iteration ---",
 				"_endloop\n"]
 		},
+		"_endloop": {
+			"prefix": "endloop",
+			"body": "_endloop\n"
+		},
 		"_if _endif": {
 			"prefix": "if",
 			"body": "_if ${1:#--- condition ---} \n_then  \n\t#--- if body ---\n_else \n\t# --- else body ---\n_endif\n"
+		},
+		"_endif": {
+			"prefix": "endif",
+			"body": "_endif\n"
 		},
 		"_then _endif": {
 			"prefix": "the",
@@ -274,13 +290,13 @@
 			"prefix": "%tab",
 			"body": "%tab"
 		},
-		"Application": {
+		"application": {
 			"prefix": ["app","smallworld_"],
-			"body": "app<< smallworld_product.application(:${1:APPLICATION_NAME})"
+			"body": "smallworld_product.application(:${1:APPLICATION_NAME})"
 		},
 		"current_map_view": {
 			"prefix": ["map","smallworld_"],
-			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
+			"body": "smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
 		},
 		"current_map...": {
 			"prefix": ["current_map","current_selection","current_trail","map","smallworld_"],
@@ -300,7 +316,7 @@
 		},
 		"databases": {
 			"prefix": ["gis_","databases"],
-			"body": "dbv<< gis_program_manager.databases"
+			"body": "gis_program_manager.databases"
 		},
 		"external_": {
 			"prefix": "external_",

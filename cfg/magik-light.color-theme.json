@@ -10,7 +10,7 @@
       "name": "pragma",
       "scope": ["pragma","constant.regexp"],
       "settings": {
-        "foreground": "#8d4cac"
+        "foreground": "#84c"
       }
     },
     {
@@ -24,22 +24,23 @@
       "name": "Keywords",
       "scope": ["keyword","keyword.control"],
       "settings": {
-        "foreground": "#14a",
+		"foreground": "#24b",
         "fontStyle": "bold"
       }
     },
    {
-      "name": "self,slot",
+      "name": "self,slot,package",
       "scope": ["constant.language"],
       "settings": {
-        "foreground": "#008"
+        "foreground": "#609",
+        "fontStyle": "bold"
       }
     },
     {
       "name": "Variables",
       "scope": ["variable", "string constant.other.placeholder"],
       "settings": {
-        "foreground": "#025"
+        "foreground": "#000"
       }
     },
     {
