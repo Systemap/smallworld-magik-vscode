@@ -3,14 +3,12 @@ All notable changes to the " Smallworld Magik" extension will be documented in t
 
 # Release Notes
 
-## [1.3.0] - 2019-06-10
+## [1.4.0] - 2019-08-04
 
-* New Magik Reference and Definition Provider. 
-* Workspace Symbol Provider performance improvements.
-* Additional Smallworld 5 Magik compiler commands.
-* Bug fix for apropos Hover action.
-* Magik snippets improvements.
-* Session startup commands improvements. 
+* New GIS Command (F2-z) to start a session. 
+* Multi-environment configuration for GIS path, command and startup.
+* Support for Case and Style archive files.
+* Various bug fixes and improvements. 
 
 # Road Map
 
@@ -22,6 +20,15 @@ All notable changes to the " Smallworld Magik" extension will be documented in t
 * Snippets for product, module, resources, messages files and folders.
 
 # Release History
+
+## [1.3.0] - 2019-06-10
+
+* New Magik Reference and Definition Provider. 
+* Workspace Symbol Provider performance improvements.
+* Additional Smallworld 5 Magik compiler commands.
+* Bug fix for apropos Hover action.
+* Magik snippets improvements.
+* Session startup commands improvements. 
 
 ## [1.2.0] - 2019-03-31
 
