@@ -12,14 +12,14 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 
 ## For Magik Developers
 
-Get started with Smallworld 5.x cambridge_db example, c:\smallworld installation.  
+Get started with Smallworld 5.x cambridge_db example, 'C:\Smallworld' installation.  
 * Open the cambridge_db product folder in VSCode
-* start a session by F2-z and enter the following command: 
-  -p c:\smallworld\core -a %SMALLWORLD_GIS%\..\cambridge_db\config\gis_aliases cambridge_db_open
+* start a session by keyboard shortcut 'F2-z' and enter the following command: 
+  -p C:\Smallworld\core -a %SMALLWORLD_GIS%\..\cambridge_db\config\gis_aliases cambridge_db_open
 
 ![Run GIS Command](images/GisCommand.png)
 
-* Optionally save the GIS Command in Settings to be listed next time.
+* Optionally save the GIS Command in Settings to the list of GIS Commands preconfigured for 'F2-z'.
 * Open a Magik file to see the code outline for classes and methods in the file.
 * Add some Magik code to the file and use F2-b to compile the file.
 
@@ -34,7 +34,7 @@ Get started with Smallworld 5.x cambridge_db example, c:\smallworld installation
 
 ![References](images/CodeReferences.png)
 
-## Start a Smallworld sessions 
+# Starting a Smallworld sessions 
 
 ### Run a GIS Command
 
@@ -64,16 +64,16 @@ Get started with Smallworld 5.x cambridge_db example, c:\smallworld installation
     * For F7 compiler keys see "Extension Settings" section below
 * Access Class or Method 'apropos' in Hover Actions over 'object.method' definitions.
 
-## Extension Settings
+# Extension Settings
 
-### Smallworld GIS Path ("Smallworld.gisPath")
+## Smallworld GIS Path ("Smallworld.gisPath")
 
 Open File-Preferences-Settings, expand Extensions - Smallworld GIS and click on "Edit in settings.json". 
 Add the "Smallworld.gisPath" entry for Smallworld gis.exe path. Use double backslash '\\' or single forward slash '/'. 
 Example:
     "Smallworld.gisPath": "C:/Smallworld/core/bin/x86/gis.exe"
 
-### Smallworld Startup ("Smallworld.startup")
+## Smallworld Startup ("Smallworld.startup")
 
 Optionally, "Smallworld.startup" section can be configured in the settings as a JSON array for Windows DOS commands to run before gis.exe. Invalid commands do not stop the startup process.
 Example:
@@ -85,7 +85,7 @@ Example:
         "if not exist %SW_DB_CONTEXT_DIR% mkdir %SW_DB_CONTEXT_DIR%"
     ],
 
-### GIS Command ("Smallworld.gisCommand")
+## GIS Command ("Smallworld.gisCommand")
 "Smallworld.gisCommand" section contains the configuration for GIS Commands that are executed by F2-z keys and starts a session from a standard Smallworld 5 command line.
 A basic GIS Command have the following format:
 	"[-p productDir] [-e environFile] -a gis_aliasFile alias"
@@ -134,14 +134,14 @@ The following is an example of a settings.json file for a VSCode Smallworld Magi
     "terminal.integrated.scrollback": 5000
 }
 
-### Compiler F7 Key Combinations
+## Compiler F7 Key Combinations
 To define F7 key combinations for the Magik compiler:
 
 - Open Preferences Keyboard Shortcuts (Ctrl-K Ctrl-S)
 - Type "SW Compile Magik" in the filter to find the Magik compiler commands
 - Select the commands you want to change (for example F9 keys) and edit to F7 
 
-## Release Notes
+# Release Notes
 
 ## [1.4.0] - 2019-08-04
 
@@ -149,3 +149,20 @@ To define F7 key combinations for the Magik compiler:
 * Multi-environment configuration for GIS path, command and startup.
 * Support for Case and Style archive files.
 * Various bug fixes and improvements. 
+
+## Known Issues 
+
+### Limited Support for Smallworld Older Versions
+There are some limitations for Smallworld versions older than 5.0: 
+
+* GIS Command syntax does not fully support Smallword 3.x and 4.x 
+* Smallworld 3.x and 4.x sessions are not integrated Terminals
+* Magik Compiler commands do not support Smallworld 3.x and 4.x
+
+### Workspace Close\Open Terminates the Session.
+Opening/closing a Workspace or the active Folder while a Smallworld Session is running, will terminate the session without a warnings.
+
+**Workarounds:** 
+* Use 'Add Folder to Workspace...' to access the sourece tree
+* Quit the Smallworld Session before switching the active Folder or Workspace.
+
