@@ -8,6 +8,7 @@
 		{ "include": "#keywords" },
 		{ "include": "#comments" },
 		{ "include": "#conditions"  },
+		{ "include": "#functions"  },
 		{ "include": "#strings"  }
 	],
 	"repository": {
@@ -54,7 +55,13 @@
 		"conditions": {
 			"patterns": [{
 				"name": "string.regexp",
-				"match": "\\s\\b(error|information|warning|system)\\b\\s"
+				"match": "\\s\\b(error|information|warning|system|debug)\\b\\s"
+			}]
+		},
+		"functions": {
+			"patterns": [{
+				"name": "markup.inserted",
+				"match": "\\b(show|write|debug_print|print)\\b"
 			}]
 		},
 		"strings": {

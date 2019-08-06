@@ -17,14 +17,14 @@
       "name": "Comment",
       "scope": ["comment"],
       "settings": {
-        "foreground": "#391"
+        "foreground": "#095"
       }
     },
     {
       "name": "Keywords",
       "scope": ["keyword","keyword.control"],
       "settings": {
-		"foreground": "#24b",
+		"foreground": "#34a",
         "fontStyle": "bold"
       }
     },
@@ -32,7 +32,7 @@
       "name": "self,slot,package",
       "scope": ["constant.language"],
       "settings": {
-        "foreground": "#609",
+        "foreground": "#349",
         "fontStyle": "bold"
       }
     },
@@ -64,7 +64,7 @@
         "punctuation.section.embedded"
       ],
       "settings": {
-        "foreground": "#888"
+        "foreground": "#808"
       }
     },
     {
@@ -98,7 +98,7 @@
         "punctuation.definition.string"
       ],
       "settings": {
-        "foreground": "#a50"
+        "foreground": "#b50"
       }
     },
     {
@@ -123,7 +123,7 @@
       ],
       "settings": {
         "fontStyle": "italic",
-        "foreground": "#888"
+        "foreground": "#996"
       }
     },
 
@@ -145,7 +145,7 @@
       "name": "Changed",
       "scope": ["markup.changed"],
       "settings": {
-        "foreground": "#aa0"
+        "foreground": "#dd0"
       }
     },
     {

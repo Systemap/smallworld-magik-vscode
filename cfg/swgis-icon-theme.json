@@ -1,0 +1,18 @@
+{
+	"iconDefinitions": {
+	  "_m": {
+		"fontCharacter": "_m",
+		"fontColor": "#48f",
+		"fontSize": "85%"
+	  },
+	  "sw": {
+		"fontCharacter": "_m",
+		"fontColor": "#48f",
+		"fontSize": "85%"
+	  }
+	},
+	"fileExtensions": {
+	  "magik": "_m",
+	  "def": "sw"
+	}
+  }
