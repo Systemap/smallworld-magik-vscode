@@ -31,11 +31,11 @@ const magikSymbols = {
 exports.magikSymbols = magikSymbols;
 
 const keyPattern = {
-	class_dot_method: /[\w_!?]+[\w_\d!?]*\s*\.\s*[\w_!?]+[\w_\d!?]*\s*[\[\(<]?/i,
-	class_dot_bare_method: /[\w_!?]+[\w_\d!?]*\s*\.\s*[\w_!?]*[\w_\d!?]*/i,
-	class_dot:        /[\w_!?]+[\w_\d!?]*\s*\./i,
-	dot_method:       /\.\s*[\w_!?]+[\w_\d!?]*\s*[\[\(<]?/i,
-	variable:         /[\w_!?]+[\w_\d!?]*/i,
+	class_dot_method: /[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*\s*(\[|\(|<)?/i,
+	class_dot_bare_method: /(\w+:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*/i,
+	class_dot:        /:?[a-z_!?]+[\w_!?]*\s*\./i,
+	dot_method:       /\.\s*[\a-z!?]+[\w_!?]*\s*[\[\(<]?/i,
+	variable:         /[a-z_!?]+[\w_!?]*/i,
 	product_module_keyword:  /\b(title|description|optional|templates|end|requires|install_requires|requires_datamodel|hidden|version|condition_message_accessor|language|hiddencase_installation|style_installation|ace_installation|system_installation|auth_installation)\b/i,
 	methodsToIgnore: /\b(invoke|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\b/i,
 	string_mask:     /(""|".*"|'.*'|:\|.*\||:[a-zA-Z_!?][\w_!?]*|:[a-zA-Z_!?][\w_!?]*\|.*\||%space|%tab|%newline|%.)/g,
@@ -183,7 +183,8 @@ function getClassMethodAtPosition(document, pos) {
 	var range = document.getWordRangeAtPosition(pos,keyPattern.class_dot_method);
 	 if (!range || range.isEmpty) return;
 	var codeLine = maskStringComments( document.lineAt(pos.line).text ) ;
-	var codeWord = codeLine.slice(range.start.character,range.end.character).replace(/\s/g,'').split(".");
+	var codeWord = codeLine.slice(range.start.character,range.end.character);
+		codeWord = codeWord.replace(/\s/g,'').split(".");
 	if (codeWord.length>1){
 		codeWord[0] = codeWord[0].toLowerCase();
 		codeWord[1] = proofMethodName(codeWord[1]);

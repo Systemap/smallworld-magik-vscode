@@ -326,16 +326,32 @@
 			"prefix": "!notify_...!!",
 			"body": "${1|!notify_database_data_changes?!,!notify_lwt_state_changes?!|}"
 		},
+		"show": {
+			"prefix":"show(",
+			"body": "show($0)"
+		},
+		"write": {
+			"prefix":"write(",
+			"body": "write($0)"
+		},
+		"print": {
+			"prefix":"print(",
+			"body": "print($0)"
+		},
+		"debug_print": {
+			"prefix":"debug_print(",
+			"body": "debug_print($0)"
+		},
 		"!proc": {
-			"prefix":["show(","write(","debug_print(","print(","!abort!","!debugger!","!error!","!traceback!","!warning!"],
-			"body": "${1|show($0),write($0),debug_print($0),print($0),!abort!(),!debugger!(),!error!(),!traceback!(),!warning!()|}"
+			"prefix":["!abort!","!debugger!","!error!","!traceback!","!warning!"],
+			"body": "${1|!abort!(),!debugger!(),!error!(),!traceback!(),!warning!()|}"
 		},
 		"!current": {
 			"prefix": "!current_...!",
 			"body": "${1|!current_application!,!current_body!,!current_condition!,!current_coordinate_system!,!current_database!,!current_dsview!,!current_dxf_app_id!,!current_field!,!current_grs!,!current_languages!,!current_locale!,!current_menu_tree!,!current_module!,!current_mpn!,!current_package!,!current_plugin_name!,!current_rendering_context!,!current_spatial_object_controller!,!current_sts!,!current_transaction!,!current_transform!,!current_unit_factor!,!current_validation_record!,!current_world!|}"
 		},
 		"!outputs": {
-			"prefix": "!\\w+",
+			"prefix": ["!output!","!terminal!","!error_output!","!print_length!","!print_float_precision!"],
 			"body": "${1|!output!,!terminal!,!error_output!,!print_length!,!print_float_precision!|}"
 		}
 	}

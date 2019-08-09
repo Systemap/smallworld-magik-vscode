@@ -24,6 +24,7 @@
         ["\"", "\""],
         ["'", "'"]
     ],
+    "wordPattern": "(-?\\d*\\.\\d\\w*)|[a-zA-Z_\\!?]+[\\w_!?]*|([^\\`\\~\\@\\#\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>\\/\\s]+)",
 	"indentationRules": {
 		"increaseIndentPattern": "\\s?(_loop|_finally|_then|_else|_block|_catch|_try|_when|_while|_protect|_protection)\\s?",
 		"decreaseIndentPattern": "\\s?(_endloop|_endif|_endblock|_endcatch|_endtry|_endprotect)\\s?"

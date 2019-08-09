@@ -19,18 +19,24 @@
 				"end": "=",
 				"name": "keyword.control.swgis",
 				"match": "\\b(title|directory|program|product|splash_screen|session|java|java_log|script|osgi_directory|args|log_file|icon_file|timeout|wait_line|interactive)\\b"
+			},{
+				"begin": "\\[",
+				"end": "\\]",
+				"name": "keyword.control.swgis",
+				"match": "\\[[_\\w\\d]+\\]"
 			}]
 		},
 		"stanzas": {
 			"name": "constant.regexp",
-			"begin": "^\\S:\\s?",
+			"begin": "^[\\w_!?]+\\s*:\\s*",
 			"end": "\\n",
-			"patterns": [{"match": "^\\([^#]\\S-+\\):\\s-*$"}]
+			"notIn": ["comments"],
+			"patterns": [{"match": "^[\\w_!?]+\\s*:\\s*"}]
 		},
 		"comments": {
 			"name": "comment",
 			"begin": "#",
-			"end": "\n",
+			"end": "\\n",
 			"patterns": [{"match": "."}]
 		},
 		"variables": {
@@ -62,29 +68,42 @@
 			}]
 		},
 		"strings": {
-			"patterns": [
-				{	"name": "string",
-					"begin": "#",
-					"end": "\\d",
-					"patterns": [{"match": ""}]
-				},
-				{	"name": "string",
-					"begin": ":\\|",
-					"end": "(\\||\\n)",
-					"patterns": [{".*"}]
-				},
-				{	"name": "string",
-					"begin": ":[a-zA-Z!?_]+",
-					"end": "([\\w!?_]*|\\n)",
-					"patterns": [{"match": "[\\w!?_]*"}]
-				},
-				{	"name": "string",
-					"begin": ":[a-zA-Z!?_]+[\\w!?_]*\\|,
-					"end": "(\\||\\n)",
-					"patterns": [{"match": ".*]"}]
-				}
+			"patterns": [{	
+				"name": "string",
+				"begin": "\"",
+				"end": "[\"\\n]",
+				"notIn": ["comment"],
+				"patterns": [{"match": "\\."}]
+			},
+			{	"name": "string",
+				"begin": "'",
+				"end": "['\\n]",
+				"notIn": ["comment"],
+				"patterns": [{"match": "."}]
+			},
+			{	"name": "string",
+				"begin": "%",
+				"end": "tab|space|newline|.",
+				"notIn": ["comment"],
+				"patterns": [{"match": ""}]
+			},
+			{	"name": "string",
+				"begin": ":\\|",
+				"end": "(\\||\\n)",
+				"notIn": ["comment"],
+				"patterns": [{"match": ".*"}]
+			},
+			{	"name": "string",
+				"begin": ":[a-zA-Z!?_][\\w!?_]*\\|",
+				"end": "(\\||\\n)",
+				"patterns": [{"match": ".*"}]
+			},
+			{	"name": "string",
+				"begin": ":[a-zA-Z!?_]",
+				"end": "([\\w!?_]*|\\n)",
+				"patterns": [{"match": "[\\w!?_]"}]
+					}
 			]
-		}
-	},
+		}	},
 	"scopeName": "source.swgis"
 }

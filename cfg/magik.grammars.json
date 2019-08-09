@@ -5,7 +5,9 @@
 		{ "include": "#pragma" },
 		{ "include": "#self" },
 		{ "include": "#slot" },
+		{ "include": "#regexp" },
 		{ "include": "#keywords" },
+		{ "include": "#variable"  },
 		{ "include": "#comments" },
 		{ "include": "#conditions"  },
 		{ "include": "#functions"  },
@@ -21,7 +23,7 @@
 		"pragma": {
 			"name": "constant.regexp",
 			"begin": "_pragma",
-			"end": "\n",
+			"end": "\\n",
 			"patterns":[]
 		},
 		"self": {
@@ -49,7 +51,7 @@
 		"comments": {
 			"name": "comment.control",
 			"begin": "#",
-			"end": "\n",
+			"end": "\\n",
 			"patterns":[]
 		},
 		"conditions": {
@@ -64,17 +66,24 @@
 				"match": "\\b(show|write|debug_print|print)\\b"
 			}]
 		},
+		"regexp": {
+			"patterns": [{
+				"name": "string.regexp",
+				"notIn": ["string", "comment"],
+				"match": "\/.+\/[gimsuy]*"
+			}]
+		},
 		"strings": {
 			"patterns": [{	
 				"name": "string",
 				"begin": "\"",
-				"end": "[\"\n]",
+				"end": "[\"\\n]",
 				"notIn": ["comment"],
 				"patterns": [{"match": "\\."}]
 			},
 			{	"name": "string",
 				"begin": "'",
-				"end": "['\n]",
+				"end": "['\\n]",
 				"notIn": ["comment"],
 				"patterns": [{"match": "."}]
 			},
