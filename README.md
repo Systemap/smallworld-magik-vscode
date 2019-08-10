@@ -5,11 +5,12 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 ## Features
 
 * Language support for Magik source and Smallworld resource file types.
-* Symbol, Definition and Reference Provider for Magik code and gis_aliases stanzas.
-* Smallworld sessions from gis_aliases or GIS Commands. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
-* Smallworld 5.x Magik compiler Code Actions, module and product loaders (Not supported on Smallworld 4). 
-* Magik traditional light theme and F2-keys shortcut combinations.  
+* Code outlines, Definitions, References and Symbol Provider for Magik and gis_aliases stanzas.
+* Run Smallworld sessions and GIS Commands 'F2-z' configuration. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
+* Magik code compiler, module and product loaders for Smallworld 5.x (Not supported on Smallworld 4). 
+* Magik F2-keys shortcut combinations and a traditional light theme.  
 
+---
 ## For Magik Developers
 
 Get started with Smallworld 5.x cambridge_db example, 'C:\Smallworld' installation.  
@@ -30,7 +31,7 @@ Get started with Smallworld 5.x cambridge_db example, 'C:\Smallworld' installati
 ![CTRL-T](images/CodeOutline.png)
 
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
-* Click on a "Class.Method" combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
+* Click on a 'Class.Method' combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
 
 ![References](images/CodeReferences.png)
 
@@ -61,21 +62,25 @@ Get started with Smallworld 5.x cambridge_db example, 'C:\Smallworld' installati
     * 'F2-r' or 'Ctrl+F9' to compile the current code range (e.g. _method ... _endmethod)
     * 'F2-s' or 'Alt+F9' to compile the current code selection
     * 'F2-l' or 'Shift+F9' to compile the current single line of code
-    * For F7 compiler keys see "Extension Settings" section below
+    * For F7 compiler keys see 'Extension Settings' section below
 * Access Class or Method 'apropos' in Hover Actions over 'object.method' definitions.
 
+---
 # Extension Settings
 
-## Smallworld GIS Path ("Smallworld.gisPath")
+Open File-Preferences-Settings and search for Smallworld GIS under the 'Extensions'. 
 
-Open File-Preferences-Settings, expand Extensions - Smallworld GIS and click on "Edit in settings.json". 
-Add the "Smallworld.gisPath" entry for Smallworld gis.exe path. Use double backslash '\\' or single forward slash '/'. 
+## Smallworld GIS Path ('Smallworld.gisPath')
+
+The 'Smallworld.gisPath' defines the location of Smallworld gis.exe or the product path. The gisPath is an array of strings that allows configuration for multipe product locations.  
 Example:
-    "Smallworld.gisPath": "C:/Smallworld/core/bin/x86/gis.exe"
+    "Smallworld.gisPath": [ "C:\\Smallworld5\\core", "C:\\Smallworld4\\product" ]
 
-## Smallworld Startup ("Smallworld.startup")
+![GIS Path Settings](images/gisPathSettings.png)	
 
-Optionally, "Smallworld.startup" section can be configured in the settings as a JSON array for Windows DOS commands to run before gis.exe. Invalid commands do not stop the startup process.
+## Smallworld Startup ('Smallworld.startup')
+
+The 'Smallworld.startup' is for the Windows DOS commands to run before gis.exe. This settings is a JSON array of strings. Invalid commands do not stop the startup process.
 Example:
     "Smallworld.startup": [
         "set JAVA_HOME=%SMALLWORLD_GIS%/jdk-11.0.1",
@@ -84,55 +89,85 @@ Example:
         "set SW_DB_CONTEXT_DIR=%PROJECT_DIR%/db_context",
         "if not exist %SW_DB_CONTEXT_DIR% mkdir %SW_DB_CONTEXT_DIR%"
     ],
+You can edit 'Smallworld.startup' in the Settings editor in Visual Studio Code 1.37.0+.  
 
-## GIS Command ("Smallworld.gisCommand")
-"Smallworld.gisCommand" section contains the configuration for GIS Commands that are executed by F2-z keys and starts a session from a standard Smallworld 5 command line.
+![Startup Settings](images/startupSettings.png)	
+
+## GIS Command ('Smallworld.gisCommand')
+
+'Smallworld.gisCommand' section contains the configuration for GIS Commands that are executed by F2-z keys and starts a session from a standard Smallworld 5 command line.
 A basic GIS Command have the following format:
-	"[-p productDir] [-e environFile] -a gis_aliasFile alias"
+	"[-p productDir] [-e environFile] -a gis_aliasFile [alias]"
+ 
+If [-p productDir] is not specified, 'Smallworld.gisPath' will be used.
+If [-e environFile] is not specified, an 'environment.bat' found in the same path as gis_aliasFile will be added to the command.
+If [alias] is not specified and gis_aliasFile is a fully resolved pathname, all of the aliases in that file will be listed for GIS Command entries.
+The 'Smallworld.startup' Windows DOS commands are executed before a GIS command is run. 
+You can edit 'Smallworld.gisCommand' in the Settings editor in Visual Studio Code 1.37.0+.  
 
-The advance format for a GIS Command is a JSON object in the following format:
-	{	
-		"gisPath":  "<Optional Smallworld Core product directory (%SMALLWORLD_GIS%)>"
-		"startup":  "<optional DOS commands to run before gis.exe>"
-		"command": "<[-p productDir] [-e envFile] [-j options] ... [-a aliasFile] alias ...>"
+![GIS Command Settings](images/gisCommandSettings.png)	
+
+##GIS Command Session Configuration ('Smallworld.sessions')
+
+The advanced format for a GIS Command can be defined in the 'Smallworld.sessions' section of settings in the form of a JSON object. 
+GIS Commands defined in 'Smallworld.sessions' are self contained and do not share or use the 'Smallworld.startup' or 'Smallwrold.gisPath' values. 
+The'Smallworld.sessions' setting is defined in the following format:
+
+    "Smallworld.sessions": [
+		{	
+			"session": "< optional lable diaplayed on the list of GIS Commands F2-z >"
+			"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >"
+			"startup": "< optional DOS commands to run before gis.exe >"
+			"command": "<[-p productDir] [-e envFile] [-j options] ... [-a aliasFile] alias ...>"
+		}
 	}
 
-If "gisPath" and [-p productDir] are not specified, "Smallworld.gisPath" will be used.
-If "startup" is not specified, "Smallworld.startup" will be used.
-Multiple GIS commands can be saved in the the user settings under "Smallworld.gisCommand" section, and use "Smallworld.gisPath" and "Smallworld.startup" when needed.
+An example configuration for multiple sessions is inlcuded in the next section. 
+To edit the 'Smallworld.sessions', click on __'Edit in settings.json'__ in the Settings editor.
+
+![Smallworld Sessions Settings](images/sessionsSettings.png)	
+
+## A JSON Example for Smallworld Settings 
 
 The following is an example of a settings.json file for a VSCode Smallworld Magik extension:
-{
-    "Smallworld.gisPath": "//appserver/Smallworld/CST519/core/bin/x86/gis.exe",
-    "Smallworld.startup": [
-        "set JAVA_HOME=%SMALLWORLD_GIS%/jdk-11.0.1",
-        "set PROJECT_DIR=//appserver/SW_Upgrade_5",
-        "call %PROJECT_DIR%/set_my_environment.bat",
-        "set SW_DB_CONTEXT_DIR=%PROJECT_DIR%/db_context",
-        "if not exist %SW_DB_CONTEXT_DIR% mkdir %SW_DB_CONTEXT_DIR%"
-    ],
-	"Smallworld.gisCommand": [
-		"-p C:/Smallworld/core -a %SMALLWORLD_GIS%/../cambridge_db/config/gis_aliases cambridge_db_open",
-		"-a C:/Smallworld/cambridge_db/config/gis_aliases cambridge_db_open",
-		{	
-			"gisPath":  "C:/SW519/core",
-			"startup": [ "set JAVA_HOME=C:/jdk-11.0.1","set PROJECT_DIR="C:/tst/project_1"],
-			"command": "-a %PROJECT_DIR%/config/gis_aliases db_open"
-		},
-		{	
-			"gisPath":  "C:/SW520/core",
-			"startup":  "set JAVA_HOME=C:/jdk-12.0.2",
-			"command": "-a C:/dev/project_1/config/gis_aliases db_open"
-		},
-		{	
-			"gisPath":  "C:/SW518/core",
-			"startup":  "set JAVA_HOME=C:/jre",
-			"command": "-a C:/prd/project_1/config/gis_aliases db_open"
-		}
-	]
-    "files.autoGuessEncoding": true,
-    "terminal.integrated.scrollback": 5000
-}
+
+	{
+		"Smallworld.gisPath": "//appserver/Smallworld/CST519/core/bin/x86/gis.exe",
+		"Smallworld.startup": [
+			"set JAVA_HOME=%SMALLWORLD_GIS%/jdk-11.0.1",
+			"set PROJECT_DIR=//appserver/SW_Upgrade_5",
+			"call %PROJECT_DIR%/set_my_environment.bat",
+			"set SW_DB_CONTEXT_DIR=%PROJECT_DIR%/db_context",
+			"if not exist %SW_DB_CONTEXT_DIR% mkdir %SW_DB_CONTEXT_DIR%"
+		],
+		"Smallworld.gisCommand": [
+			"-p C:/Smallworld/core -a %SMALLWORLD_GIS%/../cambridge_db/config/gis_aliases cambridge_db_open",
+			"-a C:/Smallworld/cambridge_db/config/gis_aliases cambridge_db_open"
+		],
+		"Smallworld.sessions": [
+			{	
+				"session": "Project 1 Test code on SW 5.1.9 on jdk 11",
+				"gisPath": "C:/SW519/core",
+				"startup": [ "set JAVA_HOME=C:/jdk-11.0.1","set PROJECT_DIR="C:/tst/project_1"],
+				"command": "-a %PROJECT_DIR%/config/gis_aliases db_open"
+			},
+			{	
+				"session": "Project 1 Development on SW 5.2.0 on jdk 12",
+				"gisPath": "C:/SW520/core",
+				"startup": ["set JAVA_HOME=C:/jdk-12.0.2","set PROJECT_DIR="C:/dev/project_1"],
+				"command": "-a %PROJECT_DIR%/config/gis_aliases db_open"
+			},
+			{	
+				"session": "Project 1 Production on SW 5.1.8 on jre 8",
+				"gisPath": "C:/SW518/core",
+				"startup": ["set JAVA_HOME=C:/jre","set PROJECT_DIR="C:/prd/project_1"],
+				"command": "-a %PROJECT_DIR%/config/gis_aliases db_open"
+			}
+		],
+		"files.autoGuessEncoding": true,
+		"terminal.integrated.scrollback": 5000
+	}
+
 
 ## Compiler F7 Key Combinations
 To define F7 key combinations for the Magik compiler:

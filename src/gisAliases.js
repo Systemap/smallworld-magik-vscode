@@ -87,8 +87,8 @@ class gisAliases{
         var commands = this.get_aliasCommands(aliasName, document.fileName);
         for (var i in commands) {
             let cmd = commands[i];
-            const cak = {value: cmd.title, tooltip: cmd.title};    
-            const runAction = new vscode.CodeAction(cmd.title, cak);// vscode.CodeActionKind.Empty);
+            const cak = {value: cmd.session, tooltip: cmd.session};    
+            const runAction = new vscode.CodeAction(cmd.session, cak);// vscode.CodeActionKind.Empty);
             runAction.command = cmd;
         //runAction.diagnostics = [ diagnostic ];
         codeActions.push(runAction);
@@ -146,7 +146,7 @@ class gisAliases{
         for (var i in swgis.gisPath) {
             let gisPath = swgis.gisPath[i];
             var titleAction = "Run GIS " +gisPath + " " + aliasName;
-            const args = [gisPath + " -a " + aliasFile + " "+ aliasName];
+            const args = ["-p " + gisPath + " -a " + aliasFile + " " + aliasName];
             let command = {
                 title:    titleAction,
                 command:  "swSessions.gisCommand",

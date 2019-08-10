@@ -38,19 +38,25 @@
 			"title": "Smallworld GIS",
 			"properties": {
 				"Smallworld.gisPath": {
-					"type": ["string","array"],
+					"type": "array",
 					"items": {"type": "string"},					
-					"default": "",
+					"default": [],
 					"description": "Specifies the path of gis.exe that the project uses. Use double backslash '\\' or single forward slash '/'. Example:\n\t\"Smallworld.gisPath\": [\"C:/SW5/core/bin/x86/gis.exe\",\"C:/SW4/product/bin/x86/gis.exe\"]."
 				},
 				"Smallworld.gisCommand": {
 					"type": "array",
-					"items": {"type": ["string","array","object"]},					
+					"items": {"type": "string"},					
 					"default": [],
-					"description": "GIS commands to start a session. Example:\n\"Smallworld.gisCommand\": [\"-p C:\\Smallworld\\core -a C:\\Smallworld\\cambridge_db\\config\\gis_aliases cambridge_db_open -login root\\ \"]"
+					"description": "GIS commands to start a session. Example:\n\"Smallworld.gisCommand\": [\"-p C:\\Smallworld\\core -a C:\\Smallworld\\cambridge_db\\config\\gis_aliases cambridge_db_open\"]"
+				},
+				"Smallworld.sessions": {
+					"type": "array",
+					"items": {"type": "object"},					
+					"default": [],
+					"description": "Configuration for a GIS command to start a session. Example:\n\"Smallworld.sessions\": [\n\t{\n\t\t\"session\":\"Camb DB Open\",\n\t\t \"gisPath\":\"C:/Smallworld/core\",\n\t\t \"statup\":[\"set CAMBRIDGE_DB_DIR=C:/Smallworld/cambridge_db\"],\n\t\t \"command\":\"-a %CAMBRIDGE_DB_DIR%/config/gis_aliases cambridge_db_open\"\n}\n]"
 				},
 				"Smallworld.startup": {
-					"type": ["string","array"],
+					"type": "array",
 					"items": {"type": "string"},					
 					"default": [],
 					"description": "Optional startup batch commands to run before gis.exe. Invalid commands do not stop the startup. Example:\n\"Smallworld.startup\": [\"set PROJECT_DIR=C:/SW5/cambridge_db\",\"call %PROJECT_DIR%/config/test_env.bat\"]"
