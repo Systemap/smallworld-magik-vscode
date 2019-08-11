@@ -109,7 +109,7 @@ class gisAliases{
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");
             } else {
-                return this.mHover('GIS Command: -a '+document.fileName+' '+alias);//,);
+                return this.mHover('# GIS Command: -a '+document.fileName+' '+alias);
             }
         }
     }
