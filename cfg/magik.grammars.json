@@ -3,8 +3,8 @@
 	"name": "magik",
 	"patterns": [
 		{ "include": "#pragma" },
-		{ "include": "#self" },
 		{ "include": "#slot" },
+		{ "include": "#package" },
 		{ "include": "#regexp" },
 		{ "include": "#keywords" },
 		{ "include": "#variable"  },
@@ -26,17 +26,9 @@
 			"end": "\\n",
 			"patterns":[]
 		},
-		"self": {
-			"name": "constant.language",
-			"begin": "\\b(_self|_super|\\w+:)\\b",
-			"end": "",
-			"patterns":[{"match": "\\b(_self|_super)\\b"}]
-		},
 		"package": {
 			"name": "constant.language",
-			"begin": "\\s\\w",
-			"end": ":",
-			"patterns":[{"match": "\\w"}]
+			"match": "\\w+:"
 		},
 		"slot": {
 			"name": "constant.language",

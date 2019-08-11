@@ -50,7 +50,7 @@ class codeExplorer {
 
     provideHover(document, position, token) {
 		if (document.fileName.endsWith("gis_aliases"))
-			return this.gAliases.provideCodeActions(document, range, diagnostics, token);   
+			return this.gAliases.provideHover(document, position, token);   
 
         var commands = this.get_aproposCommands(document, position)
         if (!commands) return;
@@ -179,7 +179,6 @@ class codeExplorer {
 	}
 
     provideCodeActions(document, range, diagnostics, token) {
-	// console.log("provideCodeActions range:"+range.start.line+" "+document.fileName);
 		if (document.fileName.endsWith("gis_aliases"))
 			return this.gAliases.provideCodeActions(document, range, diagnostics, token);   
 

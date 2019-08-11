@@ -87,8 +87,8 @@ class gisAliases{
         var commands = this.get_aliasCommands(aliasName, document.fileName);
         for (var i in commands) {
             let cmd = commands[i];
-            const cak = {value: cmd.session, tooltip: cmd.session};    
-            const runAction = new vscode.CodeAction(cmd.session, cak);// vscode.CodeActionKind.Empty);
+            const ask = {value: cmd.session, tooltip: cmd.session};    
+            const runAction = new vscode.CodeAction(cmd.session, ask);// vscode.CodeActionKind.Empty);
             runAction.command = cmd;
         //runAction.diagnostics = [ diagnostic ];
         codeActions.push(runAction);
@@ -101,7 +101,7 @@ class gisAliases{
     provideHover(document, position, token) {
         const swgis = this.swgis;
         var alias = document.lineAt(position.line).text;
-        alias = alias.split("#")[0].trim()
+        alias = alias.split("#")[0].replace(/\s+/,'');
         if (swgis.aliasePattern.test(alias)){
             alias = alias.split(":")[0].trim()
             if (swgis.getActiveSession()) {
@@ -109,7 +109,7 @@ class gisAliases{
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");
             } else {
-                // return this.mHover(alias,document.fileName);
+                return this.mHover('GIS Command: -a '+document.fileName+' '+alias);//,);
             }
         }
     }
@@ -148,7 +148,7 @@ class gisAliases{
             var titleAction = "Run GIS " +gisPath + " " + aliasName;
             const args = ["-p " + gisPath + " -a " + aliasFile + " " + aliasName];
             let command = {
-                title:    titleAction,
+                session:  titleAction,
                 command:  "swSessions.gisCommand",
                 arguments: args,
                 tooltip: titleAction
