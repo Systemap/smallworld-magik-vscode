@@ -13,7 +13,7 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 ---
 ## For Magik Developers
 
-Get started with Smallworld 5.x cambridge_db example, `C:\Smallworld` installation.  
+Get started with Smallworld 5.x cambridge_db example installation in `C:\Smallworld`.  
 * Open the cambridge_db product folder in VSCode
 * start a session by keyboard shortcut `F2-z` and enter the following command: 
   -p C:\Smallworld\core -a %SMALLWORLD_GIS%\..\cambridge_db\config\gis_aliases cambridge_db_open
