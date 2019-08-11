@@ -15,7 +15,7 @@ class codeBrowser{
     provideDocumentSymbols(document, token) {
 		var codeUri = document.uri;
 		var codeBlock = document.getText();
-		return this.get_codeSymbols(codeBlock, codeUri, token);
+		return this.get_codeSymbols(codeBlock,codeUri, document.languageId,  token);
     };
         
     get_fileSymbols(fileName) {
@@ -25,10 +25,10 @@ class codeBrowser{
 		return this.get_codeSymbols(codeBlock, codeUri);
     }
         
-    get_codeSymbols(codeBlock, codeUri, token) {
+    get_codeSymbols(codeBlock, codeUri,languageId, token) {
 		var fileName = codeUri.fsPath;
         var symInfos, refInfos=[];
-        if(fileName.endsWith(".magik")) {
+        if(languageId=="magik" || fileName.endsWith(".magik")) {
             symInfos = this.get_magikSymbols(codeBlock, codeUri, token); 
             refInfos = this.get_magikReferences(codeBlock, codeUri, token); 
         } else if(fileName.endsWith("\module.def")) {
@@ -165,21 +165,30 @@ class codeBrowser{
     }
 
     get_magikReferences(codeBlock, codeUri, token) {
-		const commonObjects =/\b(rope|property_list|hash_table)/i;
-        const commonmethods =/\b(init|new|new_with|add|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\(/i;
-        const dot_method_regex = new RegExp(magikParser.keyPattern.dot_method,"g");
-        var refes = {};
-        var codeLines = codeBlock.split("\n");
+        const parserKeys = magikParser.keyPattern;
+        const class_dot_bare_method = new RegExp(parserKeys.class_dot_bare_method,"gi");
+        const methodsToIgnore = parserKeys.methodsToIgnore;
+		const objectsToIgnore = /\b(_self|_super)\b/i;
+        const refes = {};
+		const pushRef = function(tag,lineIndex,charIndex){
+			let pos = new vscode.Position(lineIndex,charIndex);
+			tag = tag.trim().toLowerCase();
+			if (!refes[tag]) refes[tag] = [];
+			refes[tag].push( new vscode.Location(codeUri, pos));
+		};
+		var codeLines = codeBlock.split("\n");
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
-            var lineText = magikParser.maskStringComments( codeLines[lineCount] )
-			let match
-            while (match = dot_method_regex.exec(lineText)) {
-				let tag = magikParser.proofMethodName(match[0])
-				if ( commonmethods.test(tag) )  continue;
-                let pos = new vscode.Position(lineCount, match.index);
-				if (!refes[tag]) refes[tag] = [];
-                refes[tag].push( new vscode.Location(codeUri, pos));
-            }
+            var codeLine = magikParser.maskStringComments( codeLines[lineCount] )
+			let match;
+            while (match = class_dot_bare_method.exec(codeLine)) {
+				let ref = match[0].split(".");
+				if (methodsToIgnore.test(ref[1])) continue;
+				let def = new RegExp('_method\\s+'+ref[0],'i') ;
+				if (def.test(codeLine)) continue;
+				pushRef(ref[1],lineCount,match.index + match[0].length - ref[1].length);
+				if (objectsToIgnore.test(ref[0])) continue;
+				pushRef(ref[0],lineCount,match.index);
+			}
         }
         return refes;
     }
@@ -247,7 +256,7 @@ class codeBrowser{
 		var symInfos = [];
 		var codeLines = codeBlock.split("\n");
 		
-        // parse the document for functions
+        // parse the document for Symbols
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
             var lineText = codeLines[lineCount];
             var tag = magikParser.getTagText(lineText,":");
@@ -266,87 +275,91 @@ class codeBrowser{
         var tags = [], codeLinesTags;
             // parse the document for symbols
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
-            try {
-                codeLinesTags = this.parse_magikSyntax(codeLines,lineCount);
-                for (var i in codeLinesTags){
-                    var tag = codeLinesTags[i];
-                    // build node and container names    
-                    var parentName, methd, parms;
-                    var tagTxt = tag.text;
-                    switch (tag.keyWord) {
-                        case '_method':
-                            let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
-                            if (match) match = match[0];
-                            else  match = tag.text;
-                            match = match.split(".");
-                            parentName = match[0];
-                            methd =  magikParser.proofMethodName(match[match.length-1]);
-                            parms = "";
-                            break; 
-                        case '_proc':
-                            if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
-                                var lastline = codeLines[tag.keyPosition.line-1];
-                                if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
-                            } ;   
-                        case '_block':
-                            parentName = null;//tag.keyWord;
-                            methd = tag.keyWord + " ";
-                            if ((i = tagTxt.indexOf("<<")) > -1) {
-                                var arr = tagTxt.slice(0,i).trim().split(" ");
-                                methd += arr[arr.length-1].trim();
-                            } else if (tagTxt.indexOf("@") > -1){
-                                methd += tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
-                            } else {
-                                methd += "@unammed";
-							}
-                            if (tagTxt.indexOf("(") > -1) 
-                                parms = "()";    
-                            break;    
-                        case '_dynamic':
-                        case '_global':
-                        case '_constant':
-                            parentName =  null;//tag.keyWord;
-                            methd = tag.keyWord+ " ";
-                            var arr = tagTxt.split(tag.keyWord);
-                            parms = arr[arr.length-1];
-                            if ((i=parms.indexOf("<<")) > -1)            
-                                parms = parms.slice(0,i).trim().split(" ")[0];
-                            else  
-                                parms = parms.trim();
-                            break;    
-                        case 'def_mixin':
-                        case 'def_slotted_exemplar':
-                            parentName = tag.params.split('(:')[1].split(',')[0];
-                            methd = tag.keyWord;
-                            parms = "";
-                            break;                       
-                        case 'condition.define_condition':
-                        case 'smallworld_product.register_application':
-                        case 'magik_session.register_new':
-                            parentName = tag.keyWord.split(".")[0];               
-                            methd = tag.params.split('(:')[1].split(',')[0];
-                            parms = "";
-                            break;    
-                        case 'sw!patch_software':
-                            parentName = null;
-                            methd = tagTxt.trim();
-                            parms = "";                 
-                            break;    
-                        default:
-                            parentName = tagTxt.split(".")[0].trim();
-                            if (tag.params.length > 0 )
-                                methd = tag.params.split(',')[0].replace(/[\(:]/,'');
-                            else 
-                                methd = tag.text.split('(')[1].split(',')[0].replace(/[\(:]/,'');
-                            parms = "";
-                    };
-					tag.containerName = parentName;
-                    tag.nodeName = methd+parms;    
-                    tags.push(tag);
-                }    
-            } catch(err) {
-                    console.log("---parse_magikTags Error: "+err.message+" - "+ codeLines[lineCount]+" - "+codeUri.fsPath);
-            }
+			codeLinesTags = this.parse_magikSyntax(codeLines,lineCount);
+			for (var i in codeLinesTags){
+				var tag = codeLinesTags[i];
+				// build node and container names    
+				var parentName, methd, parms;
+				var tagTxt = tag.text;
+				try {
+					switch (tag.keyWord) {
+					case '_method':
+						let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
+						if (match) match = match[0];
+						else  match = tag.text;
+						match = match.split(".");
+						parentName = match[0];
+						methd =  magikParser.proofMethodName(match[match.length-1]);
+						parms = "";
+						break; 
+					case '_proc':
+						if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
+							var lastline = codeLines[tag.keyPosition.line-1];
+							if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
+						} ;   
+					case '_block':
+						parentName = null;//tag.keyWord;
+						methd = tag.keyWord + " ";
+						if ((i = tagTxt.indexOf("<<")) > -1) {
+							var arr = tagTxt.slice(0,i).trim().split(" ");
+							parms = arr[arr.length-1].trim();
+						} else if (tagTxt.indexOf("@") > -1){
+							parms = tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
+						} else {
+							parms = "@unammed";
+						}
+						if (tagTxt.indexOf("(") > -1) 
+							parms += "()";    
+						break;    
+					case '_dynamic':
+					case '_global':
+					case '_constant':
+						parentName =  null;//tag.keyWord;
+						methd = tag.keyWord+ " ";
+						var arr = tagTxt.split(tag.keyWord);
+						parms = arr[arr.length-1];
+						if ((i=parms.indexOf("<<")) > -1)            
+							parms = parms.slice(0,i).trim().split(" ")[0];
+						else  
+							parms = parms.trim();
+						break;    
+					case 'def_mixin':
+					case 'def_slotted_exemplar':
+						parentName = tag.params.split('(')[1].split(',')[0];
+						methd = tag.keyWord;
+						parms = "";
+						break;                       
+					case 'condition.define_condition':
+					case 'smallworld_product.register_application':
+					case 'magik_session.register_new':
+						parentName = tag.keyWord.split(".")[0];               
+						methd = tag.params.split('(')[1].split(',')[0];
+						parms = "";
+						break;    
+					case 'sw!patch_software':
+						parentName = null;
+						methd = tagTxt.trim();
+						parms = "";                 
+						break;    
+					default:
+						parentName = tagTxt.split(".")[0].trim();
+						if (tag.params.length > 0 )
+							methd = tag.params.split(',')[0];
+						else 
+							methd = tag.text.split('(')[1].split(',')[0];
+						parms = "";
+					}	
+				} catch(err) {
+					console.log("---parse_magikTags Error: "+err.message+" - "+ codeLines[lineCount]+" - "+codeUri.fsPath);
+					console.log(tag);
+				}
+				if (parentName)  parentName = parentName.replace(/[\"\':]/g,'');
+				if (methd)  methd = methd.replace(/[\"\':]/g,'');
+
+				tag.containerName = parentName;
+				tag.nodeName = methd+parms;    
+				tags.push(tag);
+			}    
         }  
         return tags;  
     }

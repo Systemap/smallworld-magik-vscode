@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="smallworld-magik" Version="1.3.0" Publisher="siamz"/>
+    <Identity Language="en-US" Id="smallworld-magik" Version="1.3.3" Publisher="siamz"/>
     <DisplayName>Smallworld Magik</DisplayName>
     <Description xml:space="preserve">Smallworld Magik for Visual Studio Code</Description>
-    <Tags>workspace,symbolprovider,autocorrection,smallworld,magik,gis_aliases,theme,color-theme,snippet,keybindings,Smallworld Magik,__ext_magik,swgis,Smallworld GIS,__ext_msg</Tags>
+    <Tags>smallworld,magik,swgis,sw-gis,gis_aliases,workspace,symbolprovider,definitionprovider,referenceprovider,autocorrection,theme,color-theme,snippet,keybindings,Smallworld Magik,__ext_magik,Smallworld GIS,__ext_msg</Tags>
     <Categories>Programming Languages,Snippets,Keymaps,Themes</Categories>
     <GalleryFlags>Public</GalleryFlags>
     <Badges></Badges>
@@ -14,10 +14,10 @@
       <Property Id="Microsoft.VisualStudio.Code.ExtensionPack" Value="" />
       <Property Id="Microsoft.VisualStudio.Code.LocalizedLanguages" Value="" />
       
-        <Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="https://github.com/siamz/smallworld-magik-vscode/tree/master" />
-        <Property Id="Microsoft.VisualStudio.Services.Links.Getstarted" Value="https://github.com/siamz/smallworld-magik-vscode/tree/master" />
+        <Property Id="Microsoft.VisualStudio.Services.Links.Source" Value="https://github.com/siamz/smallworld-magik-vscode" />
+        <Property Id="Microsoft.VisualStudio.Services.Links.Getstarted" Value="https://github.com/siamz/smallworld-magik-vscode" />
         
-          <Property Id="Microsoft.VisualStudio.Services.Links.GitHub" Value="https://github.com/siamz/smallworld-magik-vscode/tree/master" />
+          <Property Id="Microsoft.VisualStudio.Services.Links.GitHub" Value="https://github.com/siamz/smallworld-magik-vscode" />
         
       
       <Property Id="Microsoft.VisualStudio.Services.Links.Support" Value="https://github.com/siamz/smallworld-magik-vscode.git/issues" />
@@ -28,7 +28,7 @@
       
       
     </Properties>
-    
+    <License>extension/LICENSE.txt</License>
     <Icon>extension/images/swmagik.png</Icon>
   </Metadata>
   <Installation>
@@ -37,6 +37,6 @@
   <Dependencies/>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.Code.Manifest" Path="extension/package.json" Addressable="true" />
-    <Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true" /><Asset Type="Microsoft.VisualStudio.Services.Content.Changelog" Path="extension/CHANGELOG.md" Addressable="true" /><Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/images/swmagik.png" Addressable="true" />
+    <Asset Type="Microsoft.VisualStudio.Services.Content.Details" Path="extension/README.md" Addressable="true" /><Asset Type="Microsoft.VisualStudio.Services.Content.Changelog" Path="extension/CHANGELOG.md" Addressable="true" /><Asset Type="Microsoft.VisualStudio.Services.Content.License" Path="extension/LICENSE.txt" Addressable="true" /><Asset Type="Microsoft.VisualStudio.Services.Icons.Default" Path="extension/images/swmagik.png" Addressable="true" />
   </Assets>
 </PackageManifest>

@@ -8,8 +8,12 @@
 			"prefix": "package",
 			"body": "_package ${1:user}\n"
 		},
+		"_endblock": {
+			"prefix": "endblock",
+			"body": "_endblock\n"
+		},
 		"_block @name _endblock": {
-			"prefix": "bloc",
+			"prefix": "block",
 			"body": "_block ${1:@BLOCK_NAME} \n\t${2:# --- block body ---}\n_endblock\n"
 		},
 		"_dynamic": {
@@ -27,6 +31,10 @@
 		"_proc @name() _endproc": {
 			"prefix": "pro",
 			"body": "_proc ${1:@PROC_NAME}() \n\t##\n\t##\n\t${2:# --- proc body ---}\n_endproc\n"
+		},
+		"_endproc": {
+			"prefix": "endproc",
+			"body": "_endproc\n"
 		},
 		"_loop _endloop": {
 			"prefix": "loo",
@@ -75,9 +83,17 @@
 				"\t# --- last iteration ---",
 				"_endloop\n"]
 		},
+		"_endloop": {
+			"prefix": "endloop",
+			"body": "_endloop\n"
+		},
 		"_if _endif": {
 			"prefix": "if",
 			"body": "_if ${1:#--- condition ---} \n_then  \n\t#--- if body ---\n_else \n\t# --- else body ---\n_endif\n"
+		},
+		"_endif": {
+			"prefix": "endif",
+			"body": "_endif\n"
 		},
 		"_then _endif": {
 			"prefix": "the",
@@ -274,13 +290,13 @@
 			"prefix": "%tab",
 			"body": "%tab"
 		},
-		"Application": {
+		"application": {
 			"prefix": ["app","smallworld_"],
-			"body": "app<< smallworld_product.application(:${1:APPLICATION_NAME})"
+			"body": "smallworld_product.application(:${1:APPLICATION_NAME})"
 		},
 		"current_map_view": {
 			"prefix": ["map","smallworld_"],
-			"body": "cmv<< smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
+			"body": "smallworld_product.application(:${1:APPLICATION_NAME}).plugin(:maps).current_map_view.map"
 		},
 		"current_map...": {
 			"prefix": ["current_map","current_selection","current_trail","map","smallworld_"],
@@ -300,11 +316,43 @@
 		},
 		"databases": {
 			"prefix": ["gis_","databases"],
-			"body": "dbv<< gis_program_manager.databases"
+			"body": "gis_program_manager.databases"
 		},
 		"external_": {
 			"prefix": "external_",
 			"body": "${1|external_binary_input_stream,external_binary_output_stream,external_channel,external_checksum_binary_input_stream,external_checksum_binary_output_stream,external_grid_input_stream,external_ref,external_text_file_mixin,external_text_input_stream,external_text_output_stream,external_text_simple_output_stream,external_xml_input_stream,externally_keyed_collection_mixin|}"
+		},
+		"!notify": {
+			"prefix": "!notify_...!!",
+			"body": "${1|!notify_database_data_changes?!,!notify_lwt_state_changes?!|}"
+		},
+		"show": {
+			"prefix":"show(",
+			"body": "show($0)"
+		},
+		"write": {
+			"prefix":"write(",
+			"body": "write($0)"
+		},
+		"print": {
+			"prefix":"print(",
+			"body": "print($0)"
+		},
+		"debug_print": {
+			"prefix":"debug_print(",
+			"body": "debug_print($0)"
+		},
+		"!proc": {
+			"prefix":["!abort!","!debugger!","!error!","!traceback!","!warning!"],
+			"body": "${1|!abort!(),!debugger!(),!error!(),!traceback!(),!warning!()|}"
+		},
+		"!current": {
+			"prefix": "!current_...!",
+			"body": "${1|!current_application!,!current_body!,!current_condition!,!current_coordinate_system!,!current_database!,!current_dsview!,!current_dxf_app_id!,!current_field!,!current_grs!,!current_languages!,!current_locale!,!current_menu_tree!,!current_module!,!current_mpn!,!current_package!,!current_plugin_name!,!current_rendering_context!,!current_spatial_object_controller!,!current_sts!,!current_transaction!,!current_transform!,!current_unit_factor!,!current_validation_record!,!current_world!|}"
+		},
+		"!outputs": {
+			"prefix": ["!output!","!terminal!","!error_output!","!print_length!","!print_float_precision!"],
+			"body": "${1|!output!,!terminal!,!error_output!,!print_length!,!print_float_precision!|}"
 		}
 	}
 }
