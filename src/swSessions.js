@@ -3,23 +3,26 @@
 // ---------------------------------------------------------
 'use strict';
 const vscode = require('vscode');
-const { spawn,exec } = require('child_process');
 const fs = require("fs");
 const os = require("os");
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
 
 const swgis = {
     swWorkspace: {index: [], symbs: [], paths: [], refes:[]},
-    activeSession: {swTerminal:null, swAgent:null, aliasStanza:null, aliasPath:null, gisPath:null, cbAgent:null},
+    activeSession: {swTerminal:null, swAgent:null, aliasStanza:null, aliasFile:null, gisPath:null, cbAgent:null},
     gisPath: [],
+    gisCommand: [],
     codeAction: [], 
     sessions: null, 
     terminal: null,
     cbDocument: null,
+    cbData: [],
+    cbInfo: [],
     aliasStanza: null, 
     errorHover:null, 
-    aliasePattern: /[A-Za-z_0-9-]:$/i,
-    setActiveSession: function(swTerminal, swAgent, aliasStanza, aliasPath, gisPath) {
+	aliasePattern: /[A-Za-z_0-9-]:$/i,
+	binx86Pattern: /[\/\\]bin[\/\\]x86/i,
+    setActiveSession: function(swTerminal, swAgent, aliasStanza, aliasFile, gisPath) {
         swgis.sessions = swAgent; 
         swgis.terminal = swTerminal; 
         swgis.aliasStanza = aliasStanza;
@@ -30,7 +33,7 @@ const swgis = {
         var aSession = swgis.activeSession 
         aSession.swTerminal = swTerminal; 
         aSession.swAgent = swAgent; 
-        aSession.aliasPath = aliasPath;
+        aSession.aliasFile = aliasFile;
         aSession.aliasStanza = aliasStanza;
         aSession.gisPath = gisPath; 
         aSession.cbAgent = null;
@@ -44,7 +47,8 @@ const swgis = {
         aSession.swTerminal = null; 
         aSession.swAgent = null; 
         aSession.cbAgent = null;
-        aSession.aliasPath = null;
+        aSession.cbSocket = null;
+        aSession.aliasFile = null;
         aSession.aliasStanza = null;
         },
     getActiveSession: function(){
@@ -72,12 +76,23 @@ exports.swgis = swgis;
 class swSessions{
     constructor() {
         this.swgis = swgis;
-        this.check_gisPath();
     }
-    
+    run(){
+        this.check_gisPath();
+        var gisCommand = workbenchConfig.get('gisCommand');
+        var gisPath = workbenchConfig.get('gisPath');
+        var startup = workbenchConfig.get('startup');
+        if(!gisCommand || !gisCommand.length) {
+                vscode.window.showInformationMessage("Run Smallworld.gisCommand (F2 z) to start a session. Save Smallworld.gisCommand configurations in Preferences - Settings - Smallworld GIS");
+            if (!gisPath || !gisPath.length)
+                vscode.window.showInformationMessage("Configure Smallworld.gisPath in Preferences - Settings - Smallworld GIS, to specify the path of gis.exe");
+        } else if (!startup || !gisPath.length)
+                vscode.window.showInformationMessage("Configure Smallworld.startup in Preferences - Settings - Smallworld GIS, to run batch commands and set environment variables before starting gis.exe.");
+    }
     check_gisPath(){
         const swgis = this.swgis;
         swgis.gisPath = [];
+        var errorMsg;
         var swgisPath = workbenchConfig.get('gisPath');
         for (var i=0; i<swgisPath.length ; i++) {
             let gisPath = swgisPath[i];
@@ -87,19 +102,22 @@ class swSessions{
             }
             if (gisPath) {
                 try {
-                var stat = fs.statSync(gisPath);
-                }
-                catch(err) {
+                  var stat = fs.statSync(gisPath);
+                } catch(err) {
+                    errorMsg = (errorMsg)? errorMsg+", \n"+ gisPath : err.message 
                     gisPath = null;
                 }        
             }
             if (gisPath)  swgis.gisPath.push(gisPath);
         }    
-        return swgis.gisPath.length > 0 ;       
+        if (errorMsg) 
+            vscode.window.showErrorMessage("Smallworld.gisPath Erro: \n"+errorMsg);  
+            return swgis.gisPath.length > 0 ;       
     }
 
-    check_startup(gisPath, cp){
-		swgis.activeSession['SMALLWORLD_GIS'] = gisPath.split("/bin/x86")[0];
+    check_startup(gisPath, cp, startup){
+        const swgis = this.swgis;
+		swgis.activeSession['SMALLWORLD_GIS'] = gisPath.split(swgis.binx86Pattern)[0];
 		var swgisHome = swgis.activeSession['SMALLWORLD_GIS'];
         if (swgisHome) 
         try {      
@@ -108,7 +126,8 @@ class swSessions{
         }
         catch(err) { }
 
-        var startup = workbenchConfig.get('startup');
+        startup = (startup)? startup : workbenchConfig.get('startup');
+        startup = (typeof startup == 'string')? [startup] : startup;
         for (var i in startup)
             // try 
             {      
@@ -122,6 +141,7 @@ class swSessions{
     }
 
     check_gisExec(execCommand,cp){
+		const swgis = this.swgis;
         var eCmd = execCommand.split(/gis.exe/i);
         var swDir = eCmd[0].trim();
         var lunchers = ["runalias.exe"];// ,"sw_magik_win32.exe"]
@@ -136,41 +156,332 @@ class swSessions{
         return execCommand;       
     }
 
-    runaliases(aliasStanza, aliasPath,gisPath){
+    runaliases(aliasStanza, aliasFile,gisPath){
         // ---------------------------------------------------------
         // https://github.com/MarkerDave
         const swgis = this.swgis;
         if (swgis.getActiveSession()) return;
-        try
-        {
+        try  {
             if (!aliasStanza) {
                 var args = swgis.codeAction.command.arguments
                 aliasStanza = args[0];
-                aliasPath = args[1];
+                aliasFile = args[1];
                 gisPath = args[3];
             };
-              aliasPath = aliasPath.replace(/\//g,'\\');
+              aliasFile = aliasFile.replace(/\//g,'\\');
             //Start Smallworld with the selected alias
            var execCommand = gisPath;
-           try {      
-                var envbatCmd =  aliasPath.replace("gis_aliases","environment.bat")
-                fs.statSync(envbatCmd);
-                execCommand += ' -e ' + "\"" + envbatCmd + "\"";
+            execCommand += ' -a ' + "\"" + aliasFile + "\""+ ' ' + aliasStanza;
+			this.gisCommand(execCommand,aliasStanza);
+
+        } catch(err) {
+            swgis.endActiveSession();
+            vscode.window.showErrorMessage(err.message);  
+        }
+
+    }
+
+    gisCommand(execCommand){
+        const swgis = this.swgis;
+		if (swgis.getActiveSession()) 
+			return vscode.window.showInformationMessage("GIS terminal is active: "+swgis.activeSession.aliasStanza); 
+
+
+		const ask = async (engine, prompt, format, items, key) => {
+            var arg, args = [">Click here to add a new GIS Command, or select one from the list:"];
+            for (var i in items) args.push(++i+" "+items[--i][key]);
+            if (args.length == 1)
+                arg = await vscode.window.showInputBox({ placeHolder:format, prompt:prompt, value:"", ignoreFocusOut: true});
+            else 
+                arg = await vscode.window.showQuickPick(args, { placeHolder:"GIS Command:", prompt:prompt, ignoreFocusOut: true});
+            if (arg == args[0]) {
+                arg = await vscode.window.showInputBox({ placeHolder:format, prompt:prompt, value:"", ignoreFocusOut: true});
+            }else if (arg) {
+                var i = arg.indexOf(" ");
+                var n = Number( arg.slice(0,i) )-1;
+                arg = items[n];
+            }    
+			if (arg) 	
+				engine.gisCommand(arg);
+	}
+        const extreme = function (exp){
+			let ext = [];
+			switch (typeof exp) {
+				case 'string': 
+					ext = exp.trim();
+					break;
+				case 'object': 
+					ext = {};
+				case 'array': 
+					for(var e in exp)
+    	                if (typeof exp[e]=='string') 
+        	                ext[e.toLocaleLowerCase()] = exp[e].trim();
+            	        else 
+                	        ext[e.toLocaleLowerCase()] = exp[e];
+            }  
+            return ext;  
+		}
+
+        const exslash = function (path){
+			if (typeof path=='string') 
+				path = path.replace(/\//g,'\\');
+			
+			return path;
+		}
+
+        const expression = function (key){
+            if (!key) 
+                key = "\\s+";
+            else if (key.indexOf("s+")<0)    
+                key = "\\s?" + key + "\\s+";
+           return new RegExp(key,"i"); 
+        }
+        const exsplit = function (str,key){
+            let keyX = expression(key+"\\s+"); 
+            if (str.search(keyX) != 0 )
+                keyX = expression(key); 
+            if (str.search(keyX) > -1 )
+                return str.split(keyX);
+        }
+    	const exorcise = function (arg){
+            arg = arg.trim();
+            if (arg.search(/["']/)==0) {
+                arg = "\"" + arg.split(/["']/)[0] + "\"";
+            } else if (/\s/.test(arg) )	
+                arg = arg.split(/\s+/)[0];
+           return arg;
+        }
+		const extract = function (key, execCommand){
+            if (execCommand){
+                let arg = execCommand[key];
+                if (!arg && typeof execCommand == 'string' && execCommand.length){
+                    arg = exsplit(execCommand, key);
+                    if (arg) {
+                        arg = exorcise(arg[1]);
+                    }    
+                }
+                return arg;
             }
-            catch(err) { }
-                execCommand += ' -a ' + "\"" + aliasPath + "\""+ ' ' + aliasStanza;
+        }
+		const explode = function (command){
+            const exp = {"-p":"<gispath>", "-e":"<envfile>", "-a":"<aliasfile>", "-j":"<joptions>","-o":"<OSGIdir>","-l":"<logfile>"};
+            command = extreme(command);
+            exp.session = command["session"];
+            exp.gispath = command["gispath"];
+            exp.command = command["command"];
+            exp.startup = command["startup"];
+            exp.alias = command["alias"];
+            exp.saveconfig = command["saveconfig"];
+			command = (command["command"] || typeof command != 'string')? command["command"]:command; 
+			if (!command) return exp;
+            else if (!exp.command ) exp.command = command;
 
-            //Show some messages.
-            var sessionInfo = "Smallworld GIS Starting...\n" + execCommand;
-            execCommand = this.check_gisExec(execCommand);
+            const binx86gisexe = /[\/\\]bin[\/\\]x86[\/\\](gis.exe|runalias.exe)/i;
+            if (command.search(binx86gisexe)>0) {
+                var arr = command.split(binx86gisexe);
+                if (!exp.gispath) exp.gispath = arr[0];
+                command = arr[2];
+				exp.command =  command;
+			}
+			
+			command = command.replace(expression('-q'),"");
+			for(var key in exp ) {
+				if (key[0]=='-') {
+					exp[key] = extract(key,command);
+					if (exp[key]){
+						command = command.replace(expression(key),'');
+						command = command.replace(exp[key],'');
+					}	
+				}
+			}
+
+			if (exp['-p']){
+                exp['-p'] = exp['-p'].split(/[\/\\]bin[\/\\]x86/i)[0];
+                if (!exp.gispath)
+                    exp.gispath = exp['-p'];
+            } else if ( exp.gispath) {
+				exp['-p'] =  exp.gispath;
+			}	
+			exp.gispath = exslash( exp.gispath);
+
+			var args = command.trim().split(/\s+/);
+			let aliasRegEx =  /[\w_\-!?]+/;
+			if (args.length > 0 && aliasRegEx.test(args[0]) ){
+				exp.alias = args[0];
+			}
+			
+			command = (exp.command)? exp.command : "";
+			['-p','-e','-a'].forEach( (key)=>{
+				let val = exp[key];
+				if (val) {
+					exp[key] = exslash( exp[key]);
+					let keyRegEx =  new RegExp ("\\s?"+key+"\\s+"+val+"\\s?","i");	
+					if (keyRegEx.test(command))
+						command = command.replace(keyRegEx, " "+key+" "+exp[key]+" ");
+					else {
+						keyRegEx =  new RegExp ("\\s?"+key+"\\s+","i");	
+						if (!keyRegEx.test(command))	
+						command = key + " " + exp[key] + " " + command;
+					}
+					command = command.replace(/\s+/g," ")	
+				}
+			});	
+			exp.command = command;
+			exp.session = (exp.session)? exp.session :  exp.command;
+			return exp;
+		}			
+		const expand = function (aliasFile){
+			let stanzas = [];
+			try {      
+				fs.statSync(aliasFile);
+				var data = fs.readFileSync(aliasFile);
+				var codeBlock = data.toString();
+				var regEx = /^[\w_\-!?]+:\s*\n/gm; // 
+				let match;
+				while (match = regEx.exec(codeBlock)) {
+					stanzas.push(match[0].replace(/[:\n\s]/g,""));
+				}
+			}
+			catch(err) { }
+			return stanzas;
+		}
+        const exists = function (gisCommand1,gisCommand2) {
+			let cmd1 = explode(gisCommand1);
+			let cmd2 = explode(gisCommand2);
+			return cmd1.command == cmd2.command && cmd1.gispath == cmd2.gispath;
+		}
+        const extrim = function (title, alias) {
+			title = (title)? alias + ":  "+ title : alias
+			// let n = title.length;
+			// if (n >43) 
+			// 	title = "..."+title.substr(n-43);
+			return title; 
+		}
+
+        let cmd = explode(execCommand);
+        try {
+			if (cmd['-a'] && !cmd.alias){
+				let aliases = expand(cmd['-a']);
+				if (aliases.length){
+					for(var a in aliases) {
+						var subcmd =  explode(cmd);
+						subcmd.saveconfig = true;
+						subcmd.alias = aliases[a];
+						subcmd.command = subcmd.command.replace( cmd['-a'],  cmd['-a']+" "+subcmd.alias);
+						subcmd.session = extrim(subcmd.session, subcmd.alias);
+						aliases[a]= subcmd;
+					}    
+					let format = "[-p ProductPath] ... [-e environmentFile] ... -a aliasesFile [alias] ...";
+					return ask(this,'GIS command or gis_alias file to start a session:', format,aliases,"session");
+				} 
+			}			
+            if (!cmd.command){
+                var commands = [];
+                ['gisCommand','sessions'].forEach((setting)=>{
+                    let gisCommand = workbenchConfig.get(setting);
+                    for (var i in gisCommand) {      
+                        cmd = explode(gisCommand[i]);
+                        cmd.saveconfig = false;
+                        if (cmd['-a'] && !cmd.alias){
+                            let aliases = expand(cmd['-a']);
+                            if (aliases.length){
+                                for(var a in aliases) {
+                                    var subcmd =  explode(cmd);
+                                    subcmd.saveconfig = true;
+                                    subcmd.alias = aliases[a];
+                                    subcmd.command = subcmd.command.replace( cmd['-a'],  cmd['-a']+" "+subcmd.alias);
+                                    subcmd.session = extrim(subcmd.session, subcmd.alias);
+                                    commands.push(subcmd);
+                                }    
+                            }else {		
+                                commands.push(cmd);
+                            }
+                        } else {
+                            commands.push(cmd);
+                        }
+                    }
+                });
+                swgis.gisCommand = commands;
+                let format = "[-p ProductPath] ... [-e environmentFile] ... -a aliasesFile [alias] ...";
+                return ask(this,'GIS command or gis_alias file to start a session:', format,commands,"session");
+            } else if (!cmd.gispath) {
+                var gisPaths = workbenchConfig.get('gisPath');
+                var commands = [];
+                if (gisPaths && gisPaths.length){
+                    if (typeof gisPaths == 'string') gisPaths = [gisPaths];
+                    for(var a in gisPaths) {
+                        var subcmd =  explode(cmd);
+                        subcmd.saveconfig = true;
+                        subcmd.gispath = gisPaths[a].trim().split(swgis.binx86Pattern)[0].trim();
+                        if (!subcmd['-p']) subcmd['-p'] = subcmd.gispath;
+                        commands.push(subcmd);
+                    }    
+
+                } else {
+                    commands.push(cmd);
+                }
+                return ask(this,'Confirm path to Smallworld Core Product.', "%SMALLWORLD_GIS% : ",commands,"gispath");
+				
+            } else if (cmd.saveconfig == undefined) {
+                cmd.saveconfig = true;
+				var gisCommand = workbenchConfig.get('gisCommand');
+                for (var i in gisCommand) {      
+					if (exists(cmd,gisCommand[i])) {
+						cmd.saveconfig = false;
+						break;	
+					}
+				}    
+            }    
+
+            execCommand =  cmd.command;    
+            if(cmd.saveconfig){
+                var gisCommand = workbenchConfig.get('gisCommand');
+                gisCommand.push(execCommand );
+                const saveconfig = {
+                    title: 'Save GIS Command in Settings',
+                    command() {
+                        workbenchConfig.update('gisCommand',gisCommand, vscode.ConfigurationTarget.Global);
+                    }
+                }
+                const saveWorkspace = {
+                    title: 'Save in Workspace',
+                    command() {
+                        workbenchConfig.update('gisCommand',gisCommand, vscode.ConfigurationTarget.Workspace);
+                    }
+                }
+                const saveFolder = {
+                    title: 'Save in Folder',
+                    command() {
+                        workbenchConfig.update('gisCommand',gisCommand, vscode.ConfigurationTarget.WorkspaceFolder);
+                    }
+                }   
+                vscode.window.showInformationMessage(execCommand, saveconfig,saveWorkspace,saveFolder).then(selection => {
+                    if (selection) {
+                        selection.command();
+                    }
+                });
+            }
+
+			if (cmd['-p'] == cmd.gispath){
+				execCommand = execCommand.replace('-p ' +cmd['-p'] , "");
+            }
+            execCommand =  exslash(cmd.gispath+"\\bin\\x86\\gis.exe ")+ execCommand;    
+            let aliasStanza = (cmd.alias)? cmd.alias : 'swgis';
+            let aliasFile =  exslash( cmd['-a']);
+			let gisPath =  exslash(cmd.gispath);
+			let startup = cmd.startup;
+			if (!cmd['-e'] && aliasFile){
+                    var i = aliasFile.lastIndexOf("\\");
+					var envbatCmd =  aliasFile.slice(0,i)+"\\environment.bat";
+					execCommand = execCommand.replace(/\s+-a\s+/i,' -e ' + envbatCmd + " -a ");
+            }
+            execCommand = this.check_gisExec(execCommand);    
             console.log(execCommand);
-
-           const cp = vscode.window.createTerminal(aliasStanza);
-            const sw = this;
+            const cp = vscode.window.createTerminal(aliasStanza);
+            swgis.setActiveSession(cp, this, aliasStanza, aliasFile, gisPath);
 
             vscode.window.onDidOpenTerminal( function(event) { 
                 if (event.name === aliasStanza) {
-                    swgis.setActiveSession(cp, sw, aliasStanza, aliasPath, gisPath)
                     cp.show(workbenchConfig.get("preserveFocus"));
                     vscode.commands.executeCommand("workbench.action.terminal.clear");
                 }
@@ -180,7 +491,7 @@ class swSessions{
                     swgis.endActiveSession()
             });
 
-            this.check_startup(gisPath, cp);
+            this.check_startup(gisPath, cp, startup);
             cp.sendText(execCommand);
 
             try {            
@@ -192,7 +503,7 @@ class swSessions{
                 });
             }
             catch(err)
-            { vscode.window.showInformationMessage(err.message); }
+            { vscode.window.showErrorMessage(err.message); }
    
             // //    currentOpenTabFilePath = currentOpenTabFilePath.replace(/\\/g,'/');
             //    let cp = spawn(swgis.gisPath , 
@@ -214,32 +525,32 @@ class swSessions{
             //     {stdio: 'inherit'}
             // );
             
-        }
-         catch(err)
-        {
+        } catch(err)  {
             swgis.endActiveSession();
-            vscode.window.showInformationMessage(err.message);  
+            vscode.window.showErrorMessage(err.message);  
         }
     }
 
     packageCode(codeBlock,fileName){
         const swgis = this.swgis;
 
+		let tmp;
         if (fileName) {
-            fileName = fileName.split('\\');
-            fileName = fileName[fileName.length-1];
+			tmp = fileName.split('\\');
+            tmp = tmp[tmp.length-1];
         } else{
-            fileName = "vscode-" + swgis.aliasStanza + ".magik";
+            tmp = "vscode-" + swgis.aliasStanza + ".magik";
         }
-        var tmp = os.tmpdir()+"/"+fileName;
+		tmp = os.tmpdir()+"/"+tmp;
+		codeBlock = "#vscode:"+fileName+"\n"+codeBlock;
         for(var n=10; n<100;++n){
             try {
-                fs.writeFileSync(tmp+n,codeBlock);
+                fs.writeFileSync(tmp+n, codeBlock);
                 return "load_file(\""+tmp+n+"\")";
             }
             catch(err) {
-                if(n>9) 
-                    return "\"VSCode: failed to package Magik code "+tmp+n+"\"";
+                if(n>99) 
+                    return "\"VSCode: failed to package code "+tmp+n+"\"";
             }
         }
     }
@@ -257,12 +568,11 @@ class swSessions{
             case 'Selection','Line':
                 break; //send codeBlock as is 
             default:
-                codeBlock = this.packageCode(codeBlock,fileName)    
+				if (codeBlock.indexOf("\n")>0)
+                	codeBlock = this.packageCode(codeBlock,fileName)    
         }
-
         swgis.terminal.sendText(codeBlock);
     }
 
-	// ---------------------------------------------------------
 }
 exports.swSessions = swSessions;

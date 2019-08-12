@@ -13,15 +13,15 @@
 			"body": "templates\n\t# list of template Magik file names\n\nend\n"
 		},
 		"requires_datamodel": {
-			"prefix": "requires_datamodel ",
+			"prefix": "require",
 			"body": "requires_datamodel \n\t# list of datamodel details \n\nend\n"
 		},
 		"install_requires end": {
-			"prefix": "install_requires",
+			"prefix": "require",
 			"body": "install_requires\n\t# list of implementors \n${1:}\nend\n\n"
 		},
 		"requires": {
-			"prefix": "requires",
+			"prefix": "require",
 			"body": "requires\n\t# list of requires \n\nend\n\n"
 		},
 		"optional end": {

@@ -10,8 +10,8 @@ const magikTagKeys={
 };
 const magikSymbols = {
     _method                : ['_method',            '_endmethod', '()', vsSK.Method],
-    _proc                  : [ '_proc',               '_endproc', '()', vsSK.Array],
-    _block                 : ['_block',                '_endblock', '', vsSK.Array],
+    _proc                  : [ '_proc',               '_endproc', '()', vsSK.Function],
+    _block                 : ['_block',                '_endblock', '', vsSK.Struct],
     _global                : ['_global',               '_global', '<<', vsSK.Variable],
     _constant              : ['_constant',           '_constant', '<<', vsSK.Constant],
     _dynamic               : ['_dynamic',             '_dynamic', '<<', vsSK.Variable],
@@ -31,12 +31,15 @@ const magikSymbols = {
 exports.magikSymbols = magikSymbols;
 
 const keyPattern = {
-	class_dot_method: /[\w_\d!?]+\s?\.\s?[\w_\d!?]+\s?[\[\(<]?/,
-	class_dot:        /[\w_\d!?]+\s?\./,
-	dot_method:       /\.\s?[\w_\d!?]+\s?[\[\(<]?/,
-	variable:         /\W?\s?[\w_\d!?]+\s?\W?/,
+	class_dot_method: /[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*\s*(\[|\(|<)?/i,
+	class_dot_bare_method: /(\w+:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*/i,
+	class_dot:        /:?[a-z_!?]+[\w_!?]*\s*\./i,
+	dot_method:       /\.\s*[\a-z!?]+[\w_!?]*\s*[\[\(<]?/i,
+	variable:         /[a-z_!?]+[\w_!?]*/i,
 	product_module_keyword:  /\b(title|description|optional|templates|end|requires|install_requires|requires_datamodel|hidden|version|condition_message_accessor|language|hiddencase_installation|style_installation|ace_installation|system_installation|auth_installation)\b/i,
-	string:  { '"':/[^"]/, "'":/[^']/, ":|": /[^|]/, ":":/[a-z!?_A-Z0-9]/, "%":/(%\.|%space|%tab|%newline)/},
+	methodsToIgnore: /\b(invoke|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\b/i,
+	string_mask:     /(""|".*"|'.*'|:\|.*\||:[a-zA-Z_!?][\w_!?]*|:[a-zA-Z_!?][\w_!?]*\|.*\||%space|%tab|%newline|%.)/g,
+	string_index:  { '"':/[^"]/, "'":/[^']/, ":|": /[^|]/, ":":/[a-z!?_A-Z0-9]/, "%":/(%\.|%space|%tab|%newline)/},
 	_method: ["^\\s-*\\(_abstract\\(\n\\|\\s-\\)+\\)?\\(_private\\(\n\\|\\s-\\)+\\)?\\(_iter\\(\n\\|\\s-\\)+\\)?_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)\\)",
 		"^\\s-*_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
    		"^\\s-*\\(_abstract\\(\n\\|\\s-\\)+\\)?\\(_private\\(\n\\|\\s-\\)+\\)?_iter\\(\n\\|\\s-\\)+_method\\s-+\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\.\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
@@ -106,7 +109,7 @@ function  testInString(tagTxt,pos,inComment) {
 		if (i>0 && tagTxt[i-1]=='%') continue;
 		if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
 		i = i + ch.length; 
-		var strPttrn = keyPattern.string[ch];
+		var strPttrn = keyPattern.string_index[ch];
 		while(i<n && strPttrn.test(tagTxt[i])) ++i;
 		if (i > pos) return true;
 	}
@@ -156,27 +159,7 @@ exports.getSyntaxCode = getSyntaxCode
 
 function maskStringComments(lineText) {
 	// removes comments and masks strings with dash
-	var syntax = "";
-	for(var i=0; i< lineText.length; ++i ){
-		var s = lineText[i];
-		if (s=='#'){
-			break;
-		} else if (/["'|]/.test(s)){
-			['\"','\'','|'].forEach( function(ch){
-				if (ch != s) return;
-				while ( ++i < lineText.length  && lineText[i] != ch) s+='*';
-				s += ch;
-				syntax += s;
-			}); 
-			continue;
-		} else if (s=='%'){
-			s+='%*';
-			++i;
-			} else {
-			syntax += s;
-		};   
-		
-	};
+	var syntax = lineText.replace(keyPattern.string_mask,' ').replace(/#.*/,' ');
 	return syntax;
 }
 exports.maskStringComments = maskStringComments    
@@ -193,20 +176,48 @@ function proofMethodName(partialName) {
 			 partialName += ']';
 	return partialName;
 }
- exports.proofMethodName = proofMethodName    
+exports.proofMethodName = proofMethodName    
 
 function getClassMethodAtPosition(document, pos) {
 
 	var range = document.getWordRangeAtPosition(pos,keyPattern.class_dot_method);
 	 if (!range || range.isEmpty) return;
-	 var codeWord = document.getText(range).replace(/\s/g,'').split(".");
+	var codeLine = maskStringComments( document.lineAt(pos.line).text ) ;
+	var codeWord = codeLine.slice(range.start.character,range.end.character);
+		codeWord = codeWord.replace(/\s/g,'').split(".");
+	if (codeWord.length>1){
+		codeWord[0] = codeWord[0].toLowerCase();
+		codeWord[1] = proofMethodName(codeWord[1]);
+		var onClass = document.getWordRangeAtPosition(pos, keyPattern.class_dot);
+		codeWord[2] =  (onClass)? codeWord[0] : codeWord[1].trim().split(/[\(\[]/)[0]; 
+		return codeWord;
+	}	
+}
+exports.getClassMethodAtPosition = getClassMethodAtPosition    
+
+function getSymbolNameAtPosition(document, pos) {
+	const symbolNamePattern =/\b(register_new\s*\(|register_application\s*\(|session\s*=[\w\d!?_]:[\w\d!?_])/i;
+	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
+	 if (!range || range.isEmpty) return;
+	 var codeWord = document.getText(range).replace(/\s/g,'').split(/[\(:]/);
 	 if (codeWord.length == 2) {
-	codeWord[2] = codeWord[1];
-	 codeWord[1] = this.proofMethodName(codeWord[1]);
+		codeWord[2] = codeWord[1].replace(/\s/g,'').toLowerCase()
 	return codeWord;
 	 }
 }
-exports.getClassMethodAtPosition = getClassMethodAtPosition    
+exports.getSymbolNameAtPosition = getSymbolNameAtPosition    
+
+function getEnvironVarAtPosition(document, pos) {
+	const symbolNamePattern =/([\w_\d-!?]+:\s?|[\w\d!?_]\s*=|%[\w\d!?_]%)/i;
+	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
+	 if (!range || range.isEmpty) return;
+	 var codeWord = document.getText(range).replace(/\s/g,'').split(/[=%]/);
+	 if (codeWord.length == 2) {
+		codeWord[2] = codeWord[0].replace(/\s/g,'').toLowerCase()
+		return codeWord;
+	 }
+}
+exports.getEnvironVarAtPosition = getEnvironVarAtPosition    
 
 function get_ProductModuleName(document) {
 	for (var i=0 ; i < document.lineCount; ++i){
