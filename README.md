@@ -24,16 +24,20 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Open a Magik file to see the code outline for classes and methods in the file.
 * Add some Magik code to the file and use F2-b to compile the file.
 
-![Snippet](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/snippet.png)
+![Snippet](images/snippet.png)
 
 * open the Symbol browser by CTRL-T and see a list of Object Exemplars, Methods, and Procs in the entire product tree, and click to jump to a definition.
 
-![CTRL-T](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
+![CTRL-T](images/CodeOutline.png)
 
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
 * Click on a `Class.Method` combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
 
-![References](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeReferences.png)
+* Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
+* Click the Light bulb to get the command to Start a Smallworld Session.
+* An `environment.bat` in the same path as gis_aliases will automatically be loaded.
+
+![Run GIS Alias](images/SWRunGisAlias.png)
 
 # Starting a Smallworld sessions 
 
@@ -47,7 +51,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Click the Light bulb to get the command to Start a Smallworld Session.
 * An `environment.bat` in the same path as gis_aliases will automatically be loaded.
 
-![Run GIS Alias](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SWRunGisAlias.png)
+## Magik Compiler
 
 
 * Set the Smallworld gis.exe path in the Settings and setup optional startup batch commands to run before the gis.exe.
