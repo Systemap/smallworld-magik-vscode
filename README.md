@@ -1,4 +1,4 @@
-# Integrated Development Environment for Smallworld Magik
+# Integrated Development Environment for Smallworld GIS
 
 This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Smallworld) application development and [Magik](https://en.wikipedia.org/wiki/Magik_%28programming_language%29) programming language.
 
@@ -20,7 +20,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![Run GIS Command](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/GisCommand.png)
 
-* Optionally save the GIS Command in Settings to the list of GIS Commands preconfigured for `F2-z`.
+* Optionally save the GIS Command in Settings to the list of GIS Commands pre-configured for `F2-z`.
 * Open a Magik file to see the code outline for classes and methods in the file.
 * Add some Magik code to the file and use F2-b to compile the file.
 
@@ -33,12 +33,9 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
 * Click on a `Class.Method` combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
 
-* Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
-* Click the Light bulb to get the command to Start a Smallworld Session.
-* An `environment.bat` in the same path as gis_aliases will automatically be loaded.
+![References](images/CodeReferences.png)
 
-![Run GIS Alias](images/SWRunGisAlias.png)
-
+---
 # Starting a Smallworld sessions 
 
 ### Run a GIS Command
@@ -51,8 +48,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Click the Light bulb to get the command to Start a Smallworld Session.
 * An `environment.bat` in the same path as gis_aliases will automatically be loaded.
 
-## Magik Compiler
-
+![Run GIS Alias](images/SWRunGisAlias.png)
 
 * Set the Smallworld gis.exe path in the Settings and setup optional startup batch commands to run before the gis.exe.
 * Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
@@ -76,7 +72,7 @@ Open File-Preferences-Settings and search for Smallworld GIS under the `Extensio
 
 ## Smallworld GIS Path (`Smallworld.gisPath`)
 
-The `Smallworld.gisPath` defines the location of Smallworld gis.exe or the product path. The gisPath is an array of strings that allows configuration for multipe product locations.  
+The `Smallworld.gisPath` defines the location of Smallworld gis.exe or the product path. The gisPath is an array of strings that allows configuration for multiple product locations.  
 Example:
     "Smallworld.gisPath": [ "C:\\Smallworld5\\core", "C:\\Smallworld4\\product" ]
 
@@ -116,16 +112,16 @@ You can edit `Smallworld.gisCommand` in the Settings editor in Visual Studio Cod
 
 ![GIS Command Settings](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/gisCommandSettings.png)	
 
-##GIS Command Session Configuration (`Smallworld.sessions`)
+## GIS Command Session Configuration (`Smallworld.sessions`)
 
 The advanced format for a GIS Command can be defined in the `Smallworld.sessions` section of settings in the form of a JSON object. 
-GIS Commands defined in `Smallworld.sessions` are self contained and do not share or use the `Smallworld.startup` or `Smallwrold.gisPath` values. 
+GIS Commands defined in `Smallworld.sessions` are self contained and do not share or use the `Smallworld.startup` or `Smallworld.gisPath` values. 
 The`Smallworld.sessions` setting is defined in the following format:
 
 	{
 		"Smallworld.sessions": [
 			{	
-				"session": "< optional lable diaplayed on the list of GIS Commands F2-z >"
+				"session": "< optional label displayed on the list of GIS Commands F2-z >"
 				"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >"
 				"startup": "< optional DOS commands to run before gis.exe >"
 				"command": "<[-p productDir] [-e envFile] [-j options] ... [-a aliasFile] alias ...>"
@@ -133,7 +129,7 @@ The`Smallworld.sessions` setting is defined in the following format:
 		}
 	}
 
-An example configuration for multiple sessions is inlcuded in the next section. 
+An example configuration for multiple sessions is included in the next section. 
 To edit the `Smallworld.sessions`, click on __`Edit in settings.json`__ in the Settings editor.
 
 ![Smallworld Sessions Settings](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/sessionsSettings.png)	
@@ -189,7 +185,11 @@ To define F7 key combinations for the Magik compiler:
 
 # Release Notes
 
-## [1.4.0] - 2019-08-04
+## [1.4.2] - 18-08-2019
+* Support for _package in Symbol Provider  
+* Minor Corrections and bug fixes
+
+## [1.4.0] - 04-08-2019
 
 * New GIS Command (F2-z) to start a session. 
 * Multi-environment configuration for GIS path, command and startup.
@@ -201,7 +201,7 @@ To define F7 key combinations for the Magik compiler:
 ### Limited Support for Smallworld Older Versions
 There are some limitations for Smallworld versions older than 5.0: 
 
-* GIS Command syntax does not fully support Smallword 3.x and 4.x 
+* GIS Command syntax does not fully support Smallworld 3.x and 4.x 
 * Smallworld 3.x and 4.x sessions are not integrated Terminals
 * Magik Compiler commands do not support Smallworld 3.x and 4.x
 
@@ -209,6 +209,6 @@ There are some limitations for Smallworld versions older than 5.0:
 Opening/closing a Workspace or the active Folder while a Smallworld Session is running, will terminate the session without a warnings.
 
 **Workarounds:** 
-* Use `Add Folder to Workspace...` to access the sourece tree
+* Use `Add Folder to Workspace...` to access the source tree
 * Quit the Smallworld Session before switching the active Folder or Workspace.
 
