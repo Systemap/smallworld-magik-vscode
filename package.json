@@ -37,6 +37,11 @@
 		"configuration": {
 			"title": "Smallworld GIS",
 			"properties": {
+				"Smallworld.recursiveCodeOutline": {
+					"type": "boolean",
+					"default": false,
+					"description": "Recursive code Symbols search, e.g. to display _dynamic and _proc Symbols inside a method."
+				},
 				"Smallworld.gisPath": {
 					"type": "array",
 					"items": {
@@ -79,6 +84,14 @@
 			}
 		],
 		"commands": [
+			{
+				"command": "swSessions.dumpWorkspaceCache",
+				"title": "SW Dump Workspace Cache"
+			},
+			{
+				"command": "swSessions.clearWorkspaceCache",
+				"title": "SW Clear Workspace Cache"
+			},
 			{
 				"command": "swSessions.gisCommand",
 				"title": "SW Run GIS Command"
@@ -156,6 +169,14 @@
 				"when": "editorTextFocus"
 			},
 			{
+				"key": "f2 c",
+				"command": "swSessions.clearWorkspaceCache"
+			},
+			{
+				"key": "f2 d",
+				"command": "swSessions.dumpWorkspaceCache"
+			},
+			{
 				"key": "f2 z",
 				"command": "swSessions.gisCommand"
 			}
@@ -205,12 +226,9 @@
 				],
 				"filenames": [
 					"gis_aliases",
-					"environment.bat",
 					"product.def",
 					"module.def",
 					"load_list.txt",
-					"*config.xml",
-					"*gui.xml",
 					"patch_list.txt"
 				],
 				"configuration": "./cfg/swgis-configuration.json"

@@ -105,7 +105,7 @@ class gisAliases{
         if (swgis.aliasePattern.test(alias)){
             alias = alias.split(":")[0].trim()
             if (swgis.getActiveSession()) {
-                return this.mHover('Session is runing');
+                return this.mHover('Terminal session is active: ' + swgis.aliasStanza);
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");
             } else {

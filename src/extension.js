@@ -63,6 +63,8 @@ function activate(context) {
     gisA.run(context,disposable);
     swS.run(context,disposable);
     disposable.push( vscCmd.registerCommand( "swSessions.gisCommand",  function(gisCmd) { swS.gisCommand(gisCmd) }) );
+    disposable.push( vscCmd.registerCommand( "swSessions.clearWorkspaceCache",  function(cacheId) { swS.clearWorkspaceCache(cacheId) }) );
+    disposable.push( vscCmd.registerCommand( "swSessions.dumpWorkspaceCache",  function(fname) { swS.dumpWorkspaceCache(fname) }) );
 
 }
 exports.activate = activate;

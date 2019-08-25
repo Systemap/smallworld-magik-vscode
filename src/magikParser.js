@@ -9,6 +9,7 @@ const magikTagKeys={
 	index: null
 };
 const magikSymbols = {
+    _package               : ['_package',            '\n', '\n', vsSK.Package],
     _method                : ['_method',            '_endmethod', '()', vsSK.Method],
     _proc                  : [ '_proc',               '_endproc', '()', vsSK.Function],
     _block                 : ['_block',                '_endblock', '', vsSK.Struct],
@@ -23,16 +24,16 @@ const magikSymbols = {
     def_property           : ['def_property' ,               ')', '()', vsSK.Property],
     define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable], 
     define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant], 
-    condition              : ['condition.define_condition',  ')', '()', vsSK.Constant],
-    register_new           : ['magik_session.register_new',  ')', '()', vsSK.Module],
+    define_condition       : ['condition.define_condition',  ')', '()', vsSK.Constant],
+    register_session       : ['magik_session.register_new',  ')', '()', vsSK.Module],
     register_application   : ['smallworld_product.register_application', ')','()', vsSK.Module],
-    'sw!patch_software'    : ['sw!patch_software',           ')', '()', vsSK.Module]
+    sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module]
 }
 exports.magikSymbols = magikSymbols;
 
 const keyPattern = {
 	class_dot_method: /[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*\s*(\[|\(|<)?/i,
-	class_dot_bare_method: /(\w+:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*/i,
+	class_dot_bare_method: /(\w+:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*/ig,
 	class_dot:        /:?[a-z_!?]+[\w_!?]*\s*\./i,
 	dot_method:       /\.\s*[\a-z!?]+[\w_!?]*\s*[\[\(<]?/i,
 	variable:         /[a-z_!?]+[\w_!?]*/i,
@@ -138,8 +139,6 @@ function getSyntaxCode(lineText,keyPos) {
 			break;
 		} else if (/\s/.test(s)){
 		 	continue;
-		} else if (/\s/.test(s)){
-			continue;
 	   } else if (/["'|]/.test(s)){
 			['\"','\'','|'].forEach( function(ch){
 				if (ch != s) return;
@@ -196,14 +195,17 @@ function getClassMethodAtPosition(document, pos) {
 exports.getClassMethodAtPosition = getClassMethodAtPosition    
 
 function getSymbolNameAtPosition(document, pos) {
-	const symbolNamePattern =/\b(register_new\s*\(|register_application\s*\(|session\s*=[\w\d!?_]:[\w\d!?_])/i;
+	// const symbolNamePattern =/\b(register_new\s*\(|register_application\s*\(|session\s*=[a-z!?_]:[\w!?])/i;
+	const symbolNamePattern = keyPattern.variable;
 	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
 	 if (!range || range.isEmpty) return;
-	 var codeWord = document.getText(range).replace(/\s/g,'').split(/[\(:]/);
-	 if (codeWord.length == 2) {
-		codeWord[2] = codeWord[1].replace(/\s/g,'').toLowerCase()
+	 var codeWord = document.getText(range);
+	// var codeLine = document.getLine(pos.line); .replace(/\s/g,'');
+	// var rx = new RegExp (codeWord+"\s*[\\(\\[]")
+	//  if (rx.test(codeWord)) {
+	// 	codeWord[2] = codeWord[1].replace(/\s/g,'').toLowerCase()
+	//  }
 	return codeWord;
-	 }
 }
 exports.getSymbolNameAtPosition = getSymbolNameAtPosition    
 

@@ -8,8 +8,8 @@ const os = require("os");
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
 
 const swgis = {
-    swWorkspace: {index: [], symbs: [], paths: [], refes:[]},
-    activeSession: {swTerminal:null, swAgent:null, aliasStanza:null, aliasFile:null, gisPath:null, cbAgent:null},
+    swWorkspace: {index: [], symbs: [], paths: [], refes:{} },
+    activeSession: {swTerminal:null, swAgent:null, gisCommand:null, aliasFile:null, gisPath:null, cbAgent:null},
     gisPath: [],
     gisCommand: [],
     codeAction: [], 
@@ -18,14 +18,43 @@ const swgis = {
     cbDocument: null,
     cbData: [],
     cbInfo: [],
-    aliasStanza: null, 
     errorHover:null, 
-	aliasePattern: /[A-Za-z_0-9-]:$/i,
+	aliasePattern: /[a-z_0-9-]:$/i,
 	binx86Pattern: /[\/\\]bin[\/\\]x86/i,
-    setActiveSession: function(swTerminal, swAgent, aliasStanza, aliasFile, gisPath) {
+	filterWorkspaceSymbs: function (filter, className, methodName){
+		filter = new RegExp(filter,'i')
+		var swWorkspace = swgis.swWorkspace;
+		var fullmatch = [];
+		var partmatch = [];
+		swWorkspace.symbs.forEach(function(symbols) {
+			for (var i in symbols){
+				var symbol = symbols[i];
+				if(!symbol.name) {
+					// ignore
+					console.log("--- filterWorkspaceSymbs... symbol.name is null:"+symbol);
+					console.log(symbol);
+				} else if (symbol.name.search(filter)!=0) {
+					continue;
+				} else if (methodName && methodName == symbol.name)  {
+					if (className && className != symbol.containerName)
+						partmatch.push( symbol );
+					else 	
+						fullmatch.push( symbol );
+				} else if (className && className ==  symbol.name)  {
+						fullmatch.push( symbol );
+				} else {
+					    partmatch.push( symbol );
+				}
+			}
+		});
+		if (fullmatch.length >0) 
+			return  fullmatch;
+		else 
+			return  partmatch;
+	},	
+    setActiveSession: function(swTerminal, swAgent, gisCommand, aliasFile, gisPath) {
         swgis.sessions = swAgent; 
         swgis.terminal = swTerminal; 
-        swgis.aliasStanza = aliasStanza;
         // var swPath = workbenchConfig.get('SMALLWORLD_GIS');
         // if (gisPath) {  
         //     swPath = gisPath.replace("/bin/x86/gis.exe","");
@@ -34,14 +63,13 @@ const swgis = {
         aSession.swTerminal = swTerminal; 
         aSession.swAgent = swAgent; 
         aSession.aliasFile = aliasFile;
-        aSession.aliasStanza = aliasStanza;
+        aSession.gisCommand = gisCommand;
         aSession.gisPath = gisPath; 
         aSession.cbAgent = null;
     },
     endActiveSession: function(){
         swgis.sessions = null; 
         swgis.terminal = null; 
-        swgis.aliasStanza = null;
         var aSession = swgis.activeSession 
         aSession.gisPath = null; 
         aSession.swTerminal = null; 
@@ -49,7 +77,7 @@ const swgis = {
         aSession.cbAgent = null;
         aSession.cbSocket = null;
         aSession.aliasFile = null;
-        aSession.aliasStanza = null;
+        aSession.gisCommand = null;
         },
     getActiveSession: function(){
         var cp = swgis.terminal;
@@ -83,7 +111,7 @@ class swSessions{
         var gisPath = workbenchConfig.get('gisPath');
         var startup = workbenchConfig.get('startup');
         if(!gisCommand || !gisCommand.length) {
-                vscode.window.showInformationMessage("Run Smallworld.gisCommand (F2 z) to start a session. Save Smallworld.gisCommand configurations in Preferences - Settings - Smallworld GIS");
+                vscode.window.showInformationMessage("Press F2-z (SW RUN GIS Command) to start a session. Save GIS Commands in Preferences - Settings - Smallworld GIS");
             if (!gisPath || !gisPath.length)
                 vscode.window.showInformationMessage("Configure Smallworld.gisPath in Preferences - Settings - Smallworld GIS, to specify the path of gis.exe");
         } else if (!startup || !gisPath.length)
@@ -103,6 +131,7 @@ class swSessions{
             if (gisPath) {
                 try {
                   var stat = fs.statSync(gisPath);
+				  gisPath = gisPath.split(swgis.binx86Pattern)[0].replace(/\//g,'\\');
                 } catch(err) {
                     errorMsg = (errorMsg)? errorMsg+", \n"+ gisPath : err.message 
                     gisPath = null;
@@ -111,7 +140,7 @@ class swSessions{
             if (gisPath)  swgis.gisPath.push(gisPath);
         }    
         if (errorMsg) 
-            vscode.window.showErrorMessage("Smallworld.gisPath Erro: \n"+errorMsg);  
+            vscode.window.showErrorMessage("Smallworld.gisPath Error: \n"+errorMsg);  
             return swgis.gisPath.length > 0 ;       
     }
 
@@ -181,10 +210,54 @@ class swSessions{
 
     }
 
+    clearWorkspaceCache(cacheId){
+		const swWorkspace = this.swgis.swWorkspace;
+		for(var id in swWorkspace) {
+			if(!cacheId || cacheId==id)
+				swWorkspace[id] = [];
+        }
+        vscode.window.showInformationMessage("SW Workspace Cache (Definitions, Symbold and References) has been cleared.");
+    }
+
+    dumpWorkspaceCache(fileName){
+
+        if (!fileName) {
+            fileName = os.tmpdir()+"\\swWorkspace.tsv";
+        }
+        
+        const swWorkspace = this.swgis.swWorkspace;
+        let data = "#swWorkspace:"+fileName+'\n';
+
+        for(var i in swWorkspace['index']) {
+            for(var n in swWorkspace['symbs'][i]){
+                data += i+':'+n;
+                for(var id in swWorkspace['symbs'][i][n])
+                    data += '\t'+id+':'+ swWorkspace['symbs'][i][n][id];
+                data += '\t'+ swWorkspace['index'][i]+'\n';
+            }
+        }
+        let key = 'refes';
+        data += '\n--- '+key+' ---------------\n';
+		for(var fname in swWorkspace[key]) {
+            for(var id in swWorkspace[key][fname]) {
+                data += '\t'+id+':'+swWorkspace[key][fname][id];
+            }
+            data += '\t'+fname+'\n';
+        }
+
+        try {
+            fs.writeFileSync(fileName, data);
+        }
+        catch(err) {
+            console.log("\"VSCode: failed to package code "+fileName);
+        }
+        vscode.window.showInformationMessage("SW Workspace Cache Dumped to:"+fileName);
+    }
+
     gisCommand(execCommand){
         const swgis = this.swgis;
 		if (swgis.getActiveSession()) 
-			return vscode.window.showInformationMessage("GIS terminal is active: "+swgis.activeSession.aliasStanza); 
+			return vscode.window.showInformationMessage("GIS terminal is active: "+swgis.activeSession.session); 
 
 
 		const ask = async (engine, prompt, format, items, key) => {
@@ -466,7 +539,7 @@ class swSessions{
 				execCommand = execCommand.replace('-p ' +cmd['-p'] , "");
             }
             execCommand =  exslash(cmd.gispath+"\\bin\\x86\\gis.exe ")+ execCommand;    
-            let aliasStanza = (cmd.alias)? cmd.alias : 'swgis';
+            let aliasStanza = cmd.session;
             let aliasFile =  exslash( cmd['-a']);
 			let gisPath =  exslash(cmd.gispath);
 			let startup = cmd.startup;
@@ -478,7 +551,7 @@ class swSessions{
             execCommand = this.check_gisExec(execCommand);    
             console.log(execCommand);
             const cp = vscode.window.createTerminal(aliasStanza);
-            swgis.setActiveSession(cp, this, aliasStanza, aliasFile, gisPath);
+            swgis.setActiveSession(cp, this, cmd);
 
             vscode.window.onDidOpenTerminal( function(event) { 
                 if (event.name === aliasStanza) {
@@ -539,7 +612,7 @@ class swSessions{
 			tmp = fileName.split('\\');
             tmp = tmp[tmp.length-1];
         } else{
-            tmp = "vscode-" + swgis.aliasStanza + ".magik";
+            tmp = "swgis-vscode.magik";
         }
 		tmp = os.tmpdir()+"/"+tmp;
 		codeBlock = "#vscode:"+fileName+"\n"+codeBlock;

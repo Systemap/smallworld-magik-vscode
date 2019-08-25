@@ -25,12 +25,18 @@ class codeBrowser{
 		return this.get_codeSymbols(codeBlock, codeUri);
     }
         
+    get_fileReferences(fileName) {
+		var data = fs.readFileSync(fileName);
+		var codeBlock = data.toString();
+		var codeUri =  vscode.Uri.file(fileName);
+		return this.get_codeReferences(codeBlock, codeUri);
+    }
+        
     get_codeSymbols(codeBlock, codeUri,languageId, token) {
 		var fileName = codeUri.fsPath;
         var symInfos, refInfos=[];
         if(languageId=="magik" || fileName.endsWith(".magik")) {
             symInfos = this.get_magikSymbols(codeBlock, codeUri, token); 
-            refInfos = this.get_magikReferences(codeBlock, codeUri, token); 
         } else if(fileName.endsWith("\module.def")) {
             symInfos = this.get_moduleSymbols(codeBlock, codeUri, token);
         } else if(fileName.endsWith("\product.def")) {
@@ -47,15 +53,34 @@ class codeBrowser{
         if (  i < 0 ) {    
             swWorkspace.symbs.push(symInfos);   
             swWorkspace.index.push(fileName);  
-            swWorkspace.refes.push(refInfos);    
         } else {
             swWorkspace.symbs[i] = symInfos;         
-            swWorkspace.refes[i] = refInfos;         
 		}
         return  symInfos;   
     };
 
-    get_workspaceSymbols(rootPath) {
+    get_codeReferences(codeBlock, codeUri,languageId, token) {
+		var fileName = codeUri.fsPath;
+        var refInfos = [];
+        if(languageId=="magik" || fileName.endsWith(".magik")) {
+            refInfos = this.get_magikReferences(codeBlock, codeUri, token); 
+        // } else if(fileName.endsWith("\module.def")) {
+        //     symInfos = this.get_moduleReferences(codeBlock, codeUri, token);
+        // } else if(fileName.endsWith("\product.def")) {
+        //     symInfos = this.get_productReferences(codeBlock, codeUri, token);
+        // } else if (fileName.endsWith("\gis_aliases")) {
+        //     symInfos = this.get_aliasesReferences(codeBlock, codeUri, token);
+        // } else if (fileName.endsWith("\environment.bat")) {
+        //     symInfos = this.get_environReferences(codeBlock, codeUri, token);
+        } else {
+            return [];
+        }
+        const swWorkspace = this.swWorkspace;
+        swWorkspace.refes[fileName] = refInfos;         
+        return  refInfos;   
+    };
+
+    scanWorkspace(rootPath,caller,token) {
 		if (!rootPath) {
 			var aTextEditor = vscode.window.activeTextEditor;
 	        if (aTextEditor)
@@ -70,7 +95,7 @@ class codeBrowser{
 		};
 
 		const ignorePattern = [".git",".vscode"];
-		const includePattern = [".magik",".xml","\module.def","\product.def","\gis_aliases","\environment.bat"];
+		const includePattern = [".magik","\module.def","\product.def","\gis_aliases","\environment.bat"];
         const swgis = this.swgis;
         const swWorkspace = swgis.swWorkspace;
         const isFileSignature = function(fName, fSignatures) {
@@ -78,8 +103,7 @@ class codeBrowser{
 				if(fName.endsWith(fSignatures[f])) return true;
 		}
 
-		const cB =  this;
-		const grab = function(dir) {
+		const grab = function(dir,codeScanner) {
 			if ( isFileSignature(dir,ignorePattern) ) return 0;
 			var fileList = fs.readdirSync(dir) 
 			var count = fileList.length;
@@ -90,43 +114,82 @@ class codeBrowser{
 					// ignore
 				} else if (stat.isDirectory()) {
 //					console.log( "--- swgis Scanning ("+i+"/"+fileList.length+") "+dir.replace(rootPath,".") );		
-					count += grab(file);
+					count += grab(file,codeScanner);
 				} else if( isFileSignature(file,includePattern) && swWorkspace.index.indexOf(file) < 0 ) {    
-                    try {
-						cB.get_fileSymbols(file);
-                        // console.log("--- get_workspaceSymbols: "+symbols.length+" -"+file);	
-                    } catch(err) {
-                        console.log("--- get_workspaceSymbols Error:  "+err.message+" - "+file);		
-                    }   
+ 					let symbs = codeScanner(file);
                 }	
 			}
 			return count;
 		}         
 
-		const walk = async function(rootPath){
+		const walk = async function(rootPath, codeScanner){
 			try {
 				swWorkspace.paths.push(rootPath);
 				var d1 = new Date();
-				var count = await grab(rootPath);
+				var count = await grab(rootPath, codeScanner);
 				var t = Math.round((new Date().getTime()-d1.getTime())/1000);
 				vscode.window.showInformationMessage("Scanning Workspace took: "+t+"s - files: "+count+" - "+rootPath);
-				console.log("--- get_workspaceSymbols: -Count: "+count+" -Time: "+t+"s - "+rootPath);		
+				console.log("--- scanWorkspace: -Count: "+count+" -Time: "+t+"s - "+rootPath);		
 			} catch(err) {
 				var i = swWorkspace.paths.indexOf(rootPath)
 				if (i>-1) 
 					swWorkspace.paths[i] = "Failed";
 				vscode.window.showInformationMessage("Scanning Workspace Failed "+err.message+" "+rootPath);
-				console.log("--- get_workspaceSymbols:  Error: "+err.message+" - "+rootPath);		
+				console.log("--- scanWorkspace:  Error: "+err.message+" - "+rootPath);		
 			}   
 		}
 
-        if (swWorkspace.paths.indexOf(rootPath)<0) {
-			// vscode.window.showInformationMessage("Scanning Workspace ... "+rootPath);
-            walk(rootPath);    
+		const grob = function(dir,pathIndex,codeScanner) {
+			if ( isFileSignature(dir,ignorePattern) ) return 0;
+			var fileList = fs.readdirSync(dir) 
+			var count = fileList.length;
+			for(var i in fileList){
+				var file = dir + '\\' + fileList[i];
+				var stat = fs.statSync(file);
+				if (!stat || isFileSignature(file,ignorePattern) ) {
+					// ignore
+				} else if (stat.isDirectory()) {
+//					console.log( "--- swgis Scanning ("+i+"/"+fileList.length+") "+dir.replace(rootPath,".") );		
+					count += grob(file,pathIndex,codeScanner,codeScanner);
+				} else if(!pathIndex[file] && isFileSignature(file,includePattern)) {    
+					 let data = codeScanner(file);
+					 pathIndex[file] = data;
+                }	
+			}
+			return count;
+		}         
+	
+		const work = async function(rootPath,pathIndex, codeScanner){
+			try {
+				if (pathIndex[rootPath]) return;
+				var d1 = new Date();
+				var count = await grob(rootPath,pathIndex,codeScanner);
+				pathIndex[rootPath] = [];
+				var t = Math.round((new Date().getTime()-d1.getTime())/1000);
+				vscode.window.showInformationMessage("Scanning Workspace took: "+t+"s - files: "+count+" - "+rootPath);
+				console.log("--- scanWorkspace: -Count: "+count+" -Time: "+t+"s - "+rootPath);		
+			} catch(err) {
+				pathIndex[rootPath] = null; 
+				vscode.window.showInformationMessage("Scanning Workspace Failed "+err.message+" "+rootPath);
+				console.log("--- scanWorkspace:  Error: "+err.message+" - "+rootPath);		
+			}   
+		}
+
+		var pathIndex, codeScanner, eng = this;
+		if (caller=='provideReferences') {
+			pathIndex = swWorkspace.refes;
+			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
+            work(rootPath,pathIndex,codeScanner);    
+
+
+        } else if (swWorkspace.paths.indexOf(rootPath)<0) {
+			pathIndex = swWorkspace.symbs;
+			codeScanner = function(arg){ return eng.get_fileSymbols(arg);}
+            walk(rootPath,codeScanner);    
             swWorkspace.paths.push(rootPath);
         };
 
-        return swWorkspace.symbs; 
+        return pathIndex; 
     }
     
 
@@ -166,7 +229,7 @@ class codeBrowser{
 
     get_magikReferences(codeBlock, codeUri, token) {
         const parserKeys = magikParser.keyPattern;
-        const class_dot_bare_method = new RegExp(parserKeys.class_dot_bare_method,"gi");
+        const class_dot_bare_method = parserKeys.class_dot_bare_method;
         const methodsToIgnore = parserKeys.methodsToIgnore;
 		const objectsToIgnore = /\b(_self|_super)\b/i;
         const refes = {};
@@ -178,16 +241,18 @@ class codeBrowser{
 		};
 		var codeLines = codeBlock.split("\n");
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
-            var codeLine = magikParser.maskStringComments( codeLines[lineCount] )
+            var codeLine = codeLines[lineCount].split('#')[0];
 			let match;
             while (match = class_dot_bare_method.exec(codeLine)) {
+				// codeLine = magikParser.maskStringComments( codeLine );
+				// if (magikParser.testInString(codeLine,match.index,true)) continue;
 				let ref = match[0].split(".");
-				if (methodsToIgnore.test(ref[1])) continue;
-				let def = new RegExp('_method\\s+'+ref[0],'i') ;
-				if (def.test(codeLine)) continue;
+				// if (methodsToIgnore.test(ref[1])) continue;
+				// let def = new RegExp('_method\\s+'+ref[0],'i') ;
+				// if (def.test(codeLine)) continue;
 				pushRef(ref[1],lineCount,match.index + match[0].length - ref[1].length);
-				if (objectsToIgnore.test(ref[0])) continue;
-				pushRef(ref[0],lineCount,match.index);
+				// if (objectsToIgnore.test(ref[0])) continue;
+				// pushRef(ref[0],lineCount,match.index);
 			}
         }
         return refes;
@@ -198,8 +263,8 @@ class codeBrowser{
         var symRefIndex = [];
 		var lastContainer = null;  
 		var codeLines = codeBlock.split("\n");
-        var vsSymbols = this.parse_magikTags(codeLines,codeUri);
-		let convertTagToSymbol = function(tag,k,vsSymbols){
+		var vsSymbols = this.parse_magikTags(codeLines,codeUri);
+		const convertTagToSymbol = function(tag,k,vsSymbols){
 			// var tag = vsSymbols[k]
 			var parentName = tag.containerName;   
 			if (parentName == null) {
@@ -212,7 +277,7 @@ class codeBrowser{
 				var p1 = tag.keyPosition;
 				var i = Math.max(0,p1.line-1);
 				p1 = new vscode.Position( i,0 );
-				var tagRef = [parentName,vscode.SymbolKind.Class,p1,tag.endPosition,parentName];// + " " + i];
+				var tagRef = [parentName,vscode.SymbolKind.Class,p1,tag.endPosition,parentName,tag.package];// + " " + i];
 				//   symRef.push(parentName);
 					symRefIndex.push(tagRef);
 					tag.parentNode = tagRef;
@@ -229,6 +294,7 @@ class codeBrowser{
 			// var symInfo = new vscode.SymbolInformation(tag.nodeName, tag.vsKind, symRnge, fileName, parentName);
 			var label = tag.nodeName; //+ " " + tag.keyPosition.line;
 			var symInfo = new vscode.SymbolInformation(label, tag.vsKind, symRnge, codeUri, parentName);
+			symInfo.package = tag.package;
 			return symInfo;
 		}
 
@@ -244,7 +310,8 @@ class codeBrowser{
  
         for(var k in symRefIndex){
             var tagRef = symRefIndex[k]
-            var symRefInfo = new vscode.SymbolInformation(tagRef[4], tagRef[1], new vscode.Range(tagRef[2],tagRef[3]),codeUri );
+			var symRefInfo = new vscode.SymbolInformation(tagRef[4], tagRef[1], new vscode.Range(tagRef[2],tagRef[3]),codeUri );
+			symRefInfo.package = tagRef[5];
             vsSymbols.push(symRefInfo); 
         };
         
@@ -272,10 +339,15 @@ class codeBrowser{
     };
               
     parse_magikTags(codeLines,codeUri) {
-        var tags = [], codeLinesTags;
-            // parse the document for symbols
+		var tags = [], codeLinesTags, swPackage ='';
+		var recursiveCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("recursiveCodeOutline");
+		// parse the document for symbols
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
-			codeLinesTags = this.parse_magikSyntax(codeLines,lineCount);
+			if (/_package/i.test(codeLines[lineCount])) {
+				swPackage = codeLines[lineCount].replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
+				continue;
+			}
+			codeLinesTags = this.parse_magikSyntax(codeLines,lineCount,swPackage);
 			for (var i in codeLinesTags){
 				var tag = codeLinesTags[i];
 				// build node and container names    
@@ -359,13 +431,15 @@ class codeBrowser{
 				tag.containerName = parentName;
 				tag.nodeName = methd+parms;    
 				tags.push(tag);
-			}    
+
+				if (!recursiveCodeOutline) lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
+			}   
         }  
         return tags;  
     }
 
-    parse_magikSyntax(code,keyLine) {
-        var lineText = code[keyLine];
+    parse_magikSyntax(code,keyLine,swPackage) {
+		var lineText = code[keyLine];
 		var tagKeys = [];
 		var pCount =0;
         let match, keys = magikParser.magikKeys(); 
@@ -375,10 +449,10 @@ class codeBrowser{
             
 			// check tag    
             var tagKey = keys.index[match[1].toLowerCase()];
-
-            if (/_global/.test(tagKey)) {
-                if (/_global\s+_constant/i.test(lineText)) continue;
-            } else if (/(_global|_constant)/.test(tagKey)) {
+			
+			if (/_global/i.test(tagKey)) {
+					if (/_global\s+_constant/i.test(lineText)) continue;
+            } else if (/(_global|_constant)/i.test(tagKey)) {
                 if (/(_global\s+_constant\s+_proc[@\s\(|_global\s+_proc[@\s\(])/i.test(lineText)) continue;
             }
             var mSymb = magikParser.magikSymbols[tagKey];
@@ -416,7 +490,8 @@ class codeBrowser{
                 parentNode:  null,
                 containerName: null,
                 nodeName:    null,   
-                params :     tagParams,
+				params :     tagParams,
+				package:	 swPackage,
                 vsKind:      mSymb[3] 
             };
             tagKeys.push(tag);
