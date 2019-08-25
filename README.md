@@ -26,7 +26,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![Snippet](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/snippet.png)
 
-* Open the Symbol browser by CTRL-T and search by package:class_name.method_name format:
+* Open the Symbol browser by CTRL-T for formatted search __`Package:Class.Method`__ 
 
 ![SymbolSearch](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SymbolSearch.png)
 
