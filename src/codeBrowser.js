@@ -441,10 +441,11 @@ class codeBrowser{
     parse_magikSyntax(code,keyLine,swPackage) {
 		var lineText = code[keyLine];
 		var tagKeys = [];
-		var pCount =0;
+		var pCount =0, tagFootprint=0;
         let match, keys = magikParser.magikKeys(); 
         while ((match = keys.regexp.exec(lineText)) !== null) {
             var keyPos = match.index;
+			if (keyPos < tagFootprint) continue;
             if (magikParser.testInString(lineText,keyPos,true)) continue;
             
 			// check tag    
@@ -455,7 +456,7 @@ class codeBrowser{
             } else if (/(_global|_constant)/i.test(tagKey)) {
                 if (/(_global\s+_constant\s+_proc[@\s\(|_global\s+_proc[@\s\(])/i.test(lineText)) continue;
             }
-            var mSymb = magikParser.magikSymbols[tagKey];
+			const mSymb = magikParser.magikSymbols[tagKey];
             var tagRange = this.parse_foldingRange(code, keyLine, keyPos, mSymb[0], mSymb[1]) 
 			var tagParams = "";
             var syntaxText ="", pCount =0;
@@ -467,9 +468,19 @@ class codeBrowser{
 				var p2 = maskedSyntaxCode.match(/\)/g);
 				pCount += ((p1)? p1.length : 0) - ((p2)? p2.length : 0);
 				if (pCount == 0) {
-                    keyPos = keyPos+tagKey.length;
                     if (tagKey[0]=='_') keyPos+=1;
+					
+					let compound_index =  mSymb[4].exec(syntaxText);
+					if (compound_index)	{
+						keyPos = keyPos+compound_index[0].length;
+						console.log(syntaxText)
+					} else{
+						keyPos = keyPos+tagKey.length;
+					}
+					tagFootprint = keyPos;
+		
                     syntaxText = magikParser.getSyntaxCode(syntaxText,keyPos,mSymb[1],mSymb[2]);
+
                     p1 = syntaxText.indexOf('(');
                     p2 = syntaxText.lastIndexOf(')')+1;
                     if (p1 > -1 && p2 > p1) {
