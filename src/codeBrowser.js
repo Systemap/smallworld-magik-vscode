@@ -176,11 +176,20 @@ class codeBrowser{
 		}
 
 		var pathIndex, codeScanner, eng = this;
-		if (caller=='provideReferences') {
+		if (!caller) {
 			pathIndex = swWorkspace.refes;
 			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
             work(rootPath,pathIndex,codeScanner);    
 
+			pathIndex = swWorkspace.symbs;
+			codeScanner = function(arg){ return eng.get_fileSymbols(arg);}
+			walk(rootPath,codeScanner);    
+			swWorkspace.paths.push(rootPath);
+
+        } else if (caller=='provideReferences') {
+			pathIndex = swWorkspace.refes;
+			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
+            work(rootPath,pathIndex,codeScanner);    
 
         } else if (swWorkspace.paths.indexOf(rootPath)<0) {
 			pathIndex = swWorkspace.symbs;
@@ -346,7 +355,7 @@ class codeBrowser{
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
 			var codeLine = codeLines[lineCount];
 			if (/_package/i.test(codeLine)) {
-				swPackage = codeLines[lineCount].replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
+				swPackage = codeLine.replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
 				continue;
 			}
 			codeLinesTags = this.parse_magikSyntax(codeLines,lineCount,swPackage);
@@ -438,11 +447,8 @@ class codeBrowser{
 						break;    
 					default:
 						parentName = tagTxt.split(".")[0].trim();
-						// if (tag.params.length > 0 )
-						// 	methd = tag.params.split(',')[0];
-						// else 
-							methd = tag.text.split(/[\(\[]*/);
-							methd = methd[1].split(',')[0];
+						methd = tag.text.split(/[\(\[]*/);
+						methd = methd[1].split(',')[0];
 						parms = "";
 					}	
 				} catch(err) {
