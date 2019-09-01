@@ -48,7 +48,7 @@
 						"type": "string"
 					},
 					"default": [],
-					"markdownDescription": "Path to Smallworld installation (e.g. `C:\\Smallworld\\core`)."
+					"markdownDescription": "Path to Smallworld installation (e.g. `C:\\Smallworld\\core`).\n\n---"
 				},
 				"Smallworld.gisCommand": {
 					"type": "array",
@@ -56,7 +56,7 @@
 						"type": "string"
 					},
 					"default": [],
-					"markdownDescription": "GIS commands to start a session (e.g. `-a C:\\Smallworld\\cambridge_db\\config\\gis_aliases cambridge_db_open`)"
+					"markdownDescription": "GIS commands to start a session (e.g. `-a C:\\Smallworld\\cambridge_db\\config\\gis_aliases cambridge_db_open`).\n\n---"
 				},
 				"Smallworld.sessions": {
 					"type": "array",
@@ -64,7 +64,7 @@
 						"type": "object"
 					},
 					"default": [],
-					"markdownDescription": "Configuration for a GIS command to start a session. Read more [here](https://github.com/siamz/smallworld-magik-vscode#gis-command-session-configuration-smallworldsessions). Example:\n\n \t{ \"Smallworld.sessions\": [\n\t\t{\n\t\t \"session\": \"Camb DB Open\",\n\t\t \"gisPath\": \"C:/Smallworld/core\",\n\t\t \"startup\": [\"set CAMBRIDGE_DB_DIR=C:/Smallworld/cambridge_db\"],\n\t\t \"command\": \"-a %CAMBRIDGE_DB_DIR%/config/gis_aliases cambridge_db_open\"\n\t\t}\n\t  ]\n\t}"
+					"markdownDescription": "Advanced configuration for a GIS command to start a session (see readme [GIS Command Session Configuration](https://github.com/siamz/smallworld-magik-vscode#gis-command-session-configuration-smallworldsessions) for details). Example:\n\n \t{ \"Smallworld.sessions\": [\n\t\t{\n\t\t \"session\": \"Camb DB Open\",\n\t\t \"gisPath\": \"C:/Smallworld/core\",\n\t\t \"startup\": [\"set CAMBRIDGE_DB_DIR=C:/Smallworld/cambridge_db\"],\n\t\t \"command\": \"-a %CAMBRIDGE_DB_DIR%/config/gis_aliases cambridge_db_open\"\n\t\t}\n\t  ]\n\t}"
 				},
 				"Smallworld.startup": {
 					"type": "array",
@@ -72,7 +72,7 @@
 						"type": "string"
 					},
 					"default": [],
-					"markdownDescription": "Optional startup batch commands to run before gis.exe. Invalid commands do not stop the startup. Example:\n\"Smallworld.startup\": [\"set PROJECT_DIR=C:/SW5/cambridge_db\",\"call %PROJECT_DIR%/config/test_env.bat\"]"
+					"markdownDescription": "Optional startup batch commands to run before gis.exe. Invalid commands do not stop the startup. e.g.\n\n `set PROJECT_DIR=C:/SW5/cambridge_db` \n\n `call %PROJECT_DIR%/config/test_env.bat`\n\n---"
 				}
 			}
 		},
