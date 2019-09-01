@@ -341,9 +341,11 @@ class codeBrowser{
     parse_magikTags(codeLines,codeUri) {
 		var tags = [], codeLinesTags, swPackage ='';
 		var recursiveCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("recursiveCodeOutline");
+		var blockCode = 0;
 		// parse the document for symbols
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
-			if (/_package/i.test(codeLines[lineCount])) {
+			var codeLine = codeLines[lineCount];
+			if (/_package/i.test(codeLine)) {
 				swPackage = codeLines[lineCount].replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
 				continue;
 			}
@@ -354,8 +356,11 @@ class codeBrowser{
 				var parentName, methd, parms;
 				var tagTxt = tag.text;
 				try {
-					switch (tag.keyWord) {
+					switch (tag.key) {
 					case '_method':
+					case '_private_method':
+					case '_abstract_method':
+					case '_iter_method':
 						let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
 						if (match) match = match[0];
 						else  match = tag.text;
@@ -365,11 +370,13 @@ class codeBrowser{
 						parms = "";
 						break; 
 					case '_proc':
+					case '_iter_proc':
 						if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
 							var lastline = codeLines[tag.keyPosition.line-1];
 							if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
 						} ;   
 					case '_block':
+						if(blockCode<lineCount) blockCode = (tag.endPosition)? tag.endPosition.line : 0;
 						parentName = null;//tag.keyWord;
 						methd = tag.keyWord + " ";
 						if ((i = tagTxt.indexOf("<<")) > -1) {
@@ -387,7 +394,7 @@ class codeBrowser{
 					case '_global':
 					case '_constant':
 						parentName =  null;//tag.keyWord;
-						methd = tag.keyWord+ " ";
+						// methd = tag.keyWord+ " ";
 						var arr = tagTxt.split(tag.keyWord);
 						parms = arr[arr.length-1];
 						if ((i=parms.indexOf("<<")) > -1)            
@@ -401,24 +408,41 @@ class codeBrowser{
 						methd = tag.keyWord;
 						parms = "";
 						break;                       
-					case 'condition.define_condition':
-					case 'smallworld_product.register_application':
-					case 'magik_session.register_new':
-						parentName = tag.keyWord.split(".")[0];               
+					case 'condition':
+					case 'magik_session':
+					case 'application':
+						parentName = tag.key;               
 						methd = tag.params.split('(')[1].split(',')[0];
+						if (methd[0]==':') methd = methd.slice(1,methd.length);
+						else if (methd[0]=='\"'||methd[0]=='\'') methd = methd.slice(1,methd.length-2);
 						parms = "";
 						break;    
-					case 'sw!patch_software':
+					case 'define_property':
+					case 'define_slot_access':
+					case 'define_pseudo_slot':
+					case 'def_property':
+					case 'define_shared_variable':
+					case 'define_shared_constant':
+						parentName = tagTxt.split(".")[0].trim();
+						if (tag.params.length){
+							methd = tag.params.split(/\(:*/);
+							methd = methd[1].split(',')[0];
+						} else 
+							methd = tag.text;
+						parms = "";
+						break;
+					case 'sw_patch_software':
 						parentName = null;
 						methd = tagTxt.trim();
 						parms = "";                 
 						break;    
 					default:
 						parentName = tagTxt.split(".")[0].trim();
-						if (tag.params.length > 0 )
-							methd = tag.params.split(',')[0];
-						else 
-							methd = tag.text.split('(')[1].split(',')[0];
+						// if (tag.params.length > 0 )
+						// 	methd = tag.params.split(',')[0];
+						// else 
+							methd = tag.text.split(/[\(\[]*/);
+							methd = methd[1].split(',')[0];
 						parms = "";
 					}	
 				} catch(err) {
@@ -432,7 +456,7 @@ class codeBrowser{
 				tag.nodeName = methd+parms;    
 				tags.push(tag);
 
-				if (!recursiveCodeOutline) lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
+				if (!recursiveCodeOutline && lineCount > blockCode) lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
 			}   
         }  
         return tags;  
@@ -473,7 +497,7 @@ class codeBrowser{
 					let compound_index =  mSymb[4].exec(syntaxText);
 					if (compound_index)	{
 						keyPos = keyPos+compound_index[0].length;
-						console.log(syntaxText)
+						// console.log(syntaxText)
 					} else{
 						keyPos = keyPos+tagKey.length;
 					}

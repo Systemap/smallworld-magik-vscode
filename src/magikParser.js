@@ -46,33 +46,26 @@ const keyPattern = {
 		 "^\\s-*def_slotted_exemplar([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
 	_global : ["^\\s-*_global\\(\n\\|\\s-\\)+\\(_constant\\(\n\\|\\s-\\)+\\)?\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
 	_package : /_package\s+\w+/i,
-    _proc                  : ['_proc',               '_endproc',  '()', vsSK.Function,  /_iter\\s+_proc/i],
-    _block                 : ['_block',              '_endblock',   '', vsSK.Struct,    /_proc/i],
-    _global                : ['_global',               '_global', '<<', vsSK.Variable,  /_block/i],
-    _constant              : ['_constant',           '_constant', '<<', vsSK.Constant,  /_constant/i],
-    _dynamic               : ['_dynamic',             '_dynamic', '<<', vsSK.Variable,  /_dynamic/i],
-    _abstract_method       : ['_abstract',          '_endmethod', '()', vsSK.Method,    keyPattern._abstract_method],
-    _private_method        : ['_private',           '_endmethod', '()', vsSK.Method,    keyPattern._private_method],
-    _iter_method           : ['_iter',              '_endmethod', '()', vsSK.Method,    keyPattern._iter_method],
-    _method                : ['_method',            '_endmethod', '()', vsSK.Method,    /_method/i],
-    def_mixin              : ['def_mixin',                   ')', '()', vsSK.Property,  /def_mixin/i], 
-    def_slotted_exemplar   : ['def_slotted_exemplar',        ')', '()', vsSK.Property,  /def_slotted_exemplar/i], 
-    define_slot_access     : ['define_slot_access',          ')', '()', vsSK.Property,  /define_slot_access/i], 
-    define_pseudo_slot     : ['define_pseudo_slot',          ')', '()', vsSK.Property,  /define_pseudo_slot/i], 
-    define_property        : ['define_property',             ')', '()', vsSK.Property,  /define_property/i], 
-    def_property           : ['def_property' ,               ')', '()', vsSK.Property,  /def_property/i],
-    define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable,  /define_shared_variable/i], 
-    define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant,  /define_shared_constant/], 
-    define_condition       : ['condition.define_condition',  ')', '()', vsSK.Constant,    /condition/],
-    register_session       : ['magik_session.register_new',  ')', '()', vsSK.Module,      /register_new/],
-    register_application   : ['smallworld_product.register_application', ')','()', vsSK.Module,/smallworld_product\.register_application/i],
-    sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,'sw!patch_software']
-
+    _block                 : /_block/i,
+    _constant              :  /_constant/i,
+    _dynamic               : /_dynamic/i,
+    def_mixin              :  /def_mixin/i, 
+    def_slotted_exemplar   : /def_slotted_exemplar/i, 
+    define_slot_access     : /define_slot_access/i, 
+    define_pseudo_slot     : /define_pseudo_slot/i, 
+    define_property        : /define_property/i, 
+    def_property           : /def_property/i,
+    define_shared_variable : /define_shared_variable/i, 
+    define_shared_constant : /define_shared_constant/i, 
+    define_condition       : /condition\s*\.\s*define_condition/i,
+    register_session       : /magik_session.register_new/i,
+    register_application   : /smallworld_product\s*\.\*register_application/i,
+    sw_patch_software      : /sw!patch_software/i
 }
 exports.keyPattern = keyPattern;
 
 const magikSymbols = {
-    _package               : ['_package',            '\n', '\n', vsSK.Package],
+    _package               : ['_package',            '\n', '\n', vsSK.Package, keyPattern._package],
     _iter_proc             : ['_iter\\s+_proc',       '_endproc', '()', vsSK.Function,  keyPattern._iter_proc],
     _proc                  : ['_proc',               '_endproc',  '()', vsSK.Function,  /_iter\\s+_proc/i],
     _block                 : ['_block',              '_endblock',   '', vsSK.Struct,    /_proc/i],
@@ -91,9 +84,9 @@ const magikSymbols = {
     def_property           : ['def_property' ,               ')', '()', vsSK.Property,  /def_property/i],
     define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable,  /define_shared_variable/i], 
     define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant,  /define_shared_constant/], 
-    define_condition       : ['condition.define_condition',  ')', '()', vsSK.Constant,    /condition/],
-    register_session       : ['magik_session.register_new',  ')', '()', vsSK.Module,      /register_new/],
-    register_application   : ['smallworld_product.register_application', ')','()', vsSK.Module,/smallworld_product\.register_application/i],
+    condition              : ['condition.define_condition',  ')', '()', vsSK.Constant,    /condition/],
+    magik_session          : ['magik_session.register_new',  ')', '()', vsSK.Module,      /register_new/],
+    application            : ['smallworld_product.register_application', ')','()', vsSK.Module,/smallworld_product\.register_application/i],
     sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,'sw!patch_software']
 }
 exports.magikSymbols = magikSymbols;
