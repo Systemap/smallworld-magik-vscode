@@ -118,7 +118,7 @@ You can edit `Smallworld.gisCommand` in the Settings editor in Visual Studio Cod
 
 ## GIS Command Session Configuration (`Smallworld.sessions`)
 
-The advanced format for a GIS Command can be defined in the `Smallworld.sessions` section of settings in the form of a JSON object. 
+ `Smallworld.sessions` section provides a flexible configuration for multiple and complex GIS Command definitions in the form of a JSON object. 
 GIS Commands defined in `Smallworld.sessions` are self contained and do not share or use the `Smallworld.startup` or `Smallworld.gisPath` values. 
 The`Smallworld.sessions` setting is defined in the following format:
 
