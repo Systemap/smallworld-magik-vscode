@@ -94,6 +94,7 @@ class codeBrowser{
             return;
 		};
 
+		rootPath = rootPath.replace(/\//g,"\\");
 		const ignorePattern = [".git",".vscode"];
 		const includePattern = [".magik","\module.def","\product.def","\gis_aliases","\environment.bat"];
         const swgis = this.swgis;
@@ -108,15 +109,19 @@ class codeBrowser{
 			var fileList = fs.readdirSync(dir) 
 			var count = fileList.length;
 			for(var i in fileList){
-				var file = dir + '/' + fileList[i];
+				var file = dir + '\\' + fileList[i];
 				var stat = fs.statSync(file);
 				if (!stat || isFileSignature(file,ignorePattern) ) {
 					// ignore
 				} else if (stat.isDirectory()) {
 //					console.log( "--- swgis Scanning ("+i+"/"+fileList.length+") "+dir.replace(rootPath,".") );		
 					count += grab(file,codeScanner);
-				} else if( isFileSignature(file,includePattern) && swWorkspace.index.indexOf(file) < 0 ) {    
- 					let symbs = codeScanner(file);
+				} else if( isFileSignature(file,includePattern) && swWorkspace.index.indexOf(file) < 0 ) {  
+					try{   
+						 let symbs = codeScanner(file);
+					} catch(err) {
+						console.log("--- scanWorkspace:  Error: "+err.message+" - "+file);		
+					}   
                 }	
 			}
 			return count;
@@ -124,9 +129,9 @@ class codeBrowser{
 
 		const walk = async function(rootPath, codeScanner){
 			try {
-				swWorkspace.paths.push(rootPath);
 				var d1 = new Date();
 				var count = await grab(rootPath, codeScanner);
+				swWorkspace.paths.push(rootPath);
 				var t = Math.round((new Date().getTime()-d1.getTime())/1000);
 				vscode.window.showInformationMessage("Scanning Workspace took: "+t+"s - files: "+count+" - "+rootPath);
 				console.log("--- scanWorkspace: -Count: "+count+" -Time: "+t+"s - "+rootPath);		
@@ -176,11 +181,20 @@ class codeBrowser{
 		}
 
 		var pathIndex, codeScanner, eng = this;
-		if (caller=='provideReferences') {
+		if (!caller) {
 			pathIndex = swWorkspace.refes;
 			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
             work(rootPath,pathIndex,codeScanner);    
 
+			pathIndex = swWorkspace.symbs;
+			codeScanner = function(arg){ return eng.get_fileSymbols(arg);}
+			walk(rootPath,codeScanner);    
+			swWorkspace.paths.push(rootPath);
+
+        } else if (caller=='provideReferences') {
+			pathIndex = swWorkspace.refes;
+			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
+            work(rootPath,pathIndex,codeScanner);    
 
         } else if (swWorkspace.paths.indexOf(rootPath)<0) {
 			pathIndex = swWorkspace.symbs;
@@ -263,7 +277,7 @@ class codeBrowser{
         var symRefIndex = [];
 		var lastContainer = null;  
 		var codeLines = codeBlock.split("\n");
-		var vsSymbols = this.parse_magikTags(codeLines,codeUri);
+		var vsSymbols = this.parse_magikSyntax(codeLines,codeUri);
 		const convertTagToSymbol = function(tag,k,vsSymbols){
 			// var tag = vsSymbols[k]
 			var parentName = tag.containerName;   
@@ -338,131 +352,129 @@ class codeBrowser{
         return symInfos;
     };
               
-    parse_magikTags(codeLines,codeUri) {
+    parse_magikSyntax(codeLines,codeUri) {
 		var tags = [], codeLinesTags, swPackage ='';
 		var recursiveCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("recursiveCodeOutline");
 		var blockCode = 0;
 		// parse the document for symbols
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
 			var codeLine = codeLines[lineCount];
-			if (/_package/i.test(codeLine)) {
-				swPackage = codeLines[lineCount].replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
-				continue;
-			}
-			codeLinesTags = this.parse_magikSyntax(codeLines,lineCount,swPackage);
-			for (var i in codeLinesTags){
-				var tag = codeLinesTags[i];
-				// build node and container names    
-				var parentName, methd, parms;
-				var tagTxt = tag.text;
-				try {
+			try {
+				if (/_package/i.test(codeLine)) {
+					swPackage = codeLine.replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
+					continue;
+				}
+				codeLinesTags = this.parse_magikTags(codeLines,lineCount,swPackage);
+				for (var i in codeLinesTags){
+					var tag = codeLinesTags[i];
+					// build node and container names    
+					var parentName, methd, parms;
+					var tagTxt = tag.text;
 					switch (tag.key) {
-					case '_method':
-					case '_private_method':
-					case '_abstract_method':
-					case '_iter_method':
-						let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
-						if (match) match = match[0];
-						else  match = tag.text;
-						match = match.split(".");
-						parentName = match[0];
-						methd =  magikParser.proofMethodName(match[match.length-1]);
-						parms = "";
-						break; 
-					case '_proc':
-					case '_iter_proc':
-						if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
-							var lastline = codeLines[tag.keyPosition.line-1];
-							if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
-						} ;   
-					case '_block':
-						if(blockCode<lineCount) blockCode = (tag.endPosition)? tag.endPosition.line : 0;
-						parentName = null;//tag.keyWord;
-						methd = tag.keyWord + " ";
-						if ((i = tagTxt.indexOf("<<")) > -1) {
-							var arr = tagTxt.slice(0,i).trim().split(" ");
-							parms = arr[arr.length-1].trim();
-						} else if (tagTxt.indexOf("@") > -1){
-							parms = tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
-						} else {
-							parms = "@unammed";
-						}
-						if (tagTxt.indexOf("(") > -1) 
-							parms += "()";    
-						break;    
-					case '_dynamic':
-					case '_global':
-					case '_constant':
-						parentName =  null;//tag.keyWord;
-						// methd = tag.keyWord+ " ";
-						var arr = tagTxt.split(tag.keyWord);
-						parms = arr[arr.length-1];
-						if ((i=parms.indexOf("<<")) > -1)            
-							parms = parms.slice(0,i).trim().split(" ")[0];
-						else  
-							parms = parms.trim();
-						break;    
-					case 'def_mixin':
-					case 'def_slotted_exemplar':
-						parentName = tag.params.split('(')[1].split(',')[0];
-						methd = tag.keyWord;
-						parms = "";
-						break;                       
-					case 'condition':
-					case 'magik_session':
-					case 'application':
-						parentName = tag.key;               
-						methd = tag.params.split('(')[1].split(',')[0];
-						if (methd[0]==':') methd = methd.slice(1,methd.length);
-						else if (methd[0]=='\"'||methd[0]=='\'') methd = methd.slice(1,methd.length-2);
-						parms = "";
-						break;    
-					case 'define_property':
-					case 'define_slot_access':
-					case 'define_pseudo_slot':
-					case 'def_property':
-					case 'define_shared_variable':
-					case 'define_shared_constant':
-						parentName = tagTxt.split(".")[0].trim();
-						if (tag.params.length){
-							methd = tag.params.split(/\(:*/);
-							methd = methd[1].split(',')[0];
-						} else 
-							methd = tag.text;
-						parms = "";
-						break;
-					case 'sw_patch_software':
-						parentName = null;
-						methd = tagTxt.trim();
-						parms = "";                 
-						break;    
-					default:
-						parentName = tagTxt.split(".")[0].trim();
-						// if (tag.params.length > 0 )
-						// 	methd = tag.params.split(',')[0];
-						// else 
+						case '_method':
+						case '_private_method':
+						case '_abstract_method':
+						case '_iter_method':
+							let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
+							if (match) match = match[0];
+							else  match = tag.text;
+							match = match.split(".");
+							parentName = match[0];
+							methd =  magikParser.proofMethodName(match[match.length-1]);
+							parms = "";
+							break; 
+						case '_proc':
+						case '_iter_proc':
+							if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
+								var lastline = codeLines[tag.keyPosition.line-1];
+								if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
+							} ;   
+						case '_block':
+							if(blockCode<lineCount) blockCode = (tag.endPosition)? tag.endPosition.line : 0;
+							parentName = null;//tag.keyWord;
+							methd = tag.keyWord + " ";
+							if ((i = tagTxt.indexOf("<<")) > -1) {
+								var arr = tagTxt.slice(0,i).trim().split(" ");
+								parms = arr[arr.length-1].trim();
+							} else if (tagTxt.indexOf("@") > -1){
+								parms = tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
+							} else {
+								parms = "@unammed";
+							}
+							if (tagTxt.indexOf("(") > -1) 
+								parms += "()";    
+							break;    
+						case '_dynamic_import':
+						case '_dynamic':
+						case '_global_constant':
+						case '_global':
+						case '_constant':
+							parentName =  null;//tag.keyWord;
+							methd = tag.key+ " ";
+							var arr = tagTxt.split(tag.keyWord);
+							parms = arr[arr.length-1];
+							if ((i=parms.indexOf("<<")) > -1)            
+								parms = parms.slice(0,i).trim().split(" ")[0];
+							else  
+								parms = parms.trim();
+							break;    
+						case 'def_mixin':
+						case 'def_slotted_exemplar':
+							parentName = tag.params.split('(')[1].split(',')[0];
+							methd = tag.keyWord;
+							parms = "";
+							break;                       
+						case 'condition':
+						case 'magik_session':
+						case 'application':
+							parentName = tag.key;               
+							methd = tag.params.split('(')[1].split(',')[0];
+							if (methd[0]==':') methd = methd.slice(1,methd.length);
+							else if (methd[0]=='\"'||methd[0]=='\'') methd = methd.slice(1,methd.length-2);
+							parms = "";
+							break;    
+						case 'define_property':
+						case 'define_slot_access':
+						case 'define_pseudo_slot':
+						case 'def_property':
+						case 'define_shared_variable':
+						case 'define_shared_constant':
+							parentName = tagTxt.split(".")[0].trim();
+							if (tag.params.length){
+								methd = tag.params.split(/\(:*/);
+								methd = methd[1].split(',')[0];
+							} else 
+								methd = tag.text;
+							parms = "";
+							break;
+						case 'sw_patch_software':
+							parentName = null;
+							methd = tagTxt.trim();
+							parms = "";                 
+							break;    
+						default:
+							parentName = tagTxt.split(".")[0].trim();
 							methd = tag.text.split(/[\(\[]*/);
 							methd = methd[1].split(',')[0];
-						parms = "";
+							parms = "";
 					}	
-				} catch(err) {
-					console.log("---parse_magikTags Error: "+err.message+" - "+ codeLines[lineCount]+" - "+codeUri.fsPath);
-					console.log(tag);
-				}
-				if (parentName)  parentName = parentName.replace(/[\"\':]/g,'');
-				if (methd)  methd = methd.replace(/[\"\':]/g,'');
+					if (parentName)  parentName = parentName.replace(/[\"\':]/g,'');
+					if (methd)  methd = methd.replace(/[\"\':]/g,'');
 
-				tag.containerName = parentName;
-				tag.nodeName = methd+parms;    
-				tags.push(tag);
+					tag.containerName = parentName;
+					tag.nodeName = methd+parms;    
+					tags.push(tag);
 
-				if (!recursiveCodeOutline && lineCount > blockCode) lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
-			}   
+					if (!recursiveCodeOutline && lineCount > blockCode) lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
+				}   
+			} catch(err) {
+				console.log("---parse_magikSyntax Error: "+err.message+" - Line("+lineCount+"): "+codeLine+" - "+codeUri.fsPath);
+			}
         }  
         return tags;  
     }
 
-    parse_magikSyntax(code,keyLine,swPackage) {
+    parse_magikTags(code,keyLine,swPackage) {
 		var lineText = code[keyLine];
 		var tagKeys = [];
 		var pCount =0, tagFootprint=0;

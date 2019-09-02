@@ -44,11 +44,15 @@ const keyPattern = {
 		"^\\s-*def_mixin([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
 		"^\\s-*define_binary_operator_case([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)",
 		 "^\\s-*def_slotted_exemplar([ \t\n]*:\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
-	_global : ["^\\s-*_global\\(\n\\|\\s-\\)+\\(_constant\\(\n\\|\\s-\\)+\\)?\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
+	_global_index : ["^\\s-*_global\\(\n\\|\\s-\\)+\\(_constant\\(\n\\|\\s-\\)+\\)?\\(\\sw*\\(\\s$\\S$*\\s$\\sw*\\)?\\)"],
 	_package : /_package\s+\w+/i,
     _block                 : /_block/i,
+    _global                :  /_global/i,
+    _global_constant       :  /_global\s+_constant/i,
     _constant              :  /_constant/i,
+    _dynamic_import        : /_dynamic\s+_import/i,
     _dynamic               : /_dynamic/i,
+    _import                : /_import/i,
     def_mixin              :  /def_mixin/i, 
     def_slotted_exemplar   : /def_slotted_exemplar/i, 
     define_slot_access     : /define_slot_access/i, 
@@ -59,7 +63,7 @@ const keyPattern = {
     define_shared_constant : /define_shared_constant/i, 
     define_condition       : /condition\s*\.\s*define_condition/i,
     register_session       : /magik_session.register_new/i,
-    register_application   : /smallworld_product\s*\.\*register_application/i,
+    register_application   : /smallworld_product\s*\.\s*register_application/i,
     sw_patch_software      : /sw!patch_software/i
 }
 exports.keyPattern = keyPattern;
@@ -67,11 +71,14 @@ exports.keyPattern = keyPattern;
 const magikSymbols = {
     _package               : ['_package',            '\n', '\n', vsSK.Package, keyPattern._package],
     _iter_proc             : ['_iter\\s+_proc',       '_endproc', '()', vsSK.Function,  keyPattern._iter_proc],
-    _proc                  : ['_proc',               '_endproc',  '()', vsSK.Function,  /_iter\\s+_proc/i],
-    _block                 : ['_block',              '_endblock',   '', vsSK.Struct,    /_proc/i],
-    _global                : ['_global',               '_global', '<<', vsSK.Variable,  /_block/i],
+    _proc                  : ['_proc',                 '_endproc', '()', vsSK.Function,  /_proc/i],
+    _block                 : ['_block',                '_endblock',  '', vsSK.Struct,    /_block/i],
+    _global_constant       : ['_global\\s*_constant',  '_global',   '<<', vsSK.Variable,  keyPattern._global_constant],
+    _global                : ['_global',               '_global',   '<<', vsSK.Variable,  keyPattern._global],
     _constant              : ['_constant',           '_constant', '<<', vsSK.Constant,  /_constant/i],
-    _dynamic               : ['_dynamic',             '_dynamic', '<<', vsSK.Variable,  /_dynamic/i],
+    _dynamic_import        : ['_dynamic\\s*_import',  '_dynamic',   '<<', vsSK.Variable,   keyPattern._dynamic_import],
+    _dynamic               : ['_dynamic',             '_dynamic',   '<<', vsSK.Variable,    keyPattern._dynamic_import],
+    _import                : ['_import',              '_import',   '<<', vsSK.Variable,    keyPattern._dynamic_import],
     _abstract_method       : ['_abstract',          '_endmethod', '()', vsSK.Method,    keyPattern._abstract_method],
     _private_method        : ['_private',           '_endmethod', '()', vsSK.Method,    keyPattern._private_method],
     _iter_method           : ['_iter',              '_endmethod', '()', vsSK.Method,    keyPattern._iter_method],
@@ -86,8 +93,8 @@ const magikSymbols = {
     define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant,  /define_shared_constant/], 
     condition              : ['condition.define_condition',  ')', '()', vsSK.Constant,    /condition/],
     magik_session          : ['magik_session.register_new',  ')', '()', vsSK.Module,      /register_new/],
-    application            : ['smallworld_product.register_application', ')','()', vsSK.Module,/smallworld_product\.register_application/i],
-    sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,'sw!patch_software']
+    application            : ['smallworld_product.register_application', ')','()', vsSK.Module, keyPattern.register_application],
+    sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,/sw!patch_software/i]
 }
 exports.magikSymbols = magikSymbols;
 
@@ -184,7 +191,8 @@ exports.getSyntaxCode = getSyntaxCode
 
 function maskStringComments(lineText) {
 	// removes comments and masks strings with dash
-	var syntax = lineText.replace(keyPattern.string_mask,' ').replace(/#.*/,' ');
+	const blank = function(x) {return " ".repeat(x.length)};
+	var syntax = lineText.replace(keyPattern.string_mask, blank  ).replace(/#.*/,blank);
 	return syntax;
 }
 exports.maskStringComments = maskStringComments    
