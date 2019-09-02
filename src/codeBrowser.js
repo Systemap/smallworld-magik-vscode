@@ -360,103 +360,103 @@ class codeBrowser{
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
 			var codeLine = codeLines[lineCount];
 			try {
-				if (/_package/i.test(codeLine)) {
-					swPackage = codeLine.replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
-					continue;
-				}
+			if (/_package/i.test(codeLine)) {
+				swPackage = codeLine.replace(/_package\s+/i,'').replace(/\s+/i,'').split(/\W/)[0].toLowerCase();
+				continue;
+			}
 				codeLinesTags = this.parse_magikTags(codeLines,lineCount,swPackage);
-				for (var i in codeLinesTags){
-					var tag = codeLinesTags[i];
-					// build node and container names    
-					var parentName, methd, parms;
-					var tagTxt = tag.text;
+			for (var i in codeLinesTags){
+				var tag = codeLinesTags[i];
+				// build node and container names    
+				var parentName, methd, parms;
+				var tagTxt = tag.text;
 					switch (tag.key) {
-						case '_method':
-						case '_private_method':
-						case '_abstract_method':
-						case '_iter_method':
-							let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
-							if (match) match = match[0];
-							else  match = tag.text;
-							match = match.split(".");
-							parentName = match[0];
-							methd =  magikParser.proofMethodName(match[match.length-1]);
-							parms = "";
-							break; 
-						case '_proc':
-						case '_iter_proc':
-							if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
-								var lastline = codeLines[tag.keyPosition.line-1];
-								if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
-							} ;   
-						case '_block':
-							if(blockCode<lineCount) blockCode = (tag.endPosition)? tag.endPosition.line : 0;
-							parentName = null;//tag.keyWord;
-							methd = tag.keyWord + " ";
-							if ((i = tagTxt.indexOf("<<")) > -1) {
-								var arr = tagTxt.slice(0,i).trim().split(" ");
-								parms = arr[arr.length-1].trim();
-							} else if (tagTxt.indexOf("@") > -1){
-								parms = tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
-							} else {
-								parms = "@unammed";
-							}
-							if (tagTxt.indexOf("(") > -1) 
-								parms += "()";    
-							break;    
+					case '_method':
+					case '_private_method':
+					case '_abstract_method':
+					case '_iter_method':
+						let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
+						if (match) match = match[0];
+						else  match = tag.text;
+						match = match.split(".");
+						parentName = match[0];
+						methd =  magikParser.proofMethodName(match[match.length-1]);
+						parms = "";
+						break; 
+					case '_proc':
+					case '_iter_proc':
+						if (tagTxt.indexOf("<<") < 0 && tag.keyPosition.line > 0){
+							var lastline = codeLines[tag.keyPosition.line-1];
+							if (lastline.indexOf("<<") >= 0) tagTxt = lastline + tagTxt;
+						} ;   
+					case '_block':
+						if(blockCode<lineCount) blockCode = (tag.endPosition)? tag.endPosition.line : 0;
+						parentName = null;//tag.keyWord;
+						methd = tag.keyWord + " ";
+						if ((i = tagTxt.indexOf("<<")) > -1) {
+							var arr = tagTxt.slice(0,i).trim().split(" ");
+							parms = arr[arr.length-1].trim();
+						} else if (tagTxt.indexOf("@") > -1){
+							parms = tagTxt.slice(tagTxt.indexOf("@")).split("(")[0].trim();
+						} else {
+							parms = "@unammed";
+						}
+						if (tagTxt.indexOf("(") > -1) 
+							parms += "()";    
+						break;    
 						case '_dynamic_import':
-						case '_dynamic':
+					case '_dynamic':
 						case '_global_constant':
-						case '_global':
-						case '_constant':
-							parentName =  null;//tag.keyWord;
+					case '_global':
+					case '_constant':
+						parentName =  null;//tag.keyWord;
 							methd = tag.key+ " ";
-							var arr = tagTxt.split(tag.keyWord);
-							parms = arr[arr.length-1];
-							if ((i=parms.indexOf("<<")) > -1)            
-								parms = parms.slice(0,i).trim().split(" ")[0];
-							else  
-								parms = parms.trim();
-							break;    
-						case 'def_mixin':
-						case 'def_slotted_exemplar':
-							parentName = tag.params.split('(')[1].split(',')[0];
-							methd = tag.keyWord;
-							parms = "";
-							break;                       
-						case 'condition':
-						case 'magik_session':
-						case 'application':
-							parentName = tag.key;               
-							methd = tag.params.split('(')[1].split(',')[0];
-							if (methd[0]==':') methd = methd.slice(1,methd.length);
-							else if (methd[0]=='\"'||methd[0]=='\'') methd = methd.slice(1,methd.length-2);
-							parms = "";
-							break;    
-						case 'define_property':
-						case 'define_slot_access':
-						case 'define_pseudo_slot':
-						case 'def_property':
-						case 'define_shared_variable':
-						case 'define_shared_constant':
-							parentName = tagTxt.split(".")[0].trim();
-							if (tag.params.length){
-								methd = tag.params.split(/\(:*/);
-								methd = methd[1].split(',')[0];
-							} else 
-								methd = tag.text;
-							parms = "";
-							break;
-						case 'sw_patch_software':
-							parentName = null;
-							methd = tagTxt.trim();
-							parms = "";                 
-							break;    
-						default:
-							parentName = tagTxt.split(".")[0].trim();
-							methd = tag.text.split(/[\(\[]*/);
+						var arr = tagTxt.split(tag.keyWord);
+						parms = arr[arr.length-1];
+						if ((i=parms.indexOf("<<")) > -1)            
+							parms = parms.slice(0,i).trim().split(" ")[0];
+						else  
+							parms = parms.trim();
+						break;    
+					case 'def_mixin':
+					case 'def_slotted_exemplar':
+						parentName = tag.params.split('(')[1].split(',')[0];
+						methd = tag.keyWord;
+						parms = "";
+						break;                       
+					case 'condition':
+					case 'magik_session':
+					case 'application':
+						parentName = tag.key;               
+						methd = tag.params.split('(')[1].split(',')[0];
+						if (methd[0]==':') methd = methd.slice(1,methd.length);
+						else if (methd[0]=='\"'||methd[0]=='\'') methd = methd.slice(1,methd.length-2);
+						parms = "";
+						break;    
+					case 'define_property':
+					case 'define_slot_access':
+					case 'define_pseudo_slot':
+					case 'def_property':
+					case 'define_shared_variable':
+					case 'define_shared_constant':
+						parentName = tagTxt.split(".")[0].trim();
+						if (tag.params.length){
+							methd = tag.params.split(/\(:*/);
 							methd = methd[1].split(',')[0];
-							parms = "";
+						} else 
+							methd = tag.text;
+						parms = "";
+						break;
+					case 'sw_patch_software':
+						parentName = null;
+						methd = tagTxt.trim();
+						parms = "";                 
+						break;    
+					default:
+						parentName = tagTxt.split(".")[0].trim();
+						methd = tag.text.split(/[\(\[]*/);
+						methd = methd[1].split(',')[0];
+						parms = "";
 					}	
 					if (parentName)  parentName = parentName.replace(/[\"\':]/g,'');
 					if (methd)  methd = methd.replace(/[\"\':]/g,'');
