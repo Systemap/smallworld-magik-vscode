@@ -35,8 +35,7 @@ class codeExplorer {
 			});	
 			event.removed.forEach(function(val,idx,arr){
 				var fName = val.uri.fileName;
-				var i = swWorkspace.index[fName];
-				swWorkspace.symbs[i] = [];
+				swWorkspace.tagIndex[fName] = null;
 			});	
 		}, null, context.subscriptions);
 
@@ -54,7 +53,7 @@ class codeExplorer {
 			return this.gAliases.provideHover(document, position, token);   
 		else if (fName.endsWith("environment.bat"))
 			return;
-
+	
         var commands = this.get_aproposCommands(document, position)
         if (!commands) return;
 
@@ -75,15 +74,23 @@ class codeExplorer {
         const swgis = this.swgis;
         if ( !swgis.sessions ) return;
 
-        var codeWord = magikParser.getClassMethodAtPosition(document, pos);
-        if (!codeWord) return;
+		var codeWord;
+		if(document.fileName=="!swCB!") {
+			codeWord = document.lineAt(pos.line).text.split(/\s\INs/);
+			if( codeWord.length!=2) return 
+			codeWord = codeWord[1].trim()+"."+codeWord[0].trim()
+			
+		} else { 
+         	codeWord = magikParser.getClassMethodAtPosition(document, pos);
+			if (!codeWord) return;
+			var exm = codeWord[0];
+			var mtd = codeWord[1];
+			if (exm=="_self"||exm=="_super"||exm=="_clone") return;
+			
+			var onMethod = document.getWordRangeAtPosition(pos, magikParser.keyPattern.dot_method);
+		}
 
         var commands = [];
-        var exm = codeWord[0];
-        var mtd = codeWord[1];
-        if (exm=="_self"||exm=="_super"||exm=="_clone") return;
-		
-    	var onMethod = document.getWordRangeAtPosition(pos, magikParser.keyPattern.dot_method);
 		if (onMethod){
 			commands.push(exm+".apropos(\""+mtd+"\")");
 		} else {
@@ -102,7 +109,7 @@ class codeExplorer {
 
             // get current word
 			var codeWord = magikParser.getSymbolNameAtPosition(document, position);
-			if (!codeWord) 
+            if (!codeWord) 
 			    codeWord = magikParser.getEnvironVarAtPosition(document, position);
             if (!codeWord) 
                 return resolve([]);
@@ -114,9 +121,9 @@ class codeExplorer {
 			// var codeText = document.getText();
 			// var codeUri = document.uri;
             try {
-                let results = [], refcache = swgis.swWorkspace.refes;
-                for(var fname in refcache) {
-					var refes = refcache[fname];
+                let results = [], refIndex = swgis.swWorkspace.refIndex;
+                for(var fname in refIndex) {
+					var refes = refIndex[fname];
 					if (!refes) continue;
 					refes = refes[filter];
                     if (refes) {
@@ -129,12 +136,12 @@ class codeExplorer {
             }
             catch (e) {
 				console.log(e.message);
-                reject(e);
+				reject(e);
             }
         });
     }
 	
-	provideDefinition(document, pos, token){
+	getClassMethodAtPosition(document, pos){
 		
         var filter = magikParser.getSymbolNameAtPosition(document, pos);
 		if (!filter) return;
@@ -145,31 +152,36 @@ class codeExplorer {
 		if (ClassMethod) {
 			className = ClassMethod[0];
 			methodName = ClassMethod[1];
+			switch (className) {
+				case "_super":
+				case "_self":
+					var foldR = this.find_foldingRange(document,pos);
+					if (foldR){
+						className = foldR.symbol.containerName;
+						if (className && className.length) 
+							filter = className + "." + methodName;
+						else 
+							filter =  "." + methodName;					
+					}
+					break;
+				default :
+					filter = className + "." + methodName;
+			}
 		}
-		switch (className) {
-			case "_self":
-				var foldR = this.find_foldingRange(document,pos);
-				if (foldR){
-					className = foldR.symbol.containerName
-					if (className && className.length) break;
-				}
-			case "_super":
-				className = null;
-				onClass = false;	
-				break;
-			default :
-				if ( methodName.search(filter)!=0)
-					methodName = ""
-		}
+		return filter;
+	}	
 
+	provideDefinition(document, pos, token){
+		var filter = this.getClassMethodAtPosition(document, pos);
+		if (!filter) return 
 		var symbols = this.swgis.filterWorkspaceSymbs(filter, className, methodName);
 		if (symbols.length==0){
 			this.scanWorkspace('provideDefinition',token);			
 			symbols = this.swgis.filterWorkspaceSymbs(filter, className, methodName);
 		}
-        for (var i in symbols){
+		for (var i in symbols){
 			symbols[i] = symbols[i].location 
-        }
+  		}
 
 		return symbols;
 	}
@@ -198,33 +210,32 @@ class codeExplorer {
 		if(rootPath){
 			scanFolders.push(rootPath)
 		} else {
-			rootPath = vscode.workspace.rootPath;
-			scanFolders.push(rootPath)
 			var workspaceFolders = vscode.workspace.workspaceFolders
-			for(var i in workspaceFolders){
-				var subPath = workspaceFolders[i].uri.fsPath;
-				if (subPath.indexOf(rootPath) != 0 ) {
-					scanFolders.push(subPath)
-				}
+			for(var i in workspaceFolders) {
+				scanFolders.push(workspaceFolders[i].uri.fsPath);
 			}			
-			}
+		}
+        if (scanFolders.isEmpty) {
+            vscode.window.showInformationMessage('Add Smallworld product folders to Workspace to explore Magik Symbols.');
+            return;
+		};
 
 		var pathIndex;
-					const cB =  new cBrowser.codeBrowser(swgis);
+		const cB =  new cBrowser.codeBrowser(swgis);
 		if (caller=='provideReferences') {
-			pathIndex = swgis.swWorkspace.refes;
+			pathIndex = swgis.swWorkspace.refIndex;
 			for(var i in scanFolders){
 				var subPath = scanFolders[i];
 				if (!pathIndex[subPath])
 					cB.scanWorkspace(subPath,caller,token);
-				}
+			}		
 		} else { 
 			pathIndex = swgis.swWorkspace.paths;
 			for(var i in scanFolders){
 				var subPath = scanFolders[i];
 				if ( pathIndex.indexOf(subPath)<0 )
 					cB.scanWorkspace(subPath,caller,token);
-			}
+			}		
 		}
     }
 
@@ -236,7 +247,7 @@ class codeExplorer {
 			this.scanWorkspace('provideWorkspaceSymbols',token);
 			// --- sift the symbols for 'query'
 			const swgis = this.swgis;
-			const symbsCache = swgis.swWorkspace.symbs;
+			const symbsCache = swgis.swWorkspace.tagIndex;
 			var nodeName, container,nodePack;
 			var dot = filter.indexOf(".");
 			if (filter.indexOf(":")>-1){
@@ -280,7 +291,7 @@ class codeExplorer {
 								if (!symb.package || nodePack != symb.package ) 
 								return; // ignore
 							}
-								list.push(symb);
+							list.push(symb);
 							// console.log(filter+ '| - |'+nodeName+ '| - |'+symb.name+'| - |'+container+'| - |'+ symb.containerName);
 						} catch (err) {
 							console.log("--- provideWorkspaceSymbols..."+" -filter: " + filter + " -error: " + err.message);
@@ -375,8 +386,7 @@ class codeExplorer {
         const swgis = this.swgis ;
         var swWorkspace = swgis.swWorkspace;
         var fName = doc.fileName;
-        var i = swWorkspace.index.indexOf(fName);
-        var symbols = swWorkspace.symbs[i];
+        var symbols = swWorkspace.tagIndex[fName];
         if (symbols){
             pos = pos.line + pos.character/1000;
             for (var i in symbols){

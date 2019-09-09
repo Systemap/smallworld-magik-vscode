@@ -69,31 +69,31 @@ const keyPattern = {
 exports.keyPattern = keyPattern;
 
 const magikSymbols = {
-    _package               : ['_package',            '\n', '\n', vsSK.Package, keyPattern._package],
-    _iter_proc             : ['_iter\\s+_proc',       '_endproc', '()', vsSK.Function,  keyPattern._iter_proc],
-    _proc                  : ['_proc',                 '_endproc', '()', vsSK.Function,  /_proc/i],
-    _block                 : ['_block',                '_endblock',  '', vsSK.Struct,    /_block/i],
-    _global_constant       : ['_global\\s*_constant',  '_global',   '<<', vsSK.Variable,  keyPattern._global_constant],
-    _global                : ['_global',               '_global',   '<<', vsSK.Variable,  keyPattern._global],
-    _constant              : ['_constant',           '_constant', '<<', vsSK.Constant,  /_constant/i],
-    _dynamic_import        : ['_dynamic\\s*_import',  '_dynamic',   '<<', vsSK.Variable,   keyPattern._dynamic_import],
-    _dynamic               : ['_dynamic',             '_dynamic',   '<<', vsSK.Variable,    keyPattern._dynamic_import],
-    _import                : ['_import',              '_import',   '<<', vsSK.Variable,    keyPattern._dynamic_import],
-    _abstract_method       : ['_abstract',          '_endmethod', '()', vsSK.Method,    keyPattern._abstract_method],
-    _private_method        : ['_private',           '_endmethod', '()', vsSK.Method,    keyPattern._private_method],
-    _iter_method           : ['_iter',              '_endmethod', '()', vsSK.Method,    keyPattern._iter_method],
-    _method                : ['_method',            '_endmethod', '()', vsSK.Method,    /_method/i],
-    def_mixin              : ['def_mixin',                   ')', '()', vsSK.Property,  /def_mixin/i], 
-    def_slotted_exemplar   : ['def_slotted_exemplar',        ')', '()', vsSK.Property,  /def_slotted_exemplar/i], 
-    define_slot_access     : ['define_slot_access',          ')', '()', vsSK.Property,  /define_slot_access/i], 
-    define_pseudo_slot     : ['define_pseudo_slot',          ')', '()', vsSK.Property,  /define_pseudo_slot/i], 
-    define_property        : ['define_property',             ')', '()', vsSK.Property,  /define_property/i], 
-    def_property           : ['def_property' ,               ')', '()', vsSK.Property,  /def_property/i],
-    define_shared_variable : ['define_shared_variable',      ')', '()', vsSK.Variable,  /define_shared_variable/i], 
-    define_shared_constant : ['define_shared_constant',      ')', '()', vsSK.Constant,  /define_shared_constant/], 
-    condition              : ['condition.define_condition',  ')', '()', vsSK.Constant,    /condition/],
-    magik_session          : ['magik_session.register_new',  ')', '()', vsSK.Module,      /register_new/],
-    application            : ['smallworld_product.register_application', ')','()', vsSK.Module, keyPattern.register_application],
+    _package               : ['_package',              '\n',         '\n', vsSK.Package,    '_package'],
+    _iter_proc             : ['_iter\\s+_proc',        '_endproc',   '()', vsSK.Function, '_proc'],
+    _proc                  : ['_proc',                 '_endproc',   '()', vsSK.Function,  '_proc'],
+    _block                 : ['_block',                '_endblock',    '', vsSK.Struct,    '_block'],
+    _global_constant       : ['_global\\s*_constant',  '_global',    '<<', vsSK.Variable,  '_constant'],
+    _global                : ['_global',               '_global',    '<<', vsSK.Variable,  '_global'],
+    _constant              : ['_constant',             '_constant',  '<<', vsSK.Constant,  '_constant'],
+    _dynamic_import        : ['_dynamic\\s*_import',   '_dynamic',   '<<', vsSK.Variable,   '_dynamic'],
+    _dynamic               : ['_dynamic',              '_dynamic',   '<<', vsSK.Variable,   '_dynamic'],
+    _import                : ['_import',               '_import',   '<<', vsSK.Variable,    '_import'],
+    _abstract_method       : ['_abstract\\s+_method',  '_endmethod', '()', vsSK.Method,    '_method'],
+    _private_method        : ['_private\\s+_method',   '_endmethod', '()', vsSK.Method,    '_method'],
+    _iter_method           : ['_iter\\s+_method',      '_endmethod', '()', vsSK.Method,    '_method'],
+    _method                : ['_method',               '_endmethod', '()', vsSK.Method,    '_method'],
+    def_mixin              : ['def_mixin',                     ')',  '()', vsSK.Property,  'def_mixin'], 
+    def_slotted_exemplar   : ['def_slotted_exemplar',          ')', '()', vsSK.Property,  'def_slotted_exemplar'], 
+    define_slot_access     : ['define_slot_access',            ')', '()', vsSK.Property,  'define_slot_access'], 
+    define_pseudo_slot     : ['define_pseudo_slot',            ')', '()', vsSK.Property,  'define_pseudo_slot'], 
+    define_property        : ['define_property',               ')', '()', vsSK.Property,  'define_property'], 
+    def_property           : ['def_property' ,                 ')', '()', vsSK.Property,  'def_property'],
+    define_shared_variable : ['define_shared_variable',        ')', '()', vsSK.Variable,  'define_shared_variable'], 
+    define_shared_constant : ['define_shared_constant',        ')', '()', vsSK.Constant,  'define_shared_constant'], 
+    define_condition       : ['condition\\s*.\\s*define_condition',    ')', '()', vsSK.Constant,    'condition'],
+    register_new           : ['magik_session\\s*.\\s*register_new',    ')', '()', vsSK.Module,      'magik_session'],
+    register_application   : ['smallworld_product\\s*.\\s*register_application', ')','()', vsSK.Module, 'application'],
     sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,/sw!patch_software/i]
 }
 exports.magikSymbols = magikSymbols;
@@ -164,7 +164,7 @@ exports.trimComments = trimComments;
 
 function getSyntaxCode(lineText,keyPos) {
 	// removes comments and extra spaces 
-	var syntax = lineText.slice(0,keyPos).replace(/\s+/g,' ');
+	var syntax = lineText.slice(0,keyPos).replace(/\s+/g,' ').trim()+' ';
 
 	for(var i=keyPos; i< lineText.length; ++i ){
 		var s = lineText[i];
@@ -244,7 +244,7 @@ function getSymbolNameAtPosition(document, pos) {
 exports.getSymbolNameAtPosition = getSymbolNameAtPosition    
 
 function getEnvironVarAtPosition(document, pos) {
-	const symbolNamePattern =/([\w_\d-!?]+:\s?|[\w\d!?_]\s*=|%[\w\d!?_]%)/i;
+	const symbolNamePattern =/([\w!?]+:\s?|[\w!?]+\s*=|%[\w!?]+%)/i;
 	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
 	 if (!range || range.isEmpty) return;
 	 var codeWord = document.getText(range).replace(/\s/g,'').split(/[=%]/);
@@ -264,3 +264,21 @@ function get_ProductModuleName(document) {
 }
 exports.get_ProductModuleName = get_ProductModuleName    
 
+
+function splitChevron(codeLine) {
+	var arr =  maskStringComments(codeLine).split(/<</g);
+	if (arr.length<2) {
+		arr = null;
+	} else {
+		var s = 0;
+		for (var i in arr){
+			arr[i] = codeLine.slice(s,s+arr[i].length);
+			s = arr[i].length + 2;
+			arr[i] = arr[i].trim();
+		}	
+		s = arr[0].match(/[a-z_!?]+[\w!?]*/ig);
+		arr[0] = s[s.length-1];
+	}	
+	return arr;
+}
+exports.splitChevron = splitChevron    

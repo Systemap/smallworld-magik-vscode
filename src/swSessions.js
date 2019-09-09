@@ -8,7 +8,7 @@ const os = require("os");
 const workbenchConfig = vscode.workspace.getConfiguration('Smallworld');
 
 const swgis = {
-    swWorkspace: {index: [], symbs: [], paths: [], refes:{} },
+    swWorkspace: {tagIndex: {}, symbs: [], paths: [], refIndex:{} },
     activeSession: {swTerminal:null, swAgent:null, gisCommand:null, aliasFile:null, gisPath:null, cbAgent:null},
     gisPath: [],
     gisCommand: [],
@@ -21,17 +21,39 @@ const swgis = {
     errorHover:null, 
 	aliasePattern: /[a-z_0-9-]:$/i,
 	binx86Pattern: /[\/\\]bin[\/\\]x86/i,
-	filterWorkspaceSymbs: function (filter, className, methodName){
+	filterWorkspaceSymbs: function (filter){
+   
+        var className, methodName, packageName;
+        var cm = filter.split(':');
+        if (cm.length>1){
+            packageName = cm[0];
+            filter = cm[1];
+        }
+        var n = filter.indexOf('.');
+        cm = filter.split('.');
+        if (n==0) {
+            methodName = cm[0];
+            filter = cm[0];
+        } else if (n==filter.length) {
+            className = cm[0];
+            filter = cm[0];
+        } else if (n>0) {
+            className = cm[0];
+            methodName = cm[1];
+            filter = cm[1];
+        }   
+
 		filter = new RegExp(filter,'i')
-		var swWorkspace = swgis.swWorkspace;
+		var tagIndex = swgis.swWorkspace.tagIndex;
 		var fullmatch = [];
 		var partmatch = [];
-		swWorkspace.symbs.forEach(function(symbols) {
+		for (var fname in tagIndex) {
+			var symbols = tagIndex[fname];
 			for (var i in symbols){
 				var symbol = symbols[i];
 				if(!symbol.name) {
 					// ignore
-					console.log("--- filterWorkspaceSymbs... symbol.name is null:"+symbol);
+					console.log("--- filterWorkspaceSymbs... Null Symbol.name in "+fname);
 					console.log(symbol);
 				} else if (symbol.name.search(filter)!=0) {
 					continue;
@@ -46,7 +68,7 @@ const swgis = {
 					    partmatch.push( symbol );
 				}
 			}
-		});
+		};
 		if (fullmatch.length >0) 
 			return  fullmatch;
 		else 
@@ -130,7 +152,7 @@ class swSessions{
             }
             if (gisPath) {
                 try {
-                  var stat = fs.statSync(gisPath);
+				  var stat = fs.statSync(gisPath);
 				  gisPath = gisPath.split(swgis.binx86Pattern)[0].replace(/\//g,'\\');
                 } catch(err) {
                     errorMsg = (errorMsg)? errorMsg+", \n"+ gisPath : err.message 
@@ -215,7 +237,7 @@ class swSessions{
 		for(var id in swWorkspace) {
 			if(!cacheId || cacheId==id)
 				swWorkspace[id] = [];
-        }
+		}
         vscode.window.showInformationMessage("SW Workspace Cache (Definitions, Symbold and References) has been cleared.");
     }
 
@@ -227,16 +249,18 @@ class swSessions{
         
         const swWorkspace = this.swgis.swWorkspace;
         let data = "#swWorkspace:"+fileName+'\n';
-
-        for(var i in swWorkspace['index']) {
-            for(var n in swWorkspace['symbs'][i]){
+		var i = 0;
+        for(var fname in swWorkspace['tagIndex']) {
+			var tags = swWorkspace['tagIndex'][fname];
+			++i;
+            for(var n in tags){
                 data += i+':'+n;
-                for(var id in swWorkspace['symbs'][i][n])
-                    data += '\t'+id+':'+ swWorkspace['symbs'][i][n][id];
-                data += '\t'+ swWorkspace['index'][i]+'\n';
+                for(var id in tags[n])
+                    data += '\t'+id+':'+ tags[n][id];
+                data += '\t'+ fname+'\n';
             }
         }
-        let key = 'refes';
+        let key = 'refIndex';
         data += '\n--- '+key+' ---------------\n';
 		for(var fname in swWorkspace[key]) {
             for(var id in swWorkspace[key][fname]) {

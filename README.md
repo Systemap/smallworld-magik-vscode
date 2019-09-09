@@ -125,12 +125,12 @@ The`Smallworld.sessions` setting is defined in the following format:
 	{
 		"Smallworld.sessions": [
 			{	
-				"session": "< optional label displayed on the list of GIS Commands F2-z >"
-				"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >"
-				"startup": "< optional DOS commands to run before gis.exe >"
+				"session": "< optional label displayed on the list of GIS Commands F2-z >",
+				"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >",
+				"startup": "< optional DOS commands to run before gis.exe >",
 				"command": "<[-p productDir] [-e envFile] [-j options] ... [-a aliasFile] alias ...>"
 			}
-		}
+		]
 	}
 
 An example configuration for multiple sessions is included in the next section. 
