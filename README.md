@@ -6,7 +6,7 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 
 * Language support for Magik source and Smallworld resource file types.
 * Code outlines, Definitions, References and Symbol Provider for Magik and gis_aliases stanzas.
-* Run Smallworld sessions and GIS Commands `F2-z` configuration. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
+* Run Smallworld sessions and configure GIS Commands. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
 * Magik code compiler, module and product loaders for Smallworld 5.x (Not supported on Smallworld 4). 
 * Magik F2-keys shortcut combinations and a traditional light theme.  
 
@@ -24,16 +24,20 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Open a Magik file to see the code outline for classes and methods in the file.
 * Add some Magik code to the file and use F2-b to compile the file.
 
-![Snippet](images/snippet.png)
+![Snippet](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/snippet.png)
 
-* open the Symbol browser by CTRL-T and see a list of Object Exemplars, Methods, and Procs in the entire product tree, and click to jump to a definition.
+* Open the Symbol browser by CTRL-T for formatted search __`Package:Class.Method`__ 
 
-![CTRL-T](images/CodeOutline.png)
+![SymbolSearch](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SymbolSearch.png)
+
+* Access Object Exemplars, Methods, and Procs in the entire product tree, and click on Symbol search and Code Outline to jump to a definition in the code.
+
+![CodeOutline](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
 * Change the colour Theme to Smallworld Magik to get a traditional Light theme.
 * Click on a `Class.Method` combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
 
-![References](images/CodeReferences.png)
+![References](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeReferences.png)
 
 ---
 # Starting a Smallworld sessions 
@@ -48,7 +52,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 * Click the Light bulb to get the command to Start a Smallworld Session.
 * An `environment.bat` in the same path as gis_aliases will automatically be loaded.
 
-![Run GIS Alias](images/SWRunGisAlias.png)
+![Run GIS Alias](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/SWRunGisAlias.png)
 
 * Set the Smallworld gis.exe path in the Settings and setup optional startup batch commands to run before the gis.exe.
 * Open a gis_aliases file, the stanzas appear boxed in Orange and have Code Actions (Yellow light bulb).
@@ -114,19 +118,19 @@ You can edit `Smallworld.gisCommand` in the Settings editor in Visual Studio Cod
 
 ## GIS Command Session Configuration (`Smallworld.sessions`)
 
-The advanced format for a GIS Command can be defined in the `Smallworld.sessions` section of settings in the form of a JSON object. 
+`Smallworld.sessions` section provides a flexible configuration for multiple and complex GIS Command definitions in the form of a JSON object. 
 GIS Commands defined in `Smallworld.sessions` are self contained and do not share or use the `Smallworld.startup` or `Smallworld.gisPath` values. 
 The`Smallworld.sessions` setting is defined in the following format:
 
 	{
 		"Smallworld.sessions": [
 			{	
-				"session": "< optional label displayed on the list of GIS Commands F2-z >"
-				"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >"
-				"startup": "< optional DOS commands to run before gis.exe >"
+				"session": "< optional label displayed on the list of GIS Commands F2-z >",
+				"gisPath": "< optional Smallworld Core product directory (%SMALLWORLD_GIS%) >",
+				"startup": "< optional DOS commands to run before gis.exe >",
 				"command": "<[-p productDir] [-e envFile] [-j options] ... [-a aliasFile] alias ...>"
 			}
-		}
+		]
 	}
 
 An example configuration for multiple sessions is included in the next section. 
