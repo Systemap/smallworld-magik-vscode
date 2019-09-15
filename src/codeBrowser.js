@@ -15,6 +15,7 @@ class codeBrowser{
     provideDocumentSymbols(document, token) {
 		var codeUri = document.uri;
 		var codeBlock = document.getText();
+		this.get_codeReferences(codeBlock, codeUri, document.languageId, token);
 		return this.get_codeSymbols(codeBlock,codeUri, document.languageId,  token);
     };
         
@@ -34,7 +35,7 @@ class codeBrowser{
         
     get_codeSymbols(codeBlock, codeUri,languageId, token) {
 		var fileName = codeUri.fsPath;
-        var symInfos, refInfos=[];
+        var symInfos;
         if(languageId=="magik" || fileName.endsWith(".magik")) {
             symInfos = this.get_magikSymbols(codeBlock, codeUri, token); 
         } else if(fileName.endsWith("\module.def")) {
@@ -189,14 +190,14 @@ class codeBrowser{
     get_magikReferences(codeBlock, codeUri, token) {
         const parserKeys = magikParser.keyPattern;
         const class_dot_bare_method = parserKeys.class_dot_bare_method;
-        const methodsToIgnore = parserKeys.methodsToIgnore;
+        const pseudo_defs = parserKeys.pseudo_defs;
 		const objectsToIgnore = /\b(_self|_super)\b/i;
-        const refes = {};
+        const refIndex = {};
 		const pushRef = function(tag,lineIndex,charIndex){
 			let pos = new vscode.Position(lineIndex,charIndex);
 			tag = tag.trim().toLowerCase();
-			if (!refes[tag]) refes[tag] = [];
-			refes[tag].push( new vscode.Location(codeUri, pos));
+			if (!refIndex[tag]) refIndex[tag] = [];
+			refIndex[tag].push( new vscode.Location(codeUri, pos));
 		};
 		var codeLines = codeBlock.split("\n");
         for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
@@ -206,7 +207,7 @@ class codeBrowser{
 				// codeLine = magikParser.maskStringComments( codeLine );
 				// if (magikParser.testInString(codeLine,match.index,true)) continue;
 				let ref = match[0].split(".");
-				// if (methodsToIgnore.test(ref[1])) continue;
+				// if (pseudo_defs.test(ref[1])) continue;
 				// let def = new RegExp('_method\\s+'+ref[0],'i') ;
 				// if (def.test(codeLine)) continue;
 				pushRef(ref[1],lineCount,match.index + match[0].length - ref[1].length);
@@ -214,7 +215,7 @@ class codeBrowser{
 				// pushRef(ref[0],lineCount,match.index);
 			}
         }
-        return refes;
+        return refIndex;
     }
 
     get_magikSymbols(codeBlock, codeUri, token){
@@ -299,7 +300,7 @@ class codeBrowser{
               
     parse_magikSyntax(codeLines,codeUri) {
 		var tags = [], codeLinesTags, swPackage ='';
-		var recursiveCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("recursiveCodeOutline");
+		var nestedCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("nestedCodeOutline");
 		let match, keys = magikParser.magikKeys(); 
 		var blockCode = 0;
 		// parse the document for symbols
@@ -342,7 +343,7 @@ class codeBrowser{
 					
 					if( tag.key=='_block' && blockCode<lineCount) 
 						blockCode = (tag.endPosition)? tag.endPosition.line : 0;
-					if (!recursiveCodeOutline && lineCount > blockCode) 
+					if (!nestedCodeOutline && lineCount > blockCode) 
 						lineCount = (tag.endPosition)? tag.endPosition.line : lineCount;
 				}		
 			} catch(err) {
