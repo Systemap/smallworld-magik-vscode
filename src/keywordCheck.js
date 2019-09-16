@@ -5,7 +5,7 @@
 const vscode = require('vscode');
 const magikParser = require('./magikParser');
 
-const uRegEx = /\b(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)[^\w!?]/ig;
+const uRegEx = /\b(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)[^\w!?]/ig;
 
 class keywordCheck{
     constructor() {

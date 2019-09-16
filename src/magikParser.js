@@ -16,7 +16,7 @@ const keyPattern = {
 	dot_method:       /\.\s*[\a-z!?]+[\w_!?]*\s*[\[\(<]?/i,
 	variable:         /[a-z_!?]+[\w_!?]*/i,
 	product_module_keyword:  /\b(title|description|optional|templates|end|requires|install_requires|requires_datamodel|hidden|version|condition_message_accessor|language|hiddencase_installation|style_installation|ace_installation|system_installation|auth_installation)\b/i,
-	methodsToIgnore: /\b(invoke|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\b/i,
+	pseudo_defs: /\b(invoke|def_property|define_property|define_shared_constant|define_shared_variable|define_slot_access|define_pseudo_slot)\b/i,
 	string_mask:     /(""|".*"|'.*'|:\|.*\||:[a-zA-Z_!?][\w_!?]*|:[a-zA-Z_!?][\w_!?]*\|.*\||%space|%tab|%newline|%.)/g,
 	string_index:  { '"':/[^"]/, "'":/[^']/, ":|": /[^|]/, ":":/[a-z!?_A-Z0-9]/, "%":/(%\.|%space|%tab|%newline)/},
 	_abstract_method: /_abstract\s*(_private)?\s*(_iter)?\s+_method\s+/i,
@@ -135,17 +135,29 @@ function  getTagText(lineText, tagKey) {
 exports.getTagText = getTagText
 
 function  testInString(tagTxt,pos,inComment) {
-	var n = tagTxt.length;
-	for(var i=0; i<pos; i++){
-		var ch = tagTxt[i];
-		if (/[#"':]/.test(ch) == false) continue;
-		if (ch=='#') return inComment==true;
-		if (i>0 && tagTxt[i-1]=='%') continue;
-		if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
-		i = i + ch.length; 
-		var strPttrn = keyPattern.string_index[ch];
-		while(i<n && strPttrn.test(tagTxt[i])) ++i;
-		if (i > pos) return true;
+	// var n = tagTxt.length;
+	// for(var i=0; i<pos; i++){
+	// 	var ch = tagTxt[i];
+	// 	if (/[#"':]/.test(ch) == false) continue;
+	// 	if (ch=='#') return inComment==true;
+	// 	if (i>0 && tagTxt[i-1]=='%') continue;
+	// 	if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
+	// 	i = i + ch.length; 
+	// 	var strPttrn = keyPattern.string_index[ch];
+	// 	while(i<n && strPttrn.test(tagTxt[i])) ++i;
+	// 	if (i > pos) return true;
+	// }
+	let ci = 0, match;
+	while (match = keyPattern.string_mask.exec(tagTxt)) {
+		var p1 = match.index;
+		if (inComment) {
+			ci = tagTxt.indexOf('#',ci);
+			if (ci< 0) inComment = false;
+			else if (ci<p1) return (inComment)? true : false;
+		}	 
+		if (pos < p1) return false;
+		var p2 = p1 + match[0].length;
+		if (pos < p2) return true;
 	}
 	return false;
 }
@@ -223,6 +235,7 @@ function getClassMethodAtPosition(document, pos) {
 		codeWord[1] = proofMethodName(codeWord[1]);
 		var onClass = document.getWordRangeAtPosition(pos, keyPattern.class_dot);
 		codeWord[2] =  (onClass)? codeWord[0] : codeWord[1].trim().split(/[\(\[]/)[0]; 
+		
 		return codeWord;
 	}	
 }

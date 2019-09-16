@@ -53,7 +53,7 @@ const swgis = {
 				var symbol = symbols[i];
 				if(!symbol.name) {
 					// ignore
-					console.log("--- filterWorkspaceSymbs... Null Symbol.name in "+fname);
+					console.log("--- filterWorkspaceSymbs... null symbol.name: "+fname);
 					console.log(symbol);
 				} else if (symbol.name.search(filter)!=0) {
 					continue;
@@ -88,6 +88,7 @@ const swgis = {
         aSession.gisCommand = gisCommand;
         aSession.gisPath = gisPath; 
         aSession.cbAgent = null;
+        aSession.cbSocket = null;
     },
     endActiveSession: function(){
         swgis.sessions = null; 
@@ -101,10 +102,24 @@ const swgis = {
         aSession.aliasFile = null;
         aSession.gisCommand = null;
         },
-    getActiveSession: function(){
+    getActiveSession: function(param){
         var cp = swgis.terminal;
         if(!cp) return;
-        else return cp;
+        param = (param)? param : 'swTerminal';
+		const aSession = swgis.activeSession;
+		switch (param){
+			case 'cbSocket':
+				cp = aSession.cbSocket;
+				if (cp) return cp;
+				aSession.cbAgent = null;
+			case 'cbAgent':
+				cp = aSession.cbAgent;
+				if (!cp || cp.stdin.destroyed)
+					return aSession.cbAgent = null;
+			default:
+				cp = aSession[param];		
+		} 
+		return cp;
 
         const pId = os.tmpdir()+"\\"+ Math.trunc(Math.random()*1e5) +".tmp"; 
         try {      
@@ -136,8 +151,24 @@ class swSessions{
                 vscode.window.showInformationMessage("Press F2-z (SW RUN GIS Command) to start a session. Save GIS Commands in Preferences - Settings - Smallworld GIS");
             if (!gisPath || !gisPath.length)
                 vscode.window.showInformationMessage("Configure Smallworld.gisPath in Preferences - Settings - Smallworld GIS, to specify the path of gis.exe");
-        } else if (!startup || !gisPath.length)
+        } else if (!startup || !gisPath.length) {
                 vscode.window.showInformationMessage("Configure Smallworld.startup in Preferences - Settings - Smallworld GIS, to run batch commands and set environment variables before starting gis.exe.");
+        } else {
+            var listSessions = "List GIS Commands (F2-z)...";
+            var lastSession = workbenchConfig.get('recallSession');
+            const startSession = function (selection) {
+                if ( selection == listSessions ){
+                    vscode.commands.executeCommand('swSessions.gisCommand');
+                } else if (selection) {
+                    vscode.commands.executeCommand('swSessions.gisCommand',lastSession);
+                }
+            }    
+            if (lastSession)
+                vscode.window.showInformationMessage("Start a GIS Session:",lastSession.session,listSessions).then(startSession);
+            else     
+                vscode.window.showInformationMessage("Start a GIS Session:",listSessions).then(startSession);
+
+        }
     }
     check_gisPath(){
         const swgis = this.swgis;
@@ -238,7 +269,7 @@ class swSessions{
 			if(!cacheId || cacheId==id)
 				swWorkspace[id] = [];
 		}
-        vscode.window.showInformationMessage("SW Workspace Cache (Definitions, Symbold and References) has been cleared.");
+        vscode.window.showInformationMessage("SW Workspace Cache (Definitions, Symbols and References) has been cleared.");
     }
 
     dumpWorkspaceCache(fileName){
@@ -562,7 +593,11 @@ class swSessions{
 			if (cmd['-p'] == cmd.gispath){
 				execCommand = execCommand.replace('-p ' +cmd['-p'] , "");
             }
+
             execCommand =  exslash(cmd.gispath+"\\bin\\x86\\gis.exe ")+ execCommand;    
+
+            workbenchConfig.update('recallSession',cmd, vscode.ConfigurationTarget.Global);
+
             let aliasStanza = cmd.session;
             let aliasFile =  exslash( cmd['-a']);
 			let gisPath =  exslash(cmd.gispath);
@@ -643,7 +678,7 @@ class swSessions{
         for(var n=10; n<100;++n){
             try {
                 fs.writeFileSync(tmp+n, codeBlock);
-                return "load_file(\""+tmp+n+"\")";
+                return "$\nload_file(\""+tmp+n+"\",_unset,\""+fileName+"\")";
             }
             catch(err) {
                 if(n>99) 
