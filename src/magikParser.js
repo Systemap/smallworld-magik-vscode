@@ -101,7 +101,7 @@ exports.magikSymbols = magikSymbols;
 
 const magikKeywords = { 
 	signature: /\b(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)[^\w!?]/ig,
-	pattern: /\b_(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)\b/i,
+	pattern:  /\b_(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)\b/i,
 }
 exports.magikKeywords = magikKeywords;
 
@@ -142,17 +142,29 @@ function  getTagText(lineText, tagKey) {
 exports.getTagText = getTagText
 
 function  testInString(tagTxt,pos,inComment) {
-	var n = tagTxt.length;
-	for(var i=0; i<pos; i++){
-		var ch = tagTxt[i];
-		if (/[#"':]/.test(ch) == false) continue;
-		if (ch=='#') return inComment==true;
-		if (i>0 && tagTxt[i-1]=='%') continue;
-		if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
-		i = i + ch.length; 
-		var strPttrn = keyPattern.string_index[ch];
-		while(i<n && strPttrn.test(tagTxt[i])) ++i;
-		if (i > pos) return true;
+	// var n = tagTxt.length;
+	// for(var i=0; i<pos; i++){
+	// 	var ch = tagTxt[i];
+	// 	if (/[#"':]/.test(ch) == false) continue;
+	// 	if (ch=='#') return inComment==true;
+	// 	if (i>0 && tagTxt[i-1]=='%') continue;
+	// 	if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
+	// 	i = i + ch.length; 
+	// 	var strPttrn = keyPattern.string_index[ch];
+	// 	while(i<n && strPttrn.test(tagTxt[i])) ++i;
+	// 	if (i > pos) return true;
+	// }
+	let ci = 0, match;
+	while (match = keyPattern.string_mask.exec(tagTxt)) {
+		var p1 = match.index;
+		if (inComment) {
+			ci = tagTxt.indexOf('#',ci);
+			if (ci< 0) inComment = false;
+			else if (ci<p1) return (inComment)? true : false;
+		}	 
+		if (pos < p1) return false;
+		var p2 = p1 + match[0].length;
+		if (pos < p2) return true;
 	}
 	return false;
 }
