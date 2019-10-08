@@ -10,6 +10,7 @@ const magikTagKeys={
 };
 
 const keyPattern = {
+	package_class_dot_method: /([a-z_!?]+[\w_!?]*:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*\s*(\[\]|\(\)|<<|\[\]<<)?/i,
 	class_dot_method: /[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*\s*(\[|\(|<)?/i,
 	class_dot_bare_method: /(\w+:)?[a-z_!?]+[\w_!?]*\s*\.\s*[a-z_!?]+[\w_!?]*/ig,
 	class_dot:        /:?[a-z_!?]+[\w_!?]*\s*\./i,
@@ -70,15 +71,15 @@ exports.keyPattern = keyPattern;
 
 const magikSymbols = {
     _package               : ['_package',              '\n',         '\n', vsSK.Package,    '_package'],
-    _iter_proc             : ['_iter\\s+_proc',        '_endproc',   '()', vsSK.Function, '_proc'],
-    _proc                  : ['_proc',                 '_endproc',   '()', vsSK.Function,  '_proc'],
-    _block                 : ['_block',                '_endblock',    '', vsSK.Struct,    '_block'],
     _global_constant       : ['_global\\s*_constant',  '_global',    '<<', vsSK.Variable,  '_constant'],
     _global                : ['_global',               '_global',    '<<', vsSK.Variable,  '_global'],
     _constant              : ['_constant',             '_constant',  '<<', vsSK.Constant,  '_constant'],
     _dynamic_import        : ['_dynamic\\s*_import',   '_dynamic',   '<<', vsSK.Variable,   '_dynamic'],
     _dynamic               : ['_dynamic',              '_dynamic',   '<<', vsSK.Variable,   '_dynamic'],
     _import                : ['_import',               '_import',   '<<', vsSK.Variable,    '_import'],
+    _iter_proc             : ['_iter\\s+_proc',        '_endproc',   '()', vsSK.Function, '_proc'],
+    _proc                  : ['_proc',                 '_endproc',   '()', vsSK.Function,  '_proc'],
+    _block                 : ['_block',                '_endblock',    '', vsSK.Struct,    '_block'],
     _abstract_method       : ['_abstract\\s+_method',  '_endmethod', '()', vsSK.Method,    '_method'],
     _private_method        : ['_private\\s+_method',   '_endmethod', '()', vsSK.Method,    '_method'],
     _iter_method           : ['_iter\\s+_method',      '_endmethod', '()', vsSK.Method,    '_method'],
@@ -97,6 +98,12 @@ const magikSymbols = {
     sw_patch_software      : ['sw!patch_software',           ')', '()', vsSK.Module,/sw!patch_software/i]
 }
 exports.magikSymbols = magikSymbols;
+
+const magikKeywords = { 
+	signature: /\b(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)[^\w!?]/ig,
+	pattern: /\b_(abstract|allresults|and|andif|block|catch|clone|constant|continue|div|dynamic|elif|else|endblock|endcatch|endif|endlock|endloop|endmethod|endproc|endprotect|endtry|false|finally|for|gather|global|handling|if|import|is|isnt|iter|leave|local|lock|loop|loopbody|maybe|method|mod|no_way|not|optional|or|orif|over|package|pragma|private|proc|protect|locking|protection|recursive|return|scatter|self|super|then|thisthread|throw|true|try|unset|when|while|with|xor)\b/i,
+}
+exports.magikKeywords = magikKeywords;
 
 function magikKeys(){
 	if (!magikTagKeys.index) {
@@ -152,7 +159,7 @@ function  testInString(tagTxt,pos,inComment) {
 exports.testInString = testInString;
 
 function trimComments(tagTxt) {
-	let match, regex = /#/ig;
+	let match, regex = /(#|_pragma)/ig;
 	while (match = regex.exec(tagTxt)) 
 		if(match.index == 0) 
 			return "";
@@ -217,7 +224,7 @@ function getClassMethodAtPosition(document, pos) {
 	 if (!range || range.isEmpty) return;
 	var codeLine = maskStringComments( document.lineAt(pos.line).text ) ;
 	var codeWord = codeLine.slice(range.start.character,range.end.character);
-		codeWord = codeWord.replace(/\s/g,'').split(".");
+		codeWord = codeWord.replace(/\s/g,'').toLowerCase().split(".");
 	if (codeWord.length>1){
 		codeWord[0] = codeWord[0].toLowerCase();
 		codeWord[1] = proofMethodName(codeWord[1]);
@@ -233,14 +240,13 @@ function getSymbolNameAtPosition(document, pos) {
 	// const symbolNamePattern =/\b(register_new\s*\(|register_application\s*\(|session\s*=[a-z!?_]:[\w!?])/i;
 	const symbolNamePattern = keyPattern.variable;
 	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
-	 if (!range || range.isEmpty) return;
-	 var codeWord = document.getText(range);
-	// var codeLine = document.getLine(pos.line); .replace(/\s/g,'');
-	// var rx = new RegExp (codeWord+"\s*[\\(\\[]")
-	//  if (rx.test(codeWord)) {
-	// 	codeWord[2] = codeWord[1].replace(/\s/g,'').toLowerCase()
-	//  }
-	return codeWord;
+	if (!range || range.isEmpty) return;
+	var codeLine = trimComments( document.lineAt(pos.line).text ) ;
+	var codeWord = codeLine.slice(range.start.character-2,range.end.character-2);
+	if(!codeWord) return;
+	codeWord = document.getText(range);
+	codeWord = codeWord.replace(magikKeywords.pattern,'');
+	return codeWord.toLowerCase();
 }
 exports.getSymbolNameAtPosition = getSymbolNameAtPosition    
 
