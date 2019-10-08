@@ -55,7 +55,7 @@
 		"functions": {
 			"patterns": [{
 				"name": "markup.inserted",
-				"match": "\\b(show|write|debug_print|print)\\b"
+				"match": "\\b(show|write|debug_print|print|\\s*\\.\\.+\\s*)\\b"
 			}]
 		},
 		"regexp": {
@@ -87,14 +87,14 @@
 			},
 			{	"name": "string",
 				"begin": ":\\|",
-				"end": "(\\||\\n)",
+				"end": "[\\|\\n]",
 				"notIn": ["comment"],
-				"patterns": [{"match": ".*"}]
+				"patterns": [{"match": "[^\\n]"}]
 			},
 			{	"name": "string",
-				"begin": ":[a-zA-Z!?_][\\w!?_]*\\|",
-				"end": "(\\||\\n)",
-				"patterns": [{"match": ".*"}]
+				"begin": ":[a-zA-Z!?_][\\w!?]*\\|",
+				"end": "[\\|\\n]",
+				"patterns": [{"match": "[^\\n]"}]
 			},
 			{	"name": "string",
 				"begin": ":[a-zA-Z!?_]",

@@ -43,10 +43,18 @@
 				"\t# --- loop body ---",
 				"_endloop\n"]
 		},
+		"fast_elements()": {
+			"prefix": "fast_elements",
+			"body": "${1|fast_elements(),fast_keys_and_elements(),fast_elements_wrapped(start_index),fast_elements_in_pairs()|}"
+		},
+		"element...": {
+			"prefix": "element",
+			"body": "${1|an_element(),elements,all_elements_satisfying(a_predicate),all_elements_not_satisfying(a_predicate)|}"
+		},
 		"elements() _loop _endloop": {
-			"prefix": "elements",
+			"prefix": "elements _loop",
 			"body": [
-				"elements()",
+				"${1|elements(),keys_and_elements(),keys_and_elements_in_reverse(),elements_in_reverse(),elements_satisfying(a_predicate),elements_not_satisfying(a_predicate)|}",
 				"_loop # @ --- loop name ---",
 				"\t# --- loop body ---",
 				"_finally",
