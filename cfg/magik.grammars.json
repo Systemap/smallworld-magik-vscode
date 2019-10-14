@@ -49,7 +49,7 @@
 		"conditions": {
 			"patterns": [{
 				"name": "string.regexp",
-				"match": "\\s\\b(error|information|warning|system|debug)\\b\\s"
+				"match": "\\s\\b(error|information|warning|system|debug|IN)\\b\\s"
 			}]
 		},
 		"functions": {
