@@ -134,48 +134,49 @@ function  getTagText(lineText, tagKey) {
         if (tagKey[0]=="_" &&  tagIdx >= 0)   {            
              let str = RegExp ("\\b"+tagKey+"\\b");     
              tagIdx = lineText.search(str);
-             if (testInString(tagIdx) )
+             if (isntActiveCode(lineText,tagIdx) )
                 return;
         };           
      return tagTxt;   
 }        
 exports.getTagText = getTagText
 
-function  testInString(tagTxt,pos,inComment) {
-	// var n = tagTxt.length;
-	// for(var i=0; i<pos; i++){
-	// 	var ch = tagTxt[i];
-	// 	if (/[#"':]/.test(ch) == false) continue;
-	// 	if (ch=='#') return inComment==true;
-	// 	if (i>0 && tagTxt[i-1]=='%') continue;
-	// 	if (i+1<n && ch==':' && tagTxt[i+1]=='|') ch=":|";
-	// 	i = i + ch.length; 
-	// 	var strPttrn = keyPattern.string_index[ch];
-	// 	while(i<n && strPttrn.test(tagTxt[i])) ++i;
-	// 	if (i > pos) return true;
-	// }
-	let ci = 0, match;
-	while (match = keyPattern.string_mask.exec(tagTxt)) {
+function  isActiveCode(codeLine,pos) {
+	let ci = codeLine.indexOf('#');
+	let match;
+	while (match = keyPattern.string_mask.exec(codeLine)) {
 		var p1 = match.index;
-		if (inComment) {
-			ci = tagTxt.indexOf('#',ci);
-			if (ci< 0) inComment = false;
-			else if (ci<p1) return (inComment)? true : false;
-		}	 
-		if (pos < p1) return false;
 		var p2 = p1 + match[0].length;
-		if (pos < p2) return true;
+		if (pos<p1      ) break;
+		else if (pos<p2 ) return false;
+		else if (ci < 0 ) continue ;
+		else if (ci < p1) return false;
+		else if (ci < p2) ci = codeLine.indexOf('#',p2);   
 	}
-	return false;
+	return (ci <0 || ci >= pos);
 }
-exports.testInString = testInString;
+exports.isActiveCode = isActiveCode;
+
+function isntActiveCode(codeLine,pos) {
+	let result = isActiveCode(codeLine,pos) ;
+	return result == false;
+}
+exports.isntActiveCode = isntActiveCode;
+
+
+function param0(tag) {
+	let node = tag.params.match(/\(\s*:?\|?\s*[\w!?]+\s*\|?,/);
+	if (node) return node[0].replace(/[\(\"':\,\|\s]/g,'');
+	else return '';
+}
+exports.param0 = param0;
 
 function trimComments(tagTxt) {
 	let match, regex = /(#|_pragma)/ig;
 	while (match = regex.exec(tagTxt)) 
 		if(match.index == 0) 
 			return "";
-		else if (!testInString(tagTxt,match.index))
+		else if (isActiveCode(tagTxt,match.index))
 			return tagTxt.slice(0,match.index-1).trim();
 	return tagTxt.trim();
 }
@@ -236,7 +237,7 @@ function getClassMethodAtPosition(document, pos) {
 	 if (!range || range.isEmpty) return;
 	var codeLine = maskStringComments( document.lineAt(pos.line).text ) ;
 	var codeWord = codeLine.slice(range.start.character,range.end.character);
-		codeWord = codeWord.replace(/\s/g,'').toLowerCase().split(".");
+		codeWord = codeWord.replace(/\s/g,'').split(".");
 	if (codeWord.length>1){
 		codeWord[0] = codeWord[0].toLowerCase();
 		codeWord[1] = proofMethodName(codeWord[1]);
@@ -254,7 +255,7 @@ function getSymbolNameAtPosition(document, pos) {
 	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
 	if (!range || range.isEmpty) return;
 	var codeLine = trimComments( document.lineAt(pos.line).text ) ;
-	var codeWord = codeLine.slice(range.start.character-2,range.end.character-2);
+	var codeWord = codeLine.slice(range.start.character,range.end.character);
 	if(!codeWord) return;
 	codeWord = document.getText(range);
 	codeWord = codeWord.replace(magikKeywords.pattern,'');

@@ -5,7 +5,7 @@
 const vscode = require("vscode");
 const fs=require("fs");
 const os=require("os");
-const cBrowser = require('./codeBrowser');
+const codeBrowser = require('./codeBrowser');
 const magikParser = require('./magikParser');
 const gAliases = require('./gisAliases');
 
@@ -21,16 +21,17 @@ class codeExplorer {
         };
         this.symbols = [];
 		this.swgis = swgis;
+		this.codeBrowser =	new codeBrowser.codeBrowser(swgis);
 		// ---- gisAliases
 		this.gAliases = new gAliases.gisAliases(swgis);
     }
 
     run(context) {
+		const cB = this.codeBrowser;
         vscode.workspace.onDidChangeWorkspaceFolders(event => {
 			if (!event) return;
 			event.added.forEach(function(val,idx,arr){
 				var fPath = val.uri.fileName;
-				const cB =  new cBrowser.codeBrowser(swgis);
 				cB.scanWorkspace(fPath);
 			});	
 			event.removed.forEach(function(val,idx,arr){
@@ -57,13 +58,21 @@ class codeExplorer {
         var commands = this.get_aproposCommands(document, position)
         if (!commands) return;
 
-        const contents = new vscode.MarkdownString();
+		const contents = new vscode.MarkdownString();
+        // for (var i in commands ){
+        //     var cmd = commands[i];
+        //     const args = encodeURIComponent(JSON.stringify( [cmd]))
+        //     const commandUri = vscode.Uri.parse(`command:swSessions.apropos?${args}`);
+        //     if (i >0) contents.appendMarkdown(`  ${"\n"}`);
+        //     contents.appendMarkdown(` [${cmd}](${commandUri})`,"magik");
+        // }
+        // contents.isTrusted = true;
+        // return new vscode.Hover(contents);
+
         for (var i in commands ){
             var cmd = commands[i];
-            const args = encodeURIComponent(JSON.stringify( [cmd]))
-            const commandUri = vscode.Uri.parse(`command:swSessions.apropos?${args}`);
-            if (i >0) contents.appendMarkdown(`  ${"\n"}`);
-            contents.appendMarkdown(` [${cmd}](${commandUri})`,"magik");
+            if (i > 0) contents.appendMarkdown(`  ${"\n"}`);
+            contents.appendMarkdown(cmd,"magik");
         }
         contents.isTrusted = true;
         return new vscode.Hover(contents);
@@ -72,33 +81,23 @@ class codeExplorer {
     get_aproposCommands(document, pos) {
 
         const swgis = this.swgis;
-        if ( !swgis.sessions ) return;
+        if ( !swgis.getActiveSession() ) return;
 
-		var codeWord;
-		if(document.fileName=="!swCB!") {
-			codeWord = document.lineAt(pos.line).text.split(/\s\INs/);
-			if( codeWord.length!=2) return 
-			codeWord = codeWord[1].trim()+"."+codeWord[0].trim()
-			
-		} else { 
-         	codeWord = magikParser.getClassMethodAtPosition(document, pos);
-			if (!codeWord) return;
-			var exm = codeWord[0];
-			var mtd = codeWord[1];
-			if (exm=="_self"||exm=="_super"||exm=="_clone") return;
-			
-			var onMethod = document.getWordRangeAtPosition(pos, magikParser.keyPattern.dot_method);
-		}
-
-        var commands = [];
-		if (onMethod){
-			commands.push(exm+".apropos(\""+mtd+"\")");
+		var codeWord = this.getClassMethodAtPosition(document, pos);
+		if (!codeWord) return;
+		var commands = [],cmd,arg,lbl;
+		if ( document.fileName=="!swCB!"){
+			lbl =   "Jump to source: "+codeWord;
+			arg = encodeURIComponent(JSON.stringify([document,codeWord]));
+			cmd = vscode.Uri.parse(`command:swCb.jump?${arg}`);
+			commands.push(` [${lbl}](${cmd})`)
 		} else {
-        	commands.push("apropos(\""+exm+"\")");
-        commands.push(exm+".apropos(\"\")");
+			lbl =   "Class Browser: ";
+			arg = encodeURIComponent(JSON.stringify([codeWord]));
+			cmd = vscode.Uri.parse(`command:swCb.find?${arg}`);
+			commands.push(` [${lbl+codeWord}](${cmd})`)
 		}
-	
-        return commands ;
+        return commands;
     }
     
     provideReferences(document, position, options, token) {
@@ -142,31 +141,60 @@ class codeExplorer {
     }
 	
 	getClassMethodAtPosition(document, pos){
-		
-        var filter = magikParser.getSymbolNameAtPosition(document, pos);
+		if ( document.fileName=="!swCB!"){
+			var nameStr = document.lineAt(pos.line).text.split("#")[0].trim(); 
+			if (/\s+IN\s+/.test(nameStr)) {
+				var str = nameStr.split(/\s+/g);
+				if (str.length > 3){
+					return  str[2]+str[0];    
+				}
+			} else if (/[\w!?]*:?[\w!?]+\s+\.[\w!?\(\)\[\]]+\s+_pragma/i.test(nameStr)) {
+				var str = nameStr.split(/[\.\s]+/g);
+				if (str.length > 2){
+					return  str[0]+'.'+str[1];    		
+				}
+			}	
+			return;
+		}	
+		var filter = magikParser.getSymbolNameAtPosition(document, pos);
 		if (!filter) return;
+
+        var editor = vscode.window.activeTextEditor;
+		if (editor) {
+			var range = editor.selection
+			if (!range.isEmpty && range.start.line == range.end.line) {
+				filter = document.getText(editor.selection).replace(/\s*/g,'');
+			}
+		}
 
 		var className = null;
 		var methodName = null;
-        var ClassMethod = magikParser.getClassMethodAtPosition(document, pos);
+		var ClassMethod = magikParser.getClassMethodAtPosition(document, pos);
 		if (ClassMethod) {
 			className = ClassMethod[0];
 			methodName = ClassMethod[1];
-			switch (className) {
-				case "_super":
-				case "_self":
-					var foldR = this.find_foldingRange(document,pos);
-					if (foldR){
-						className = foldR.symbol.containerName;
-						if (className && className.length) 
-							filter = className + "." + methodName;
-						else 
-							filter =  "." + methodName;					
-					}
-					break;
-				default :
-					filter = className + "." + methodName;
+			if (className ==  "_super" || className ==  "_self"){
+				var foldR = this.find_foldingRange(document,pos);
+				if (foldR){
+					className = foldR.symbol.containerName;
+					if (!className) className =  "";					
+				}
+			} else if (!className.length && filter.indexOf(className)<0) {
+				className = '';
 			}
+
+			if (methodName.search(magikParser.keyPattern.pseudo_defs)==0) {
+				var foldR = this.find_foldingRange(document,pos);
+				if (foldR) {
+					methodName = foldR.symbol.name;
+				}	
+			}
+			if (filter==className) 
+				filter = className + ".";
+			else if (filter.indexOf(className)<0)
+				filter = "." + methodName;
+			else 
+				filter = className + "." + methodName;
 		}
 		return filter;
 	}	
@@ -174,17 +202,23 @@ class codeExplorer {
 	provideDefinition(document, pos, token){
 		var filter = this.getClassMethodAtPosition(document, pos);
 		if (!filter) return 
-		var symbols = this.swgis.filterWorkspaceSymbs(filter, className, methodName);
-		if (symbols.length==0){
-			this.scanWorkspace('provideDefinition',token);			
-			symbols = this.swgis.filterWorkspaceSymbs(filter, className, methodName);
-		}
-		for (var i in symbols){
-			symbols[i] = symbols[i].location 
-  		}
 
-		return symbols;
-	}
+		let swgis = this.swgis;
+		if(document.fileName=="!swCB!") {
+			return //this.get_aproposCommands(document, pos)
+		} else {
+			var symbols = swgis.filterWorkspaceSymbs(filter);
+			if (symbols.length==0){
+				this.scanWorkspace('provideDefinition',token);			
+				symbols = this.swgis.filterWorkspaceSymbs(filter);
+			}
+			for (var i in symbols){
+				symbols[i] = symbols[i].location 
+			  }
+
+			return symbols;
+		}	
+	}	
 
     provideCodeActions(document, range, diagnostics, token) {
 		let fName = document.fileName;
@@ -205,7 +239,9 @@ class codeExplorer {
     }
 
     scanWorkspace(caller,token, rootPath) {
+
 		const swgis = this.swgis;
+		const cB = this.codeBrowser;
 		var scanFolders = []
 		if(rootPath){
 			scanFolders.push(rootPath)
@@ -218,10 +254,10 @@ class codeExplorer {
         if (scanFolders.isEmpty) {
             vscode.window.showInformationMessage('Add Smallworld product folders to Workspace to explore Magik Symbols.');
             return;
-		};
+		} else 
+			console.log(caller +  " scanWorkspace "+scanFolders.toString());
 
 		var pathIndex;
-		const cB =  new cBrowser.codeBrowser(swgis);
 		if (caller=='provideReferences') {
 			pathIndex = swgis.swWorkspace.refIndex;
 			for(var i in scanFolders){
@@ -339,7 +375,7 @@ class codeExplorer {
 
         } else if (fName=="module.def"){
             var mName = magikParser.get_ProductModuleName(document);
-            codeBlock = "_try\n\tsmallworld_product.add_product(\""+fPath+"\\..\")\n\tsw_module_manager.load_module(:"+mName+")\n_when error\n\tsw_module_manager.load_module_definition(\""+fPath+"\")\n\tsw_module_manager.load_module(:"+mName+")\n_endtry";
+            codeBlock = "_try\n\tsmallworld_product.add_product(\""+fPath+"\\..\\..\")\n\tsw_module_manager.load_module(:"+mName+")\n_when error\n\tsw_module_manager.load_module_definition(\""+fPath+"\")\n\tsw_module_manager.load_module(:"+mName+")\n_endtry";
             titleAction = "Load Module ("+ mName+")";
 
         } else if (fName=="load_list.txt"){
@@ -383,10 +419,14 @@ class codeExplorer {
     }
 
     find_foldingRange(doc, pos) {
-        const swgis = this.swgis ;
-        var swWorkspace = swgis.swWorkspace;
-        var fName = doc.fileName;
-        var symbols = swWorkspace.tagIndex[fName];
+        // const swgis = this.swgis ;
+        // var swWorkspace = swgis.swWorkspace;
+        // var fName = doc.fileName;
+		// var symbols = swWorkspace.tagIndex[fName];
+		const cB = this.codeBrowser;
+		var codeBlock = doc.getText();
+		var symbols = cB.get_codeSymbols(codeBlock,doc.uri, doc.languageId);
+		console.log("find_foldingRange: "+pos.line);
         if (symbols){
             pos = pos.line + pos.character/1000;
             for (var i in symbols){
@@ -429,7 +469,11 @@ class codeExplorer {
 					pos = foldR.range.start.line;
 					if (pos>0){
 						pos = doc.lineAt(pos-1).text.trim();
-						if (pos.indexOf("_pragma") == 0 ) codeBlock = pos +"\n"+ codeBlock;
+						if (pos.indexOf("_pragma") == 0 ) {
+							codeBlock = pos +"\n"+ codeBlock;
+							pos=pos-1;
+						}
+						codeBlock = '\n'.repeat(pos) + codeBlock;
 					}
 					context = "Code"; 
 				} else {
@@ -453,13 +497,15 @@ class codeExplorer {
                 codeBlock = doc.getText();
                 break;
             case 'Selection':
-				codeBlock = doc.getText(range).trim();
-                if (range.isEmpty || codeBlock.length==0){
+				codeBlock = doc.getText(range);
+                if (range.isEmpty || codeBlock.trim().length==0){
 					pos = (range.start.line+1) + ":" + (range.start.character+1);
 					pos += " - "+(range.end.line+1) + ":" + (range.end.character+1);
                     codeBlock = "failed to find code selection "+pos+".";    
                     context = 'Error' ;
-				} 
+				} else {
+					codeBlock = '\n'.repeat(range.start.line) + codeBlock;
+				}
                 break;
              default: 
                 codeBlock = context;
@@ -497,9 +543,9 @@ class codeExplorer {
 	}
 
 	provideSignatureHelp(document, position, token) {
-        // if (!this.swConfig) {
-        //     this.swConfig = vscode.workspace.getConfiguration('magik', document.uri);
-        // }
+        if (!this.swConfig) {
+            this.swConfig = vscode.workspace.getConfiguration('magik', document.uri);
+        }
         // let theCall = this.walkBackwardsToBeginningOfCall(document, position);
         // if (theCall == null) {
         //     return Promise.resolve(null);

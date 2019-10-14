@@ -63,7 +63,7 @@ class keywordCheck{
     findKeyword(document, cursorPositon) {
         let lineText = document.lineAt(cursorPositon).text;
         let cpos = cursorPositon.character ;
-        if (magikParser.testInString(lineText,cpos,true)) return;
+        if (magikParser.isntActiveCode(lineText,cpos)) return;
 
         // Keywords and exception chars
         let result = null;

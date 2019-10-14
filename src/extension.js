@@ -10,6 +10,7 @@ const swSessions = require('./swSessions');
 const cBrowser = require('./codeBrowser');
 const gAliases = require('./gisAliases');
 const cExplorer = require("./codeExplorer");
+const swCb = require("./swCb");
 const disposable = [];
 
 // extension is activated 
@@ -65,6 +66,12 @@ function activate(context) {
     disposable.push( vscCmd.registerCommand( "swSessions.gisCommand",  function(gisCmd) { swS.gisCommand(gisCmd) }) );
     disposable.push( vscCmd.registerCommand( "swSessions.clearWorkspaceCache",  function(cacheId) { swS.clearWorkspaceCache(cacheId) }) );
     disposable.push( vscCmd.registerCommand( "swSessions.dumpWorkspaceCache",  function(fname) { swS.dumpWorkspaceCache(fname) }) );
+
+    // register a class browser
+    const cb = new swCb.swCb(swgis);
+    cb.run(context,disposable);
+    const cbAgent = new cExplorer.codeExplorer(swgis);
+    vscode.languages.registerHoverProvider(cb.scheme,cbAgent);
 
 }
 exports.activate = activate;

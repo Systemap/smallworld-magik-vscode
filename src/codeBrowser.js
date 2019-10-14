@@ -15,8 +15,11 @@ class codeBrowser{
     provideDocumentSymbols(document, token) {
 		var codeUri = document.uri;
 		var codeBlock = document.getText();
-		this.get_codeReferences(codeBlock, codeUri, document.languageId, token);
-		return this.get_codeSymbols(codeBlock,codeUri, document.languageId,  token);
+		var languageId =  document.languageId;
+		if (document.fileName=="!swCB!")	return; 
+		
+		this.get_codeReferences(codeBlock, codeUri, languageId, token);
+		return this.get_codeSymbols(codeBlock,codeUri, languageId,  token);
     };
         
     get_fileSymbols(fileName) {
@@ -34,7 +37,7 @@ class codeBrowser{
     }
         
     get_codeSymbols(codeBlock, codeUri,languageId, token) {
-		var fileName = codeUri.fsPath;
+		var fileName = codeUri.fsPath.toLowerCase();
         var symInfos;
         if(languageId=="magik" || fileName.endsWith(".magik")) {
             symInfos = this.get_magikSymbols(codeBlock, codeUri, token); 
@@ -46,6 +49,8 @@ class codeBrowser{
             symInfos = this.get_gisSymbols(codeBlock, codeUri, token);
         } else if (fileName.endsWith("\environment.bat")) {
             symInfos = this.get_gisSymbols(codeBlock, codeUri, token);
+		} else if(languageId=="swgis" || fileName.endsWith(".msg")) {
+            symInfos = this.get_messageSymbols(codeBlock, codeUri, token); 
         } else {
             return [];
         }
@@ -55,18 +60,20 @@ class codeBrowser{
     };
 
     get_codeReferences(codeBlock, codeUri,languageId, token) {
-		var fileName = codeUri.fsPath;
+		var fileName = codeUri.fsPath.toLowerCase();
         var refInfos = [];
         if(languageId=="magik" || fileName.endsWith(".magik")) {
             refInfos = this.get_magikReferences(codeBlock, codeUri, token); 
-        // } else if(fileName.endsWith("\module.def")) {
-        //     symInfos = this.get_moduleReferences(codeBlock, codeUri, token);
         // } else if(fileName.endsWith("\product.def")) {
-        //     symInfos = this.get_productReferences(codeBlock, codeUri, token);
+        //     refInfos = this.get_productReferences(codeBlock, codeUri, token);
         // } else if (fileName.endsWith("\gis_aliases")) {
-        //     symInfos = this.get_aliasesReferences(codeBlock, codeUri, token);
+        //     refInfos = this.get_aliasesReferences(codeBlock, codeUri, token);
         // } else if (fileName.endsWith("\environment.bat")) {
-        //     symInfos = this.get_environReferences(codeBlock, codeUri, token);
+        //     refInfos = this.get_environReferences(codeBlock, codeUri, token);
+		} else if(languageId=="swgis" || fileName.endsWith(".msg")) {
+            refInfos = this.get_messageReferences(codeBlock, codeUri, token); 
+        } else if(fileName.endsWith("\module.def")) {
+            refInfos = this.get_moduleReferences(codeBlock, codeUri, token);
         } else {
             return [];
         }
@@ -86,7 +93,7 @@ class codeBrowser{
       
 		rootPath = rootPath.replace(/\//g,"\\");
 		const ignorePattern = [".git",".vscode"];
-		const includePattern = [".magik","\module.def","\product.def","\gis_aliases","\environment.bat"];
+		const includePattern = [".magik",".msg","\module.def","\product.def","\gis_aliases","\environment.bat"];
         const swgis = this.swgis;
         const swWorkspace = swgis.swWorkspace;
         const isFileSignature = function(fName, fSignatures) {
@@ -140,18 +147,30 @@ class codeBrowser{
 		var pathIndex, codeScanner, eng = this;
 		if (!caller || caller=='provideReferences') {
 			pathIndex = swWorkspace.refIndex;
-			codeScanner = function(arg){ return eng.get_fileReferences(arg);}
+			codeScanner = function(fname){ return eng.get_fileReferences(fname);}
             walk(rootPath,pathIndex,codeScanner);    
 		}
 		if (!caller || caller!='provideReferences') {
 			pathIndex = swWorkspace.tagIndex;
-			codeScanner = function(arg){ return eng.get_fileSymbols(arg);}
+			codeScanner = function(fname){ return eng.get_fileSymbols(fname);}
             walk(rootPath,pathIndex,codeScanner);    
 		}
 
         return pathIndex; 
     }
     
+    symbolLocation(filter,filename) {
+		const swgis = this.swgis;
+        const swWorkspace = swgis.swWorkspace;
+		let pathIndex = swWorkspace.tagIndex;
+		if(!pathIndex[file] && isFileSignature(file,includePattern))    
+		try{   
+			 let data = eng.get_fileSymbols(filename);
+			 pathIndex[file] = data;
+		} catch(err) {
+			console.log("--- scanWorkspace:  Error: "+err.message+" - "+file);		
+		}   
+	};
 
     get_productSymbols(codeBlock, codeUri, token) {
 		var symInfos = [];
@@ -169,6 +188,29 @@ class codeBrowser{
 
 	    return symInfos  
     }
+
+    get_moduleReferences(codeBlock, codeUri, token) {
+		const refIndex = {};
+		var codeLines = codeBlock.split("\n");
+		var requires=false, name=true;
+		// parse the document for Symbols
+        for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
+			var lineText = codeLines[lineCount].split("#")[0].trim();
+			var tag = lineText.split(/\s/)[0];
+			if ( tag.length == 0) {
+				continue;
+			} else if (tag.search(/requires/i)==0){
+				requires = true;
+			} else if (requires || name){
+				tag = tag.toLowerCase();
+				var symRnge = new vscode.Range(new vscode.Position(lineCount, 0), new vscode.Position(lineCount+1, 0));
+				if (!refIndex[tag]) refIndex[tag] = [];
+				refIndex[tag].push( new vscode.Location(codeUri, symRnge));
+				name = false;
+			}
+		};
+        return refIndex;
+	}
 
     get_moduleSymbols(codeBlock, codeUri, token) {
 		var symInfos = [];
@@ -252,7 +294,7 @@ class codeBrowser{
 			};
 			var symRnge = new vscode.Range(tag.keyPosition, tag.endPosition);
 			// var symInfo = new vscode.SymbolInformation(tag.nodeName, tag.vsKind, symRnge, fileName, parentName);
-			var label = tag.nodeName; //+ " " + tag.keyPosition.line;
+			var label = (tag.nodeName)? tag.nodeName : "_unset"; //+ " " + tag.keyPosition.line;
 			var symInfo = new vscode.SymbolInformation(label, tag.vsKind, symRnge, codeUri, parentName);
 			symInfo.package = tag.package;
 			return symInfo;
@@ -298,6 +340,45 @@ class codeBrowser{
         return symInfos;
     };
               
+    get_messageReferences(codeBlock, codeUri, token) {
+		const refIndex = {};
+		var codeLines = codeBlock.split("\n");
+		// parse the document for Symbols
+        for (var lineCount = 0; lineCount < codeLines.length; ++lineCount) {
+            var msg = codeLines[lineCount].match(/\s*:[\w!?]+\s+/);
+			if (msg && msg.index == 0) {
+				msg = msg[0].slice(1).trim().toLowerCase();
+				var symRnge = new vscode.Range(new vscode.Position(lineCount, 0), new vscode.Position(lineCount+1, 0));
+				if (!refIndex[msg]) refIndex[msg] = [];
+				refIndex[msg].push( new vscode.Location(codeUri, symRnge));
+			}
+		};
+        return refIndex;
+    };
+              
+    get_messageSymbols(codeBlock, codeUri, token){
+		
+		const swWorkspace = this.swWorkspace;
+      	var refInfos =  swWorkspace.refIndex[codeUri.fileName];         
+		if (!refInfos || refInfos.length==0)
+			refInfos = this.get_messageReferences(codeBlock, codeUri, token);
+		
+			var parentNode = codeUri.fsPath.split(/[\\//]/g);
+			parentNode = parentNode[parentNode.length-1].split('.')[0];
+			var symInfos = [], symInfo, symRnge;	
+        for (var msg in refInfos) {
+			symRnge = refInfos[msg][0];
+			symInfo = new vscode.SymbolInformation(msg, vscode.SymbolKind.EnumMember, parentNode, symRnge);
+			symInfos.push(symInfo);
+		}; 
+
+		symRnge = new vscode.Range(new vscode.Position(0, 0), symRnge.range.end);
+		symInfo = new vscode.SymbolInformation(parentNode, vscode.SymbolKind.Enum, symRnge, codeUri);
+		symInfos.push(symInfo);
+
+        return symInfos;
+    };
+              
     parse_magikSyntax(codeLines,codeUri) {
 		var tags = [], codeLinesTags, swPackage ='';
 		var nestedCodeOutline = vscode.workspace.getConfiguration('Smallworld').get("nestedCodeOutline");
@@ -318,7 +399,7 @@ class codeBrowser{
 					if (keyPos < tagFootprint) continue;
 					tagFootprint = keyPos;
 
-					if (magikParser.testInString(codeLine,keyPos,true)) continue;
+					if (magikParser.isntActiveCode(codeLine,keyPos)) continue;
 					if (/_global/i.test(match[1])) {
 						if (/_global\s+_constant/i.test(codeLine)) continue;
 						else if (/(_global\s+_constant\s+_proc[@\s\(|_global\s+_proc[@\s\(])/i.test(codeLine))	continue;
@@ -354,99 +435,94 @@ class codeBrowser{
     }
            
     set_nodeContainerNames(tag) {
-					// build node and container names    
-					var root, node, args;
-					var tagTxt = tag.text;
-					switch (tag.keyWord) {
-						case '_method':
-						// case '_private_method':
-						// case '_abstract_method':
-						// case '_iter_method':
-							let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
-							if (match) match = match[0];
-							else  match = tag.text;
-							match = match.split(".");
-							root = match[0];
-							node =  magikParser.proofMethodName(match[match.length-1]);
-							args = "";
-							break; 
-						case '_proc':
-						// case '_iter_proc':
-							node = tagTxt.match(/_handling\s+[\w!?]+\s+_with\s*/i);
-							if (node && node.length) node = node.split(/\.*_handling\s+/i)[0];
-							else if(node = magikParser.splitChevron(tagTxt)) node = node[0]; 
-							else node = null;
-							args ='()'
-						case '_block':
-							root = null;//tag.keyWord;
-							if (!node) {
-								node = tagTxt.match(/@[\w!?]+/);
-								if (node && node.length){
-									node = node[0];
-								} else {
-									node = "@unnamed";
-								}
-							}		
-							node = tag.keyWord +" "+ node;
-							args = (args)? args:"";
-							break;    
-						case '_dynamic_import':
-						case '_dynamic':
-						case '_global_constant':
-						case '_global':
-						case '_constant':
-							root =  null;//tag.keyWord;
-							node = tag.keyWord+ " ";
-							var arr = magikParser.splitChevron(tagTxt);
-							if (arr) args = arr[0];
-							else args = tagTxt.replace(magikParser.keyPattern[tag.key],'');
-							args = args.trim();
-							break;    
-						case 'def_mixin':
-						case 'def_slotted_exemplar':
-							root = tag.params.split('(')[1].split(',')[0];
-							node = tag.keyWord;
-							args = "";
-							break;                       
-						case 'condition':
-						case 'magik_session':
-						case 'application':
-							root = tag.keyWord;               
-							node = tag.params.split('(')[1].split(',')[0];
-							if (node[0]==':') node = node.slice(1,node.length);
-							else if (node[0]=='\"'||node[0]=='\'') node = node.slice(1,node.length-2);
-							args = "";
-							break;    
-						case 'define_property':
-						case 'define_slot_access':
-						case 'define_pseudo_slot':
-						case 'def_property':
-						case 'define_shared_variable':
-						case 'define_shared_constant':
-							root = tagTxt.split(".")[0].trim();
-							if (tag.params.length){
-								node = tag.params.split(/\(:*/);
-								node = node[1].split(',')[0];
-							} else 
-								node = tag.text;
-							args = "";
-							break;
-						case 'sw_patch_software':
-							root = null;
-							node = tagTxt.trim();
-							args = "";                 
-							break;    
-						default:
-							root = tagTxt.split(".")[0].trim();
-							node = tag.text.split(/[\(\[]*/);
-							node = node[1].split(',')[0];
-							args = "";
-					}	
-					if (root)  root = root.replace(/[\"\':]/g,'');
-					if (node)  node = node.replace(/[\"\':]/g,'');
+		// build node and container names    
+		var root, node, args;
+		var tagTxt = tag.text;
+		switch (tag.keyWord) {
+			case '_method':
+			// case '_private_method':
+			// case '_abstract_method':
+			// case '_iter_method':
+				let match = magikParser.keyPattern.class_dot_method.exec(tag.text)
+				if (match) match = match[0];
+				else  match = tag.text;
+				match = match.split(".");
+				root = match[0];
+				node =  magikParser.proofMethodName(match[match.length-1]);
+				args = "";
+				break; 
+			case '_proc':
+			// case '_iter_proc':
+				node = tagTxt.match(/_handling\s+[\w!?]+\s+_with\s*/i);
+				if (node && node.length) node = node[0].split(/\.*_handling\s+/i)[0];
+				else if(node = magikParser.splitChevron(tagTxt)) node = node[0]; 
+				else node = null;
+				args ='()'
+			case '_block':
+				root = null;//tag.keyWord;
+				if (!node) {
+					node = tagTxt.match(/@[\w!?]+/);
+					if (node && node.length){
+						node = node[0];
+					} else {
+						node = "@unnamed";
+					}
+				}		
+				node = tag.keyWord +" "+ node;
+				args = (args)? args:"";
+				break;    
+			case '_dynamic_import':
+			case '_dynamic':
+			case '_global_constant':
+			case '_global':
+			case '_constant':
+				root =  null;//tag.keyWord;
+				node = tag.keyWord+ " ";
+				var arr = magikParser.splitChevron(tagTxt);
+				if (arr) args = arr[0];
+				else args = tagTxt.replace(magikParser.keyPattern[tag.key],'');
+				args = args.trim();
+				break;    
+			case 'def_mixin':
+			case 'def_slotted_exemplar':
+				root =  magikParser.param0(tag);
+				node = tag.keyWord;
+				args = "";
+				break;                       
+			case 'condition':
+			case 'magik_session':
+			case 'application':
+				root = tag.keyWord;               
+				node = magikParser.param0(tag);
+				args = "";
+				break;    
+			case 'define_property':
+			case 'define_slot_access':
+			case 'define_pseudo_slot':
+			case 'def_property':
+			case 'define_shared_variable':
+			case 'define_shared_constant':
+				root = tagTxt.split(".")[0].trim();
+				node = magikParser.param0(tag);
+				if (!node) node = tag.text;
+				args = "";
+				break;
+			case 'sw_patch_software':
+				root = null;
+				node = tagTxt.trim();
+				args = "";                 
+				break;    
+			default:
+				root = tagTxt.split(".")[0].trim();
+				node = tag.text.split(/[\(\[]*/);
+				node = node[1].split(',')[0];
+				args = "";
+		}	
+		if (root)  root = root.replace(/[\"\':]/g,'');
+		if (node)  node = node.replace(/[\"\':]/g,'');
 
-					tag.containerName = root;
-					tag.nodeName = node+args;    
+		tag.containerName = root;
+		tag.nodeName = node+args;    
     }
 
     parse_magikTag(match,code,keyPos,keyLine,swPackage) {
@@ -523,8 +599,11 @@ class codeBrowser{
 				nestedBrackets += ((p1)? p1.length : 0) - ((p2)? p2.length : 0);
 				if (nestedBrackets == 0) break;
 			}; 
-		// const prefixes = /\b(_iter|_abstract|_private|_pragma)\b/i;
-		const prefixes = /\b(_iter|_abstract|_private)\b/i;
+
+		const parserKeys = magikParser.keyPattern;
+		let prefixes = /\b(_iter|_abstract|_private)\b/i;
+        if(parserKeys.pseudo_defs.test(keyWord))
+			prefixes = /[a-z_!?][\w!?]*\s*\./i;
 		for(var n = keyLine; n>=0; --n){
 				let match = prefixes.exec(code[n]);
 				if (match){
@@ -534,6 +613,7 @@ class codeBrowser{
 				}
 				if (n < keyLine && code[n].length>0) break;
 		}
+
 		keyPos = new vscode.Position(keyLine,keyPos);
 		endPos = Math.max(0, lastLine.lastIndexOf(endWord) + endWord.length);
 		endPos = new vscode.Position(endLine,endPos);
