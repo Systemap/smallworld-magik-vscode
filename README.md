@@ -5,10 +5,11 @@ This is a fast and modern IDE for [Smallworld](https://en.wikipedia.org/wiki/Sma
 ## Features
 
 * Language support for Magik source and Smallworld resource file types.
-* Code outlines, Definitions, References and Symbol Provider for Magik and gis_aliases stanzas.
-* Run Smallworld sessions and configure GIS Commands. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
-* Magik code compiler, module and product loaders for Smallworld 5.x (Not supported on Smallworld 4). 
+* Configure GIS Commands and run Smallworld sessions (Contributor: [MarkerDave](https://github.com/MarkerDave) ).
+* Magik code compiler, module and product loaders for Smallworld 5.x. 
+* Integrated Smallworld Class Browser for Smallworld 5.x.   
 * Magik F2-keys shortcut combinations and a traditional light theme.  
+* Code Outline, Definitions, References, Code Lense, Code Action, Hover and Symbol Provider features.
 
 ---
 ## For Magik Developers
@@ -34,7 +35,11 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![CodeOutline](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
-* Change the colour Theme to Smallworld Magik to get a traditional Light theme.
+* Press (F2-F2) to open the Class Browser and type in a `Class.Method` combination to query method_finder.
+* or Simply hover over a `Class.Method` combination, to get Class Browser hover action  
+
+![ClassBrowser](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowser.png)
+
 * Click on a `Class.Method` combination, hold down CTRL to get Definition Peak or right-click for Definition and References in the context menu  
 
 ![References](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeReferences.png)
@@ -189,25 +194,21 @@ To define F7 key combinations for the Magik compiler:
 
 # Release Notes
 
-## [1.4.2] - 18-08-2019
-* Support for _package in Symbol Provider  
-* Minor Corrections and bug fixes
-
-## [1.4.0] - 04-08-2019
-
-* New GIS Command (F2-z) to start a session. 
-* Multi-environment configuration for GIS path, command and startup.
-* Support for Case and Style archive files.
+## [1.5.0] - 20-10-2019
+* New integrated Smallworld Class Browser.   
+* New Redial function to automatically start the last GIS Command session. 
+* Definition and Reference support for Message identifiers in .magik and .msg files.
 * Various bug fixes and improvements. 
 
 ## Known Issues 
 
-### Limited Support for Smallworld Older Versions
-There are some limitations for Smallworld versions older than 5.0: 
+### No Support for Smallworld Sessions Prior to Version 5.0
+This extensions does not support Smallworld sessions and its related functions on versions older than 5.0 which includes: 
 
-* GIS Command syntax does not fully support Smallworld 3.x and 4.x 
-* Smallworld 3.x and 4.x sessions are not integrated Terminals
+* GIS Command not supported on Smallworld 3.x and 4.x 
 * Magik Compiler commands do not support Smallworld 3.x and 4.x
+* Magik CLass Browser is not supported for Smallworld 3.x and 4.x
+
 
 ### Workspace Close\Open Terminates the Session.
 Opening/closing a Workspace or the active Folder while a Smallworld Session is running, will terminate the session without a warnings.

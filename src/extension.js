@@ -10,6 +10,7 @@ const swSessions = require('./swSessions');
 const cBrowser = require('./codeBrowser');
 const gAliases = require('./gisAliases');
 const cExplorer = require("./codeExplorer");
+const swCb = require("./swCb");
 const disposable = [];
 
 // extension is activated 
@@ -66,6 +67,10 @@ function activate(context) {
     disposable.push( vscCmd.registerCommand( "swSessions.clearWorkspaceCache",  function(cacheId) { swS.clearWorkspaceCache(cacheId) }) );
     disposable.push( vscCmd.registerCommand( "swSessions.dumpWorkspaceCache",  function(fname) { swS.dumpWorkspaceCache(fname) }) );
 
+    // register a class browser
+    const cbAgent = new cExplorer.codeExplorer(swgis);
+    const cb = new swCb.swCb(cbAgent);
+    cb.run(context,disposable);
 }
 exports.activate = activate;
 

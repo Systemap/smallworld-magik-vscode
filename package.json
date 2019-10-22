@@ -37,7 +37,7 @@
 		"configuration": {
 			"title": "Smallworld GIS",
 			"properties": {
-				"Smallworld.recursiveCodeOutline": {
+				"Smallworld.nestedCodeOutline": {
 					"type": "boolean",
 					"default": false,
 					"markdownDescription": "Find and display code outline inside Symbols, e.g. `_dynamic` and `_proc` definitions inside a `_method`."
@@ -57,6 +57,10 @@
 					},
 					"default": [],
 					"markdownDescription": "GIS commands to start a session (e.g. `-a C:\\Smallworld\\cambridge_db\\config\\gis_aliases cambridge_db_open`).\n\n---"
+				},
+				"Smallworld.redialSession": {
+					"type": "object",
+					"markdownDescription": "GIS command quick start, to be managed by the extension."
 				},
 				"Smallworld.sessions": {
 					"type": "array",
@@ -111,9 +115,86 @@
 			{
 				"command": "swSessions.compileLine",
 				"title": "SW Compile Magik Line"
+			},
+			{
+				"command": "swCb.open",
+				"title": "SW CB Open"
+			},
+			{
+				"command": "swCb.find",
+				"title": "SW Class Browser Find"
+			},
+			{
+				"command": "swCb.jump",
+				"title": "SW CB Jump to Source"
+			},
+			{
+				"command": "swCb.inherit",
+				"title": "SW CB Inherit Switch"
+			},
+			{
+				"command": "swCb.inheritLocal",
+				"title": "SW CB Inherit Local"
+			},
+			{
+				"command": "swCb.inheritParent",
+				"title": "SW CB Inherit Parents"
+			},
+			{
+				"command": "swCb.inheritObject",
+				"title": "SW CB Inherit Object"
+			},
+			{
+				"command": "swCb.comments",
+				"title": "SW CB Comments Toggle"
 			}
 		],
 		"keybindings": [
+			{
+				"key": "f2 f2",
+				"command": "swCb.open",
+				"title": "SW Class Browser Open"
+			},
+			{
+				"key": "f2 j",
+				"command": "swCb.jump",
+				"when": "editorTextFocus",
+				"title": "SW Class Browser Jump"
+			},
+			{
+				"key": "f2 f",
+				"command": "swCb.find",
+				"when": "editorTextFocus",
+				"title": "SW Class Browser Find"
+			},
+			{
+				"key": "f2 up",
+				"command": "swCb.comments",
+				"args": "off",
+				"when": "editorTextFocus",
+				"title": "SW CB Comments Off"
+			},
+			{
+				"key": "f2 down",
+				"command": "swCb.comments",
+				"args": "on",
+				"when": "editorTextFocus",
+				"title": "SW CB Comments On"
+			},
+			{
+				"key": "f2 left",
+				"command": "swCb.inherit",
+				"args": "local/parent",
+				"when": "editorTextFocus",
+				"title": "SW CB Inherit Local"
+			},
+			{
+				"key": "f2 right",
+				"command": "swCb.inherit",
+				"args": "object/parent",
+				"when": "editorTextFocus",
+				"title": "SW CB Inherit Object"
+			},
 			{
 				"key": "Ctrl+f9",
 				"command": "swSessions.compileCode",
@@ -187,6 +268,49 @@
 					"command": "swSessions.compileCode",
 					"group": "swSessions",
 					"when": "editorLangId == magik"
+				},
+				{
+					"command": "swCb.find",
+					"group": "swSessions",
+					"when": "editorLangId == magik"
+				},
+				{
+					"command": "swCb.comments",
+					"group": "swSessions",
+					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.inheritLocal",
+					"group": "swSessions",
+					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.inheritParent",
+					"group": "swSessions",
+					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.inheritObject",
+					"group": "swSessions",
+					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.jump",
+					"group": "navigation",
+					"when": "editorLangId == swCB"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "swCb.jump",
+					"group": "navigation",
+					"when": "editorLangId == swCB"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "swCb.open",
+					"when": "editorLangId == magik"
 				}
 			]
 		},
@@ -195,6 +319,11 @@
 				"label": "Smallworld Magik Light",
 				"uiTheme": "vs",
 				"path": "./cfg/magik-light.color-theme.json"
+			},
+			{
+				"label": "Smallworld Magik Dark",
+				"uiTheme": "vs-dark",
+				"path": "./cfg/magik-dark.color-theme.json"
 			}
 		],
 		"languages": [
@@ -232,6 +361,13 @@
 					"patch_list.txt"
 				],
 				"configuration": "./cfg/swgis-configuration.json"
+			},
+			{
+				"id": "swCB",
+				"aliases": ["_mf"],
+				"extensions": [],
+				"filenames": ["!swCB!"],
+				"configuration": "./cfg/magik-configuration.json"
 			}
 		],
 		"grammars": [
@@ -244,6 +380,11 @@
 				"language": "swgis",
 				"scopeName": "source.swgis",
 				"path": "./cfg/swgis.grammars.json"
+			},
+			{
+				"language": "swCB",
+				"scopeName": "source.magik",
+				"path": "./cfg/magik.grammars.json"
 			}
 		],
 		"snippets": [
