@@ -120,17 +120,7 @@ class codeExplorer {
 			// var codeText = document.getText();
 			// var codeUri = document.uri;
             try {
-                let results = [], refIndex = swgis.swWorkspace.refIndex;
-                for(var fname in refIndex) {
-					var refes = refIndex[fname];
-					if (!refes) continue;
-					refes = refes[filter];
-                    if (refes) {
-                        for (let i in refes) {
-                            results.push(refes[i]) 
-                        }
-                    } 
-                };
+                let results = swgis.filterWorkspaceRefs(filter);
                 resolve(results);
             }
             catch (e) {
@@ -165,7 +155,7 @@ class codeExplorer {
 			if (!range.isEmpty && range.isSingleLine) {
 				let s = range.start, e = range.end;
 				if (pos.line==s.line && pos.character>=s.character && pos.character<=e.character)
-					filter = document.getText(editor.selection).replace(/\s*/g,'');
+					return document.getText(editor.selection).replace(/\s*/g,'');
 			}
 		}
 
@@ -191,17 +181,14 @@ class codeExplorer {
 					methodName = foldR.symbol.name;
 				}	
 			}
-			let c = filter.indexOf(className), m = filter.indexOf(methodName);
-			if (c>-1 && m > c) 
-				filter = className + "."+ methodName;
-			else if (filter==className) 
+			if (filter==className) 
 				filter = className + ".";
-			else if (filte==methodName)
+			else if (methodName.indexOf(filter)==0)
 				filter = "." + methodName;
 			// else if (filter.indexOf(className)<0)
 			// 	filter = "." + methodName;
-			// else 
-			// 	filter = className + "." + methodName;
+			else 
+				filter = className + "." + methodName;
 		}
 		return filter;
 	}	

@@ -171,14 +171,17 @@ function param0(tag) {
 }
 exports.param0 = param0;
 
-function trimComments(tagTxt) {
+function maskComments(tagTxt) {
 	let match, regex = /(#|_pragma)/ig;
 	while (match = regex.exec(tagTxt)) 
-		if(match.index == 0) 
-			return "";
-		else if (isActiveCode(tagTxt,match.index))
-			return tagTxt.slice(0,match.index-1).trim();
-	return tagTxt.trim();
+		if(match.index == 0 || isActiveCode(tagTxt,match.index))
+			return tagTxt.slice(0,match.index)+' '.repeate(tagTxt.length-match.index);
+	return tagTxt;
+}
+exports.maskComments = maskComments;
+
+function trimComments(tagTxt) {
+	return maskComments(tagTxt).trim();
 }
 exports.trimComments = trimComments;
 
@@ -234,7 +237,11 @@ exports.proofMethodName = proofMethodName
 function getClassMethodAtPosition(document, pos) {
 
 	var range = document.getWordRangeAtPosition(pos,keyPattern.class_dot_method);
-	 if (!range || range.isEmpty) return;
+	if (!range || range.isEmpty) 
+		range = document.getWordRangeAtPosition(pos,keyPattern.dot_method);
+	if (!range || range.isEmpty) 
+		range = document.getWordRangeAtPosition(pos,keyPattern.class_dot);
+	if (!range || range.isEmpty) return;
 	var codeLine = maskStringComments( document.lineAt(pos.line).text ) ;
 	var codeWord = codeLine.slice(range.start.character,range.end.character);
 		codeWord = codeWord.replace(/\s/g,'').split(".");
@@ -254,7 +261,8 @@ function getSymbolNameAtPosition(document, pos) {
 	const symbolNamePattern = keyPattern.variable;
 	var range = document.getWordRangeAtPosition(pos,symbolNamePattern);
 	if (!range || range.isEmpty) return;
-	var codeLine = trimComments( document.lineAt(pos.line).text ) ;
+	var codeLine = document.lineAt(pos.line).text ;
+	codeLine = maskComments( document.lineAt(pos.line).text ) ;
 	var codeWord = codeLine.slice(range.start.character,range.end.character);
 	if(!codeWord) return;
 	codeWord = document.getText(range);
