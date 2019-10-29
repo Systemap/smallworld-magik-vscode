@@ -146,7 +146,11 @@
 			},
 			{
 				"command": "swCb.comments",
-				"title": "SW CB Comments Toggle"
+				"icon": {
+					"light": "./images/swcb-comments.svg",
+					"dark": "./images/swcb-comments.svg"
+				},
+				"title": "SW CB Comments Fold"
 			}
 		],
 		"keybindings": [
@@ -302,7 +306,7 @@
 			],
 			"editor/title": [
 				{
-					"command": "swCb.jump",
+					"command": "swCb.comments",
 					"group": "navigation",
 					"when": "editorLangId == swCB"
 				}
