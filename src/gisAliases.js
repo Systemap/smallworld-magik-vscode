@@ -105,7 +105,7 @@ class gisAliases{
         if (swgis.aliasePattern.test(alias)){
             alias = alias.split(":")[0].trim()
             if (swgis.getActiveSession()) {
-                return this.mHover('Session is runing');
+                return this.mHover('Terminal session is active: ' + swgis.aliasStanza);
             } else if (swgis.gisPath.length==0) {
                 return this.mHover("Configure swgis.gisPath");
             } else {
@@ -121,7 +121,7 @@ class gisAliases{
             msgHover = [];
             let hoverTexts = new vscode.MarkdownString();
             hoverTexts.appendCodeblock("Set swgis.gisPath in Settings to run an alias:","magik");
-            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : [\"C:/Smallworld/core/bin/x86/gis.exe\"] }","magik");
+            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : [\"C:/Smallworld/core\"] }","magik");
             msgHover['Configure swgis.gisPath'] = new vscode.Hover(hoverTexts);
         };
         swgis.errorHover = msgHover;

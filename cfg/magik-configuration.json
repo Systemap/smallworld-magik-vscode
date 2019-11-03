@@ -1,7 +1,6 @@
 {
     "comments": {
-        "lineComment": "#",
-        "blockComment": []
+        "lineComment": "#"
     },
     "brackets": [
         ["{", "}"],
@@ -93,10 +92,10 @@
         "_thisthread": "The current thread.",
         "_throw": "Introduces a _throw statement to transfer control to a matching _catch statement.",
         "_true": "Enumerated object with value true.",
-        "_try ": "ntroduces a statement sequence which may give rise to particular conditions; the statements for handling a condition are introduced by _when.",
-        "_unset": "numerated object with value unset.",
-        "_when": "ntroduces a list of conditions which may be raised by a _try statement.",
-        "_with": "ntroduces value or value list in statements such as _leave, _throw, _handling.",
-        "_xor":" //"
+        "_try ": "Introduces a statement sequence which may give rise to particular conditions; the statements for handling a condition are introduced by _when.",
+        "_unset": "Enumerated object with value unset.",
+        "_when": "Introduces a list of conditions which may be raised by a _try statement.",
+        "_with": "Introduces value or value list in statements such as _leave, _throw, _handling.",
+        "_xor":  " //"
       }
 }

@@ -10,6 +10,7 @@ const swSessions = require('./swSessions');
 const cBrowser = require('./codeBrowser');
 const gAliases = require('./gisAliases');
 const cExplorer = require("./codeExplorer");
+const swCb = require("./swCb");
 const disposable = [];
 
 // extension is activated 
@@ -58,11 +59,15 @@ function activate(context) {
 
 	disposable.push( vscCmd.registerTextEditorCommand( "swSessions.apropos",  function(edt,chg,cmd) { magikAgent.aproposCode(cmd,edt,chg) }) );
 
+    // register a class browser
+    const cEAgent = new cExplorer.codeExplorer(swgis);
+    const cb = new swCb.swCb(cEAgent);
+    cb.run(context,disposable);
+
     // ---- gisAliases
     const gisA = new gAliases.gisAliases(swS.swgis);
     gisA.run(context,disposable);
     swS.run(context,disposable);
-    disposable.push( vscCmd.registerCommand( "swSessions.gisCommand",  function(gisCmd) { swS.gisCommand(gisCmd) }) );
 
 }
 exports.activate = activate;

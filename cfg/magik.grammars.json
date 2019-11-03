@@ -49,13 +49,7 @@
 		"conditions": {
 			"patterns": [{
 				"name": "string.regexp",
-				"match": "\\s\\b(error|information|warning|system|debug)\\b\\s"
-			}]
-		},
-		"functions": {
-			"patterns": [{
-				"name": "markup.inserted",
-				"match": "\\b(show|write|debug_print|print)\\b"
+				"match": "\\s\\b(error|information|warning|system|debug|IN)\\b\\s"
 			}]
 		},
 		"regexp": {
@@ -87,14 +81,14 @@
 			},
 			{	"name": "string",
 				"begin": ":\\|",
-				"end": "(\\||\\n)",
+				"end": "[\\|\\n]",
 				"notIn": ["comment"],
-				"patterns": [{"match": ".*"}]
+				"patterns": [{"match": "[^\\n]"}]
 			},
 			{	"name": "string",
-				"begin": ":[a-zA-Z!?_][\\w!?_]*\\|",
-				"end": "(\\||\\n)",
-				"patterns": [{"match": ".*"}]
+				"begin": ":[a-zA-Z!?_][\\w!?]*\\|",
+				"end": "[\\|\\n]",
+				"patterns": [{"match": "[^\\n]"}]
 			},
 			{	"name": "string",
 				"begin": ":[a-zA-Z!?_]",
