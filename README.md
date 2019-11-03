@@ -35,7 +35,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![CodeOutline](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
-* Press (F2-F2) to open the Class Browser and type in a `Class.Method` combination to query method_finder.
+* Click on !swCB! icon (F2-F2) in the status bar to open the Class Browser and type in a `Class.Method` combination to query method_finder.
 * or Simply hover over a `Class.Method` combination, to get Class Browser hover action  
 
 ![ClassBrowser](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowser.png)
