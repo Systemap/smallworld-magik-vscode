@@ -121,7 +121,7 @@ class gisAliases{
             msgHover = [];
             let hoverTexts = new vscode.MarkdownString();
             hoverTexts.appendCodeblock("Set swgis.gisPath in Settings to run an alias:","magik");
-            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : [\"C:/Smallworld/core/bin/x86/gis.exe\"] }","magik");
+            hoverTexts.appendCodeblock("{ \"swgis.gisPath\" : [\"C:/Smallworld/core\"] }","magik");
             msgHover['Configure swgis.gisPath'] = new vscode.Hover(hoverTexts);
         };
         swgis.errorHover = msgHover;

@@ -175,7 +175,7 @@ function maskComments(tagTxt) {
 	let match, regex = /(#|_pragma)/ig;
 	while (match = regex.exec(tagTxt)) 
 		if(match.index == 0 || isActiveCode(tagTxt,match.index))
-			return tagTxt.slice(0,match.index)+' '.repeate(tagTxt.length-match.index);
+			return tagTxt.slice(0,match.index)+' '.repeat(tagTxt.length-match.index);
 	return tagTxt;
 }
 exports.maskComments = maskComments;

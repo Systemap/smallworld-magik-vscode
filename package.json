@@ -182,7 +182,14 @@
 				"key": "f2 down",
 				"command": "swCb.comments",
 				"args": "on",
-				"when": "editorTextFocus",
+				"when": "editorLangId == swCB",
+				"title": "SW CB Comments On"
+			},
+			{
+				"key": "Ctrl+/",
+				"command": "swCb.comments",
+				"args": "on",
+				"when": "editorLangId == swCB",
 				"title": "SW CB Comments On"
 			},
 			{
