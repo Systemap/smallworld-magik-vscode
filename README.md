@@ -35,7 +35,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![CodeOutline](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
-* Click on !swCB! icon (F2-F2) in the status bar to open the Class Browser and type in a `Class.Method` combination to query method_finder.
+* Click on !swCB! icon (F2-F2) on the statusbar or to open the Class Browser prompt and type in a `Class.Method` combination to query method_finder.
 * or Simply hover over a `Class.Method` combination, to get Class Browser hover action  
 
 ![ClassBrowser](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowser.png)
@@ -72,7 +72,24 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
     * `F2-s` or `Alt+F9` to compile the current code selection
     * `F2-l` or `Shift+F9` to compile the current single line of code
     * For F7 compiler keys see `Extension Settings` section below
-* Access Class or Method `apropos` in Hover Actions over `object.method` definitions.
+
+## Class Browser
+
+ Run Class Browser from !swCB! icons or from `Class Browser` Hover Actions over `object.method` definitions.
+    * `F2-F2` Open Class Browser prompt and the class Browser document. 
+    * `F2-UP ARROW` to fold up method_finder comments.
+    * `F2-DOWN ARROW` to fold down method_finder comments.
+    * `Ctrl+/` to toggle the folding/unfolding method_finder comments.
+
+ The Class Browser prompt accepts the following syntax: 
+  `[class].[method] [*loc/obj] [*b] [*a] [*s] [*r] [*d] [*dp] [*rs]`
+  * Pragma flags filter the classification level as `*b` basic, `*a` advanced, `*s` subclassable, `*r` redefinable, `*d` debug, `*dp` deprecated, `*rs` restricted.
+  * If no pragma flags are defined, all classifications will be listed.
+  * Inheritance is filtered by `*loc` local methods only, `*obj` parents including `object` 
+  * If inheritance filter is not defined all parents except `object` will be listed.
+ Example:  `stream.new *dp *rs`  lists all the method names containing `new` on class names containing `stream` which are flagged as 'deprecated' or 'restricted'.   
+
+The Class Browser Editor/Title command _##_ toggles the folding and unfolding of method_finder comments and arguments.  
 
 ---
 # Extension Settings
@@ -207,7 +224,7 @@ This extensions does not support Smallworld sessions and its related functions o
 
 * GIS Command not supported on Smallworld 3.x and 4.x 
 * Magik Compiler commands do not support Smallworld 3.x and 4.x
-* Magik CLass Browser is not supported for Smallworld 3.x and 4.x
+* Magik Class Browser is not supported for Smallworld 3.x and 4.x
 
 
 ### Workspace Close\Open Terminates the Session.
