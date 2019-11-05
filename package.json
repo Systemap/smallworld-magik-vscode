@@ -122,15 +122,19 @@
 			},
 			{
 				"command": "swCb.find",
-				"title": "SW Class Browser Find"
+				"title": "SW CB Find"
 			},
 			{
 				"command": "swCb.jump",
 				"title": "SW CB Jump to Source"
 			},
 			{
+				"command": "swCb.refresh",
+				"title": "SW CB Refresh"
+			},
+			{
 				"command": "swCb.inherit",
-				"title": "SW CB Inherit Switch"
+				"title": "SW CB Inherit"
 			},
 			{
 				"command": "swCb.inheritLocal",
@@ -191,20 +195,6 @@
 				"args": "on",
 				"when": "editorLangId == swCB",
 				"title": "SW CB Comments On"
-			},
-			{
-				"key": "f2 left",
-				"command": "swCb.inherit",
-				"args": "local/parent",
-				"when": "editorTextFocus",
-				"title": "SW CB Inherit Local"
-			},
-			{
-				"key": "f2 right",
-				"command": "swCb.inherit",
-				"args": "object/parent",
-				"when": "editorTextFocus",
-				"title": "SW CB Inherit Object"
 			},
 			{
 				"key": "Ctrl+f9",
@@ -307,6 +297,11 @@
 				},
 				{
 					"command": "swCb.jump",
+					"group": "navigation",
+					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.refresh",
 					"group": "navigation",
 					"when": "editorLangId == swCB"
 				}

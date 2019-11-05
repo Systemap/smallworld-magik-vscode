@@ -124,7 +124,6 @@ class codeExplorer {
                 resolve(results);
             }
             catch (e) {
-				console.log(e.message);
 				reject(e);
             }
         });
@@ -185,8 +184,6 @@ class codeExplorer {
 				filter = className + ".";
 			else if (methodName.indexOf(filter)==0)
 				filter = "." + methodName;
-			// else if (filter.indexOf(className)<0)
-			// 	filter = "." + methodName;
 			else 
 				filter = className + "." + methodName;
 		}
