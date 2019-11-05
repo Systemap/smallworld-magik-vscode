@@ -124,7 +124,6 @@ class codeExplorer {
                 resolve(results);
             }
             catch (e) {
-				console.log(e.message);
 				reject(e);
             }
         });
