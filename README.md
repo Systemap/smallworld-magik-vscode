@@ -87,9 +87,11 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
   * If no pragma flags are defined, all classifications will be listed.
   * Inheritance is filtered by `*loc` local methods only, `*obj` parents including `object` 
   * If inheritance filter is not defined all parents except `object` will be listed.
- Example:  `stream.new *dp *rs`  lists all the method names containing `new` on class names containing `stream` which are flagged as 'deprecated' or 'restricted'.   
+ Example:  `item.aspect *dp *rs`  lists all the method names containing `aspect` on class names containing `item` which are flagged as 'deprecated' or 'restricted'.   
 
-The Class Browser Editor/Title command _##_ toggles the folding and unfolding of method_finder comments and arguments.  
+The Class Browser Editor/Title command _##_ toggles the folding and unfolding of method_finder comments and arguments.
+
+![ClassBrowserComments](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowserComments.png)
 
 ---
 # Extension Settings

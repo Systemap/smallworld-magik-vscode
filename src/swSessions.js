@@ -343,9 +343,6 @@ class swSessions{
     }
 
     gisCommandParser(execCommand){
-        const swgis = this.swgis;
-		if (swgis.getActiveSession()) 
-			return vscode.window.showInformationMessage("GIS terminal is active: "+swgis.activeSession.session); 
 
         const extreme = function (exp){
 			let ext = [];
@@ -477,6 +474,11 @@ class swSessions{
     }
 
     gisCommand(execCommand){
+        const swgis = this.swgis;
+        let cp = swgis.getActiveSession();
+		if (cp) 
+			return vscode.window.showInformationMessage("GIS terminal is active: "+cp.name); 
+
 		const ask = async (engine, prompt, format, items, key) => {
             var arg, args = [">Click here to add a new GIS Command, or select one from the list:"];
             for (var i in items) args.push(++i+" "+items[--i][key]);
@@ -508,7 +510,9 @@ class swSessions{
 			}
 			catch(err) { }
 			return stanzas;
-		}
+        }
+        const _self = this;
+        const explode = function (gisCmd) { return _self.gisCommandParser(gisCmd);};
         const exists = function (gisCommand1,gisCommand2) {
 			let cmd1 = explode(gisCommand1);
 			let cmd2 = explode(gisCommand2);
@@ -529,7 +533,7 @@ class swSessions{
 			return path;
 		}
 
-        let cmd = this.gisCommandParser(execCommand);
+        let cmd = explode(execCommand);
         try {
 			if (cmd['-a'] && !cmd.alias){
 				let aliases = expand(cmd['-a']);
@@ -641,7 +645,7 @@ class swSessions{
 
             workbenchConfig.update('redialSession',cmd, vscode.ConfigurationTarget.Global);
 
-            let aliasStanza = cmd.session;
+            let aliasStanza = cmd.alias;
             let aliasFile =  exslash( cmd['-a']);
 			let gisPath =  exslash(cmd.gispath);
 			let startup = cmd.startup;
