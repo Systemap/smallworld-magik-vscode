@@ -274,7 +274,7 @@ class codeExplorer {
 			this.scanWorkspace('provideWorkspaceSymbols',token);
 			// --- sift the symbols for 'query'
 			const swgis = this.swgis;
-			const symbsCache = swgis.swWorkspace.tagIndex;
+			const tagIndex = swgis.swWorkspace.tagIndex;
 			var nodeName, container,nodePack;
 			var dot = filter.indexOf(".");
 			if (filter.indexOf(":")>-1){
@@ -297,9 +297,9 @@ class codeExplorer {
 			}
 			console.log(filter+ '| -node:|'+nodeName+ '| -container:|'+container+'| -nodePack:|'+ nodePack);
 			var list = [], total = 0;
-				for (var n in symbsCache) {
+				for (var n in tagIndex) {
 					if (token && token.isCancellationRequested) reject(e);
-					symbsCache[n].forEach(function(symb){
+					tagIndex[n].forEach(function(symb){
 						try {
 							if(!symb.name) {
 								// ignore

@@ -82,6 +82,15 @@ const swgis = {
 		fileName = fileName.toLowerCase();
 		return swgis.swWorkspace.tagIndex[fileName];
     },	
+    cacheSymbols: function (symInfos,fileName){
+        const tagIndex = swgis.swWorkspace.tagIndex;
+        let findex = tagIndex[fileName];
+        if (findex) {
+            tagIndex[fileName] = symInfos;
+        } else {
+            tagIndex[fileName] = symInfos;
+        }
+    },	
     filterWorkspaceRefs: function(filter){
         let results = [], refIndex = swgis.swWorkspace.refIndex;
         for(var fname in refIndex) {
