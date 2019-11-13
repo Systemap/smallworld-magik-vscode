@@ -543,7 +543,7 @@ class swSessions{
 			return path;
 		}
 
-        let cmd = explode(execCommand);
+        let cmd = this.gisCommandParser(execCommand);
         try {
 			if (cmd['-a'] && !cmd.alias){
 				let aliases = expand(cmd['-a']);
