@@ -35,7 +35,7 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 
 ![CodeOutline](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/CodeOutline.png)
 
-* Press (F2-F2) to open the Class Browser and type in a `Class.Method` combination to query method_finder.
+* Click on !swCB! icon (F2-F2) on the statusbar or to open the Class Browser prompt and type in a `Class.Method` combination to query method_finder.
 * or Simply hover over a `Class.Method` combination, to get Class Browser hover action  
 
 ![ClassBrowser](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowser.png)
@@ -47,9 +47,18 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
 ---
 # Starting a Smallworld sessions 
 
+### Redial the last Session
+
+* When the extension is activated, on opening a folder or a workspace, the Redial dialog pops up to run the last run GIS Command or start a new command. 
+
+![Redial Command](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/RedialCommand.png)
+
+
 ### Run a GIS Command
 
-* Press `F2-z` and enter a Smallworld 5 standard format command line _`  [-p productPath] [-e environFile] -a gis_aliasFile alias  `_ to start a session. 
+* Press `F2-z` and enter a Smallworld 5 standard command line to start a session. 
+_`  [-p productPath] [-e environFile] -a gis_aliasFile alias  `_ 
+
 
 ### Run gis_aliases stanzas. (Contributor: [MarkerDave](https://github.com/MarkerDave) )
 
@@ -72,14 +81,33 @@ Get started with Smallworld 5.x cambridge_db example, based on your local instal
     * `F2-s` or `Alt+F9` to compile the current code selection
     * `F2-l` or `Shift+F9` to compile the current single line of code
     * For F7 compiler keys see `Extension Settings` section below
-* Access Class or Method `apropos` in Hover Actions over `object.method` definitions.
+
+## Class Browser
+
+ Run Class Browser from !swCB! icons or from `Class Browser` Hover Actions over `object.method` definitions.
+    * `F2-F2` Open Class Browser prompt and the class Browser document. 
+    * `F2-UP ARROW` to fold up method_finder comments.
+    * `F2-DOWN ARROW` to fold down method_finder comments.
+    * `Ctrl+/` to toggle the folding/unfolding method_finder comments.
+
+ The Class Browser prompt accepts the following syntax: 
+  `[class].[method] [*loc/obj] [*b] [*a] [*s] [*r] [*d] [*dp] [*rs]`
+  * Pragma flags filter the classification level as `*b` basic, `*a` advanced, `*s` subclassable, `*r` redefinable, `*d` debug, `*dp` deprecated, `*rs` restricted.
+  * If no pragma flags are defined, all classifications will be listed.
+  * Inheritance is filtered by `*loc` local methods only, `*obj` parents including `object` 
+  * If inheritance filter is not defined all parents except `object` will be listed.
+ Example:  `item.aspect *dp *rs`  lists all the method names containing `aspect` on class names containing `item` which are flagged as 'deprecated' or 'restricted'.   
+
+The Class Browser Editor/Title command _##_ toggles the folding and unfolding of method_finder comments and arguments.
+
+![ClassBrowserComments](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/ClassBrowserComments.png)
 
 ---
 # Extension Settings
 
 Open File-Preferences-Settings and search for Smallworld GIS under the `Extensions`. 
 
-## Smallworld GIS Path (`Smallworld.gisPath`)
+## Smallworld GIS Path configuration
 
 The `Smallworld.gisPath` defines the location of Smallworld gis.exe or the product path. The gisPath is an array of strings that allows configuration for multiple product locations.  
 Example:
@@ -87,7 +115,7 @@ Example:
 
 ![GIS Path Settings](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/gisPathSettings.png)	
 
-## Smallworld Startup (`Smallworld.startup`)
+## Smallworld Startup configuration
 
 The `Smallworld.startup` is for the Windows DOS commands to run before gis.exe. This settings is a JSON array of strings. Invalid commands do not stop the startup process.
 Example:
@@ -106,7 +134,7 @@ You can edit `Smallworld.startup` in the Settings editor in Visual Studio Code 1
 
 ![Startup Settings](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/startupSettings.png)	
 
-## GIS Command (`Smallworld.gisCommand`)
+## Simple GIS Command configurations
 
 `Smallworld.gisCommand` section contains the configuration for GIS Commands that are executed by F2-z keys and starts a session from a standard Smallworld 5 command line.
 A basic GIS Command have the following format:
@@ -121,7 +149,7 @@ You can edit `Smallworld.gisCommand` in the Settings editor in Visual Studio Cod
 
 ![GIS Command Settings](https://github.com/siamz/smallworld-magik-vscode/raw/master/images/gisCommandSettings.png)	
 
-## GIS Command Session Configuration (`Smallworld.sessions`)
+## Multi-environment GIS Session configuration
 
 `Smallworld.sessions` section provides a flexible configuration for multiple and complex GIS Command definitions in the form of a JSON object. 
 GIS Commands defined in `Smallworld.sessions` are self contained and do not share or use the `Smallworld.startup` or `Smallworld.gisPath` values. 
@@ -194,8 +222,8 @@ To define F7 key combinations for the Magik compiler:
 
 # Release Notes
 
-## [1.5.0] - 20-10-2019
-* New integrated Smallworld Class Browser.   
+## [1.5.0] - 10-11-2019
+* New integrated Smallworld Class Browser (replacing apropos function).   
 * New Redial function to automatically start the last GIS Command session. 
 * Definition and Reference support for Message identifiers in .magik and .msg files.
 * Various bug fixes and improvements. 
@@ -207,13 +235,18 @@ This extensions does not support Smallworld sessions and its related functions o
 
 * GIS Command not supported on Smallworld 3.x and 4.x 
 * Magik Compiler commands do not support Smallworld 3.x and 4.x
-* Magik CLass Browser is not supported for Smallworld 3.x and 4.x
+* Class Browser is not supported for Smallworld 3.x and 4.x
 
+### Ctrl+C  at Magik prompt terminates the Session.
+Ctrl+C key combination at the Magik prompt is captured by the VSCode Terminal DOS command and terminate the Terminal and the GIS session.
 
-### Workspace Close\Open Terminates the Session.
-Opening/closing a Workspace or the active Folder while a Smallworld Session is running, will terminate the session without a warnings.
-
-**Workarounds:** 
+### Workspace Close\Open terminates the Session.
+Opening/closing a Workspace or the active Folder while a Smallworld Session is running, will terminate the session.
 * Use `Add Folder to Workspace...` to access the source tree
 * Quit the Smallworld Session before switching the active Folder or Workspace.
 
+### Class Browser delays and synch issues.
+The delay in Class Browser response from the GIS session and the VSCode thread priorities cause some aspects of the Class Browser UI no to work as expected. 
+* Click twice on the Comment fold/unfold icon _##_ when the swCB folding state is lost.
+* For queries returning large number of classes and methods, the swCB editor might remain blank for a while. 
+* If the communication to the method_finder in the GIS session is lost, please re-run the Class Browser from `!swCB!` icon in the statusbar. 

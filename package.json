@@ -2,7 +2,7 @@
 	"name": "smallworld-magik",
 	"displayName": "Smallworld Magik",
 	"description": "Smallworld Magik for Visual Studio Code",
-	"version": "1.4.1",
+	"version": "1.5.2",
 	"publisher": "siamz",
 	"icon": "images/swmagik.png",
 	"keywords": [
@@ -122,28 +122,40 @@
 			},
 			{
 				"command": "swCb.find",
-				"title": "SW Class Browser Find"
+				"title": "SW CB Find"
 			},
 			{
 				"command": "swCb.jump",
 				"title": "SW CB Jump to Source"
 			},
 			{
+				"command": "swCb.refresh",
+				"title": "SW CB Refresh"
+			},
+			{
+				"command": "swCb.inherit",
+				"title": "SW CB Inherit"
+			},
+			{
 				"command": "swCb.inheritLocal",
-				"title": "SW CB List Local"
+				"title": "SW CB Inherit Local"
 			},
 			{
 				"command": "swCb.inheritParent",
-				"title": "SW CB List Parents"
+				"title": "SW CB Inherit Parents"
 			},
 			{
 				"command": "swCb.inheritObject",
-				"title": "SW CB List Object"
+				"title": "SW CB Inherit Object"
 			},
 			{
 				"command": "swCb.comments",
-				"title": "SW CB Comments Toggle"
-			},
+				"icon": {
+					"light": "./images/swcb-comments.svg",
+					"dark": "./images/swcb-comments.svg"
+				},
+				"title": "SW CB Comments Fold"
+			}
 		],
 		"keybindings": [
 			{
@@ -166,30 +178,23 @@
 			{
 				"key": "f2 up",
 				"command": "swCb.comments",
-				"args": "on",
-				"when": "editorTextFocus",
-				"title": "SW CB Comments On"
-			},
-			{
-				"key": "f2 down",
-				"command": "swCb.Comments",
 				"args": "off",
 				"when": "editorTextFocus",
 				"title": "SW CB Comments Off"
 			},
 			{
-				"key": "f2 left",
-				"command": "swCb.inheritLocal",
-				"args": "local/parent",
-				"when": "editorTextFocus",
-				"title": "SW CB Inherit Local"
+				"key": "f2 down",
+				"command": "swCb.comments",
+				"args": "on",
+				"when": "editorLangId == swCB",
+				"title": "SW CB Comments On"
 			},
 			{
-				"key": "f2 right",
-				"command": "swCb.inheritObject",
-				"args": "object/parent",
-				"when": "editorTextFocus",
-				"title": "SW CB Inherit Object"
+				"key": "Ctrl+/",
+				"command": "swCb.comments",
+				"args": "on",
+				"when": "editorLangId == swCB",
+				"title": "SW CB Comments On"
 			},
 			{
 				"key": "Ctrl+f9",
@@ -294,11 +299,16 @@
 					"command": "swCb.jump",
 					"group": "navigation",
 					"when": "editorLangId == swCB"
+				},
+				{
+					"command": "swCb.refresh",
+					"group": "navigation",
+					"when": "editorLangId == swCB"
 				}
 			],
 			"editor/title": [
 				{
-					"command": "swCb.jump",
+					"command": "swCb.comments",
 					"group": "navigation",
 					"when": "editorLangId == swCB"
 				}
@@ -360,9 +370,13 @@
 			},
 			{
 				"id": "swCB",
-				"aliases": ["_mf"],
+				"aliases": [
+					"_mf"
+				],
 				"extensions": [],
-				"filenames": ["!swCB!"],
+				"filenames": [
+					"!swCB!"
+				],
 				"configuration": "./cfg/magik-configuration.json"
 			}
 		],

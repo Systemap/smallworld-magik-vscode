@@ -3,16 +3,15 @@ All notable changes to the " Smallworld Magik" extension will be documented in t
 
 # Release Notes
 
-## [1.4.0] - 2019-08-04
+## [1.5.0] - 10-11-2019
 
-* New GIS Command (F2-z) to start a session. 
-* Multi-environment configuration for GIS path, command and startup.
-* Support for Case and Style archive files.
+* New integrated Smallworld Class Browser (replacing apropos function).   
+* New Redial function to automatically start the last GIS Command session. 
+* Definition and Reference support for Message identifiers in .magik and .msg files.
 * Various bug fixes and improvements. 
 
 # Road Map
 
-* Magik Class Browser for Smallworld 5.
 * Enabling Magik language extension in the Session Terminal. 
 * Code Outline for XML configuration resources.
 * Magik Autocorrection performance improvements.
@@ -20,6 +19,13 @@ All notable changes to the " Smallworld Magik" extension will be documented in t
 * Snippets for product, module, resources, messages files and folders.
 
 # Release History
+
+## [1.4.0] - 2019-08-04
+
+* New GIS Command (F2-z) to start a session. 
+* Multi-environment configuration for GIS path, command and startup.
+* Support for Case and Style archive files.
+* Various bug fixes and improvements. 
 
 ## [1.3.0] - 2019-06-10
 

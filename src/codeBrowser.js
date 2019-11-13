@@ -16,7 +16,7 @@ class codeBrowser{
 		var codeUri = document.uri;
 		var codeBlock = document.getText();
 		var languageId =  document.languageId;
-		if (document.fileName=="!swCB!")	return; 
+		if (document.languageId=="swCB")	return; 
 		
 		this.get_codeReferences(codeBlock, codeUri, languageId, token);
 		return this.get_codeSymbols(codeBlock,codeUri, languageId,  token);
@@ -53,9 +53,8 @@ class codeBrowser{
             symInfos = this.get_messageSymbols(codeBlock, codeUri, token); 
         } else {
             return [];
-        }
-        this.swWorkspace.tagIndex[fileName] = symInfos;  
-
+		}
+		this.swgis.cacheSymbols(symInfos,fileName);
 		return  symInfos;   
     };
 
@@ -109,17 +108,15 @@ class codeBrowser{
 				var stat = null, file = dir + '\\' + fileList[i];
 			try {
 					stat = fs.statSync(file);
-			} catch(err) {
-					// igonre
-		}
+			} catch(err) { }
 				if (!stat || isFileSignature(file,ignorePattern) ) {
 					// ignore
 				} else if (stat.isDirectory()) {
 					count += grab(file,pathIndex,codeScanner);
 				} else if(!pathIndex[file] && isFileSignature(file,includePattern)) {    
 					try{   
-					 let data = codeScanner(file);
-					 pathIndex[file] = data;
+						let data = codeScanner(file);
+						// pathIndex[file] = data;
 					} catch(err) {
 						console.log("--- scanWorkspace:  Error: "+err.message+" - "+file);		
 					}   
@@ -312,6 +309,7 @@ class codeBrowser{
  
         for(var k in symRefIndex){
             var tagRef = symRefIndex[k]
+			if (!tagRef[4]) continue;
 			var symRefInfo = new vscode.SymbolInformation(tagRef[4], tagRef[1], new vscode.Range(tagRef[2],tagRef[3]),codeUri );
 			symRefInfo.package = tagRef[5];
             vsSymbols.push(symRefInfo); 

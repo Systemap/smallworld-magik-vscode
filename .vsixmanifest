@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Language="en-US" Id="smallworld-magik" Version="1.4.1" Publisher="siamz"/>
+    <Identity Language="en-US" Id="smallworld-magik" Version="1.5.2" Publisher="siamz"/>
     <DisplayName>Smallworld Magik</DisplayName>
     <Description xml:space="preserve">Smallworld Magik for Visual Studio Code</Description>
-    <Tags>smallworld,magik,swgis,sw-gis,gis_aliases,workspace,symbolprovider,definitionprovider,referenceprovider,autocorrection,theme,color-theme,icon-theme,snippet,keybindings,Smallworld Magik,__ext_magik,__ext_case,__ext_style,__ext_archive,Smallworld GIS,__ext_msg,__ext_ace,__ext_dump</Tags>
+    <Tags>smallworld,magik,swgis,sw-gis,gis_aliases,workspace,symbolprovider,definitionprovider,referenceprovider,autocorrection,theme,color-theme,icon-theme,snippet,keybindings,Smallworld Magik,__ext_magik,__ext_case,__ext_style,__ext_archive,Smallworld GIS,__ext_msg,__ext_ace,__ext_dump,swCB,_mf</Tags>
     <Categories>Programming Languages,Snippets,Keymaps,Themes</Categories>
     <GalleryFlags>Public</GalleryFlags>
     <Badges></Badges>

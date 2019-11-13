@@ -32,7 +32,7 @@
       "name": "self,slot,package",
       "scope": ["constant.language"],
       "settings": {
-        "foreground": "#2b005c",
+        "foreground": "#306",
         "fontStyle": "bold"
       }
     },

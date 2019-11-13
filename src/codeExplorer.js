@@ -86,7 +86,7 @@ class codeExplorer {
 		var codeWord = this.getClassMethodAtPosition(document, pos);
 		if (!codeWord) return;
 		var commands = [],cmd,arg,lbl;
-		if ( document.fileName=="!swCB!"){
+		if ( document.languageId=="swCB"){
 			lbl =   "Jump to source: "+codeWord;
 			arg = encodeURIComponent(JSON.stringify([document,codeWord]));
 			cmd = vscode.Uri.parse(`command:swCb.jump?${arg}`);
@@ -120,28 +120,17 @@ class codeExplorer {
 			// var codeText = document.getText();
 			// var codeUri = document.uri;
             try {
-                let results = [], refIndex = swgis.swWorkspace.refIndex;
-                for(var fname in refIndex) {
-					var refes = refIndex[fname];
-					if (!refes) continue;
-					refes = refes[filter];
-                    if (refes) {
-                        for (let i in refes) {
-                            results.push(refes[i]) 
-                        }
-                    } 
-                };
+                let results = swgis.filterWorkspaceRefs(filter);
                 resolve(results);
             }
             catch (e) {
-				console.log(e.message);
 				reject(e);
             }
         });
     }
 	
 	getClassMethodAtPosition(document, pos){
-		if ( document.fileName=="!swCB!"){
+		if ( document.languageId=="swCB"){
 			var nameStr = document.lineAt(pos.line).text.split("#")[0].trim(); 
 			if (/\s+IN\s+/.test(nameStr)) {
 				var str = nameStr.split(/\s+/g);
@@ -162,8 +151,10 @@ class codeExplorer {
         var editor = vscode.window.activeTextEditor;
 		if (editor) {
 			var range = editor.selection
-			if (!range.isEmpty && range.start.line == range.end.line) {
-				filter = document.getText(editor.selection).replace(/\s*/g,'');
+			if (!range.isEmpty && range.isSingleLine) {
+				let s = range.start, e = range.end;
+				if (pos.line==s.line && pos.character>=s.character && pos.character<=e.character)
+					return document.getText(editor.selection).replace(/\s*/g,'');
 			}
 		}
 
@@ -191,7 +182,7 @@ class codeExplorer {
 			}
 			if (filter==className) 
 				filter = className + ".";
-			else if (filter.indexOf(className)<0)
+			else if (methodName.indexOf(filter)==0)
 				filter = "." + methodName;
 			else 
 				filter = className + "." + methodName;
@@ -204,7 +195,7 @@ class codeExplorer {
 		if (!filter) return 
 
 		let swgis = this.swgis;
-		if(document.fileName=="!swCB!") {
+		if(document.languageId=="swCB") {
 			return //this.get_aproposCommands(document, pos)
 		} else {
 			var symbols = swgis.filterWorkspaceSymbs(filter);
@@ -283,7 +274,7 @@ class codeExplorer {
 			this.scanWorkspace('provideWorkspaceSymbols',token);
 			// --- sift the symbols for 'query'
 			const swgis = this.swgis;
-			const symbsCache = swgis.swWorkspace.tagIndex;
+			const tagIndex = swgis.swWorkspace.tagIndex;
 			var nodeName, container,nodePack;
 			var dot = filter.indexOf(".");
 			if (filter.indexOf(":")>-1){
@@ -306,9 +297,9 @@ class codeExplorer {
 			}
 			console.log(filter+ '| -node:|'+nodeName+ '| -container:|'+container+'| -nodePack:|'+ nodePack);
 			var list = [], total = 0;
-				for (var n in symbsCache) {
+				for (var n in tagIndex) {
 					if (token && token.isCancellationRequested) reject(e);
-					symbsCache[n].forEach(function(symb){
+					tagIndex[n].forEach(function(symb){
 						try {
 							if(!symb.name) {
 								// ignore
